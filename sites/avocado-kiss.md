@@ -267,9 +267,17 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
   Глобальный поиск — §9.
 - **MobileMenu**: простое раскрытие (не отдельный диалог) — см. «Вне объёма v1»
   в спеке дизайна.
-- **Footer**: бренд + tagline, колонка Magazine (**About, Contact** — за флагом
-  `STATIC_PAGES_ENABLED=false`, скрыта до появления этих страниц), колонка Follow
-  (соцсети), нижняя строка copyright/made_with из `footer_settings`.
+- **Footer**: бренд + tagline, колонка Magazine (**About, Contact** — ссылки живые,
+  флаг `STATIC_PAGES_ENABLED=true`, миграция 0017), колонка Follow (соцсети), нижняя
+  строка copyright/made_with из `footer_settings` + ссылки **Privacy** и **Terms**.
+- **Статические страницы (миграция 0017):** роуты `/about`, `/contact`, `/privacy`,
+  `/terms` — RSC + ISR `revalidate=60`, SEO из строк `pages` (`fetchPageSeo`) с
+  код-фолбэком. About — `about_content` (intro/story/3 карточки, компоненты
+  `components/about/*`); Contact — `contact_content` (email `mailto` + соцсети из
+  `buildSocials`, компоненты `components/contact/*`); Privacy/Terms — `pages.body`
+  (Markdown) через `LegalArticle`+`MarkdownText` (`react-markdown`), null → встроенный
+  шаблон-фолбэк (⚠️ до запуска вставить реальные юрлицо/контакт/дату). Все поля
+  nullable → безопасный фолбэк. Правятся в web.admin: Pages → редактор по slug.
 - **Глобальные секции (соцсети) — DB-driven (миграция 0016):** соцсети
   (**X / Pinterest / Instagram**) — сайт-глобальные, лежат в `site_settings`
   (`x_url`/`pinterest_url`/`instagram_url`), читаются один раз в `app/layout.tsx`

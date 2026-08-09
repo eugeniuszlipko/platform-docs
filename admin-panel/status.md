@@ -180,6 +180,31 @@
      SEO-посты;
    - ротация secret key base-one, использованного для импорта при переезде.
 
+## Static pages (About + Contact + Privacy + Terms) для Avocado Kiss (2026-08-09)
+
+Спек/план — `docs/superpowers/{specs,plans}/2026-08-09-avocado-static-pages-*`.
+- **Миграция avocado `0017`**: `pages.body` (Markdown) + строки `pages` about/contact/privacy/terms;
+  singleton `about_content` (intro/story/3 карточки) и `contact_content` (eyebrow/heading/intro/
+  email/response_note). RLS/гранты/триггеры/сид по шаблону 0001.
+- **Сайт avocado.kiss**: роуты `/about` (`about_content` → `components/about/*`), `/contact`
+  (`contact_content` + соцсети из `buildSocials` → `components/contact/*`), `/privacy` + `/terms`
+  (`pages.body` Markdown → `LegalArticle`+`MarkdownText`, `react-markdown`; фолбэк-шаблон).
+  Все RSC+ISR, SEO из `pages` с фолбэком. Футер: `STATIC_PAGES_ENABLED=true` + ссылки Privacy/Terms.
+  `app/sitemap.ts` расширен 4 роутами.
+- **web.admin**: `AvocadoPageEditPage` стал условным по slug (hero shop/blog · body-markdown
+  privacy/terms · About-редактор · Contact-редактор · SEO всегда). Строки about/contact/privacy/
+  terms появляются в списке Pages автоматически. Новые: `src/lib/avocadoAbout.ts`,
+  `src/lib/avocadoContact.ts`, `src/features/pages/{AvocadoAboutEditor,AvocadoContactEditor}.tsx`,
+  чистый `avocadoPageForm.ts` (+тесты). Один Save пишет строку pages + нужную content-таблицу.
+  `about_content.story_image_path` — в `USAGE_SOURCES`.
+- Контракт БД — schema.md §9; сайт — sites/avocado-kiss.md §6; редактор — pages.md §9.
+
+Отложено (не блокеры): текст/эмодзи фолбэков About и юр-текст Privacy/Terms — **шаблон**,
+до запуска заменить реальными реквизитами/контактом/датой; форма Contact не рабочая (только
+email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-tsconfig-paths` не применяется к
+тест-файлам avocado (в `tsconfig.exclude`) — новый тест использует относительные импорты
+(рантайм `@/` в тестах = латентная дыра, тикет при необходимости).
+
 ## Global sections (Footer + Socials) для Avocado Kiss (2026-08-09)
 
 Сделан редактор глобальных секций avocado (спек/план — `docs/superpowers/{specs,plans}/2026-08-09-avocado-global-sections-*`):

@@ -167,3 +167,28 @@
   статический сегмент перед `pages/:pageId`).
 - Сайт: соцсети читаются в `app/layout.tsx` (`fetchSiteSettings` + `buildSocials`) и
   идут в Header/MobileMenu/Footer; тексты футера — `fetchFooterSettings`. `revalidate=60`.
+
+## 9. Статические страницы — Avocado Kiss (редактор по slug)
+
+Миграция 0017 добавила строки `pages` `about/contact/privacy/terms` — они появляются
+в списке Pages автоматически (`AvocadoPagesPage` листает все строки). `AvocadoPageEditPage`
+теперь **условный по slug** (зеркало cozy `PageEditPage`); форм-маппинг вынесен в чистый
+`src/features/pages/avocadoPageForm.ts` (unit-тесты), тип `AvocadoPageFormValues`
+переиспользуют встроенные редакторы.
+- **hero** — только `shop`/`blog` (`HERO_SLUGS`); у `home` и статических страниц hero нет.
+- **body (Markdown)** — `privacy`/`terms` (`BODY_SLUGS`), через общий `RichTextEditor`
+  (`Controller`), пишется в `pages.body`.
+- **About** (`slug='about'`) — встроенный `AvocadoAboutEditor` (порт cozy
+  `AboutContentEditor`: Intro / Story + image-picker / 3 карточки), поля `about.*`;
+  слой `src/lib/avocadoAbout.ts` (таблица `about_content`).
+- **Contact** (`slug='contact'`) — `AvocadoContactEditor` (eyebrow/heading/intro/email/
+  response_note), поля `contact.*`; слой `src/lib/avocadoContact.ts` (`contact_content`).
+- **SEO** — всегда.
+- **Загрузка**: `AvocadoPageEditPage` грузит строку `pages`, затем `PageDataGate`
+  догружает singleton About/Contact (gated `useQuery` по slug) — форма монтируется с
+  полными `defaultValues`.
+- **Один Save**: `updateAvocadoPage` (строка pages, вкл. `body`), затем условно
+  `updateAvocadoAbout`/`updateAvocadoContact` — последовательно, идемпотентно (как cozy
+  `updatePage`); гард несохранённых изменений — как везде. `about_content.story_image_path`
+  добавлен в `USAGE_SOURCES` (`src/lib/media.ts`).
+- Сайт: роуты `/about /contact /privacy /terms` (RSC, ISR); контракт БД — schema.md §9.

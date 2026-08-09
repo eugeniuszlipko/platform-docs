@@ -541,15 +541,37 @@ posts) с check `num_nonnulls(recipe_id, related_post_id) = 1`. Публично
 
 ### pages — страницы + SEO
 
-Фиксированный набор из 3 строк (`home`, `shop`, `blog`) — create/delete нет.
-`id`, timestamps, `slug` (unique), `seo_title`, `seo_description`,
-`og_image_path` (§4). Строка `shop` — миграция 0007, `blog` — 0010. Миграция
-0010 добавила **hero-баннер** для страниц `/shop` и `/blog`: `hero_eyebrow`,
+Набор из 7 строк (`home`, `shop`, `blog` + `about`, `contact`, `privacy`, `terms`) —
+задан кодом/миграциями, create/delete нет. `id`, timestamps, `slug` (unique),
+`seo_title`, `seo_description`, `og_image_path` (§4), `body` (Markdown, nullable).
+Строка `shop` — миграция 0007, `blog` — 0010, `about/contact/privacy/terms` — 0017.
+Миграция 0010 добавила **hero-баннер** для `/shop` и `/blog`: `hero_eyebrow`,
 `hero_title`, `hero_description`, `hero_image_path` (плоский ключ бакета или URL;
-null → плейсхолдер) — раньше текст был захардкожен в `app/shop|blog/page.tsx`
-(`HUB_HERO`/`HERO`), теперь страницы читают строку `pages` с фолбэком на эти
-константы. У строки `home` баннера нет (мозаика). Markdown-полей/`body` по-прежнему
-нет.
+null → плейсхолдер) — страницы читают строку `pages` с фолбэком на код-константы.
+У `home` баннера нет (мозаика). **`body`** (миграция 0017, Markdown) используют только
+`privacy`/`terms` (рендер `LegalArticle`+`react-markdown`, null → встроенный
+шаблон-фолбэк). SEO всех 7 страниц читается через `fetchPageSeo(slug)`.
+
+### about_content — контент страницы /about (singleton, одна строка)
+
+Миграция 0017. Управляемый контент `/about`: фиксированные секции (intro / story /
+3 карточки-ценности) — «колонка на поле» (как `footer_settings`), не типизированные
+секции. Поля (все text nullable, пусто → сайт показывает встроенный фолбэк):
+`id`, timestamps, `eyebrow`, `heading`, `intro`; `story_heading`, `story_body_1`,
+`story_body_2`, `story_image_path` (§4); `card1_icon`/`card1_title`/`card1_text` …
+`card3_*` (`*_icon` — эмодзи-строка). RLS public-read + `is_admin()`-write; триггер
+`set_updated_at`; сид одной строкой. Сайт: `fetchAboutContent` (`lib/content.ts`) →
+`components/about/{AboutIntro,AboutStory,AboutValues}`. Правится в web.admin: Pages →
+строка `about` (встроенный `AvocadoAboutEditor`, слой `src/lib/avocadoAbout.ts`);
+`story_image_path` учтён в `USAGE_SOURCES` админки.
+
+### contact_content — контент страницы /contact (singleton, одна строка)
+
+Миграция 0017. Поля (text nullable): `id`, timestamps, `eyebrow`, `heading`, `intro`,
+`email`, `response_note`. Соцсети НЕ здесь — берутся сайт-глобально из `site_settings`.
+RLS/триггер/сид — как у `about_content`. Сайт: `fetchContactContent` → `components/contact/
+{ContactIntro,ContactMethods}` (email `mailto` + соцсети из `buildSocials`). Правится
+в web.admin: Pages → строка `contact` (`AvocadoContactEditor`, `src/lib/avocadoContact.ts`).
 
 ### footer_settings — текст футера (singleton, одна строка)
 
@@ -719,6 +741,13 @@ timestamps) — сайт-глобальные соцсети для header+foote
 public-read + `is_admin()`-write RLS, триггер `set_updated_at`, сид одной строкой.
 Соцсети переехали сюда из `footer_settings.*_url` (те → legacy/unused). Сайт читает
 через `fetchSiteSettings`/`buildSocials` в `app/layout.tsx`.
+· **0017 статические страницы** (About/Contact/Privacy/Terms): `pages.body` (Markdown,
+nullable — privacy/terms) + строки `pages` `about/contact/privacy/terms` (SEO);
+singleton-таблицы `about_content` (intro/story/3 карточки) и `contact_content`
+(eyebrow/heading/intro/email/response_note) — гранты, public-read + `is_admin()`-write
+RLS, триггеры, сид по строке. Роуты `/about /contact /privacy /terms` (RSC, ISR);
+футер-флаг `STATIC_PAGES_ENABLED` включён. Правятся в web.admin: Pages → редактор
+по slug.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
