@@ -2,6 +2,14 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> ✅ **РЕАЛИЗОВАНО 2026-08-08** (ветка `feature/avocado-blog-admin` в web.admin /
+> avocado.kiss / platform-docs; PR открыты, не смёржены). Итог и хвосты —
+> [../../../admin-panel/status.md](../../../admin-panel/status.md). Отклонения от
+> плана по ходу: Task 11 выявил, что раздел Pages несовместим с моделью avocado →
+> добавлен **Task 13** (avocado-специфичный Pages-редактор + диспетчер `/pages`);
+> код-ревью нашло 2 бага (image-путь блока писался абсолютным URL; Read-also —
+> мёртвые кнопки/невалидный DOM/нет дедупа) — исправлены. 71 unit-тест зелёный.
+
 **Goal:** Построить в общей админке `web.admin` раздел Blog для сайта Avocado Kiss (3 шаблона поста + единая таблица секций из 6 блоков + теги/авторы/Read-also/баннер архива/папки).
 
 **Architecture:** Отдельная feature-папка `src/features/articles/` + слой данных `src/lib/articles.ts`; UI-механику (конструктор блоков, diff-сохранение, dirty-guard, image/FK-пикеры, SEO customize/reset) портируем из `src/features/posts/` (блог CozyCorner), модель данных берём из контракта `platform-docs/admin-panel/blog-avocado-kiss.md`. Маршрут `/:siteSlug/blog` диспетчеризуется по `site.schema`, чтобы CozyCorner остался на `PostsPage`, а Avocado получил `ArticlesPage`.
