@@ -180,6 +180,27 @@
      SEO-посты;
    - ротация secret key base-one, использованного для импорта при переезде.
 
+## Global sections (Footer + Socials) для Avocado Kiss (2026-08-09)
+
+Сделан редактор глобальных секций avocado (спек/план — `docs/superpowers/{specs,plans}/2026-08-09-avocado-global-sections-*`):
+- **Миграция avocado `0016`**: singleton `site_settings` (`x_url`/`pinterest_url`/`instagram_url`)
+  — сайт-глобальные соцсети. Соцсети переехали из `footer_settings.*_url` (те → legacy/unused).
+- **Сайт avocado.kiss**: соцсети теперь DB-driven — `fetchSiteSettings` + `buildSocials`
+  (`lib/socials.ts`, `SOCIAL_ICONS` по стабильному ключу) в `app/layout.tsx` → Header/
+  MobileMenu/Footer. Прежний захардкоженный `SOCIALS` удалён. Колонка Footer «Magazine»
+  (About/Contact) — за флагом `STATIC_PAGES_ENABLED=false` до итерации статических страниц.
+- **web.admin**: экран **Pages → «Footer & socials»** (`features/pages/AvocadoFooterEditPage.tsx`,
+  роут `/:siteSlug/pages/footer` через `FooterEditRoute` в `PagesRoutes.tsx`, закреплённая
+  ссылка в `AvocadoPagesPage`). Данные: `lib/avocadoFooter.ts` (footer_settings: tagline/
+  copyright/made_with + newsletter) + `lib/avocadoSiteSettings.ts` (site_settings: соцсети);
+  форм-маппинг `features/pages/avocadoFooterForm.ts` (unit-тесты). Один Save пишет обе
+  таблицы (идемпотентно, без транзакции). Гард несохранённых изменений — как везде.
+- Контракт БД — schema.md §9 (`site_settings`, `footer_settings`); сайт — sites/avocado-kiss.md §6.
+
+Отложено: набор соцсетей фиксирован X/Pinterest/Instagram (`telegram_url`/`rss_url`
+в `footer_settings` — legacy, без иконок); логотипы и ведущие пункты навигации хедера
+остаются захардкоженными (осознанно).
+
 ## Доработки по разделу Blog/Pages avocado (после 2026-08-08)
 
 Раздел построен и работает (пользователь подтвердил живьём); ниже — отложенное:

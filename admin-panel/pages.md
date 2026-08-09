@@ -144,3 +144,26 @@
   `pages/:pageId`, коллизии нет). `HeaderEditPage` в `App.tsx` перед `pages/:pageId`.
 - Сайт читает `header_settings` через `fetchHeaderSettings` (`lib/content.ts`) и
   прокидывает `instagram_url` в `<Header>` из `app/layout.tsx`.
+
+## 8. Footer & socials — Avocado Kiss (site-wide)
+
+Только для avocado (`site.schema === 'avocado_kiss'`). Отдельный экран из списка Pages
+(закреплённая строка «Footer & socials»), редактирует **две** таблицы одним Save:
+`footer_settings` (тексты) + `site_settings` (сайт-глобальные соцсети, миграция 0016).
+У cozy пока своего footer-редактора нет — для не-avocado роут редиректит в список.
+- **Слой данных** — `src/lib/avocadoFooter.ts` (`getAvocadoFooter`/`updateAvocadoFooter`
+  над `footer_settings`: `tagline`/`copyright`/`made_with` + newsletter) и
+  `src/lib/avocadoSiteSettings.ts` (`getAvocadoSiteSettings`/`updateAvocadoSiteSettings`
+  над `site_settings`: `x_url`/`pinterest_url`/`instagram_url`). Оба — singleton,
+  update по `id`, явные колонки. Query-ключи `['footer', site.slug]` / `['siteSettings', site.slug]`.
+- **Форм-маппинг** — `src/features/pages/avocadoFooterForm.ts` (чистый, unit-тесты):
+  `footerFormSchema` (zod; URL-поля соцсетей — пусто разрешено, иначе валидный http(s)),
+  `toFormValues(footer, site)` (null→''), `toFooterInput`/`toSiteSettingsInput` (''→null).
+- **Форма** — `src/features/pages/AvocadoFooterEditPage.tsx`: секции Footer / Newsletter /
+  Social links; sticky Save (`form="footer-form"`); гард несохранённых изменений
+  (`useBlocker` + `beforeunload`) — как у остальных редакторов. `mutationFn` пишет обе
+  таблицы последовательно (идемпотентно, без транзакции — как `updateAvocadoPage`).
+- **Маршрут** — `/:siteSlug/pages/footer` (`FooterEditRoute` в `PagesRoutes.tsx`;
+  статический сегмент перед `pages/:pageId`).
+- Сайт: соцсети читаются в `app/layout.tsx` (`fetchSiteSettings` + `buildSocials`) и
+  идут в Header/MobileMenu/Footer; тексты футера — `fetchFooterSettings`. `revalidate=60`.

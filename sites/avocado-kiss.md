@@ -267,10 +267,19 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
   Глобальный поиск — §9.
 - **MobileMenu**: простое раскрытие (не отдельный диалог) — см. «Вне объёма v1»
   в спеке дизайна.
-- **Footer**: бренд + tagline, колонка Magazine (**About, Contact** — заглушки
-  `href="#"`, страниц-адресатов пока нет), колонка Follow (**Twitter, Pinterest,
-  Instagram** из `SOCIALS`), нижняя строка copyright/made_with из
-  `footer_settings`.
+- **Footer**: бренд + tagline, колонка Magazine (**About, Contact** — за флагом
+  `STATIC_PAGES_ENABLED=false`, скрыта до появления этих страниц), колонка Follow
+  (соцсети), нижняя строка copyright/made_with из `footer_settings`.
+- **Глобальные секции (соцсети) — DB-driven (миграция 0016):** соцсети
+  (**X / Pinterest / Instagram**) — сайт-глобальные, лежат в `site_settings`
+  (`x_url`/`pinterest_url`/`instagram_url`), читаются один раз в `app/layout.tsx`
+  (`fetchSiteSettings`) и через `buildSocials` (`lib/socials.ts`) прокидываются в
+  Header, MobileMenu и Footer. Иконки — в коде (`SOCIAL_ICONS`, ключ — стабильный
+  `x`/`pinterest`/`instagram`, не label; клиентский `MobileMenu` резолвит иконку по
+  ключу, т.к. компонент-функцию нельзя передать через RSC-границу). Пустой URL —
+  сеть не рендерится. Правится в админке: web.admin → Pages → «Footer & socials»
+  (один Save пишет `footer_settings` + `site_settings`). `revalidate=60` в layout —
+  правки видны в течение минуты. Прежний захардкоженный `SOCIALS` удалён.
 - Глобальный поиск в шапке — реализован (§9).
 
 ## 7. Окружение и деплой

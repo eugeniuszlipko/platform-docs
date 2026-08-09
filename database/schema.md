@@ -553,12 +553,31 @@ null → плейсхолдер) — раньше текст был захард
 
 ### footer_settings — текст футера (singleton, одна строка)
 
-`tagline`, `copyright`, `made_with` («Made with care · New York — Lisbon»),
-`instagram_url`, `pinterest_url`, `telegram_url`, `rss_url` + тексты
-декоративного блока рассылки: `newsletter_eyebrow`, `newsletter_title`,
+`tagline`, `copyright`, `made_with` («Made with care · New York — Lisbon») +
+тексты декоративного блока рассылки: `newsletter_eyebrow`, `newsletter_title`,
 `newsletter_text`. Все text nullable (кроме id/timestamps); пусто — элемент
 не рендерится. Форма рассылки ничего никуда не пишет (нет таблицы
 `subscribers` в v1).
+⚠️ Колонки `instagram_url`, `pinterest_url`, `telegram_url`, `rss_url` — **legacy/unused**:
+соцсети переехали в `site_settings` (миграция 0016), сайт их из `footer_settings`
+больше не читает. Колонки оставлены (не дропаются), новый код их не использует.
+Правится в админке: web.admin → Pages → «Footer & socials»
+(`src/lib/avocadoFooter.ts`, форма `features/pages/avocadoFooterForm.ts`, экран
+`AvocadoFooterEditPage.tsx`) — один Save пишет и `footer_settings`, и `site_settings`.
+
+### site_settings — сайт-глобальные настройки (singleton, одна строка)
+
+Миграция 0016. Сайт-глобальные параметры header+footer; сейчас — соцсети.
+Заведена «колонка на поле» с прицелом на рост (новый глобальный параметр = новая
+колонка). Поля: `id`, `created_at`, `updated_at`, `x_url`, `pinterest_url`,
+`instagram_url` (все text nullable). Набор соцсетей фиксирован: **X, Pinterest,
+Instagram** (иконки в коде сайта, `lib/socials.ts` → `SOCIAL_ICONS`). RLS: публичное
+чтение + запись `is_admin()`; `updated_at` триггером `public.set_updated_at()`;
+сид одной строкой. Сайт читает первую строку (`fetchSiteSettings`, `lib/content.ts`)
+в `app/layout.tsx` и через `buildSocials` прокидывает соцсети в Header / MobileMenu /
+Footer; пусто/ошибка → соцсети не рендерятся (безопасный фолбэк). ⚠️ `app/layout.tsx`
+держит `export const revalidate = 60` — иначе правки из админки не видны до редеплоя.
+Правится тем же экраном админки, что и `footer_settings` (см. выше).
 
 ### media — метаданные загруженных файлов
 
@@ -695,6 +714,11 @@ backfill по slug), `products.folder_id` + секция `products` в `admin_fo
 `product_categories`. · **0015 posts.folder_id** (nullable FK → admin_folders, on
 delete set null) + секция `'posts'` в `admin_folders.section` CHECK — папки блога в
 web.admin (по образцу cozy 0022). Аддитивно; сайт `posts.folder_id` не читает.
+· **0016 site_settings** (singleton: `x_url`/`pinterest_url`/`instagram_url` +
+timestamps) — сайт-глобальные соцсети для header+footer с явными грантами,
+public-read + `is_admin()`-write RLS, триггер `set_updated_at`, сид одной строкой.
+Соцсети переехали сюда из `footer_settings.*_url` (те → legacy/unused). Сайт читает
+через `fetchSiteSettings`/`buildSocials` в `app/layout.tsx`.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
