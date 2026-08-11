@@ -2,7 +2,7 @@
 
 ## Projects in this workspace
 - `platform-docs/` — shared documentation (this project)
-- `cozycorner/` — public catalog site for cozy home goods (Next.js 16 App Router + Supabase)
+- `cozycorner/` — public catalog site for cozy home goods (Next.js 16 App Router + Supabase); live: https://www.cozycorner.me
 - `avocado.kiss/` — culinary recipe magazine (Next.js 16 App Router + Supabase)
 - `web.admin/` — multi-site admin panel for managing site content (Vite + React SPA + Supabase)
 

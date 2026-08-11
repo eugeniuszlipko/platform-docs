@@ -1,6 +1,9 @@
 # CozyCorner — архитектура сайта
 
-> Last updated: 2026-07-23 | Source project: cozycorner (CLAUDE.md, docs/page-content.md, docs/product-images.md) — пути файлов относятся к репозиторию `cozycorner/`
+> Last updated: 2026-08-11 | Source project: cozycorner (CLAUDE.md, docs/page-content.md, docs/product-images.md) — пути файлов относятся к репозиторию `cozycorner/`
+>
+> **Live-домен:** https://www.cozycorner.me (Vercel). Статика корня сайта — из `public/`
+> (напр. `public/app-ads.txt` → `https://www.cozycorner.me/app-ads.txt` для AdMob).
 
 Каталог уютных товаров для дома: главная с hero и сеткой товаров (бесконечный скролл),
 каталог по категориям (`/shop` → `/shop/[category]`), страницы товаров, блог,
