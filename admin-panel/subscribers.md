@@ -1,21 +1,24 @@
 # Раздел Subscribers — правила и концепции
 
-> Last updated: 2026-07-23 | Source project: web.admin — пути `src/…` относятся к репозиторию `web.admin/`
+> Last updated: 2026-08-13 | Source project: web.admin — пути `src/…` относятся к репозиторию `web.admin/`
 
 Документ фиксирует, как устроен раздел Subscribers админки: контракт с данными и
 решения по UI. Модель данных — [../database/schema.md](../database/schema.md) §5
-(таблица `subscribers`); дизайн —
+(cozycorner) и §9 (avocado_kiss) — таблица `subscribers`; дизайн —
 `../archive/web.admin/superpowers/specs/2026-07-23-subscribers-design.md`. Читать
 перед правками раздела.
 
 ## 1. Главные концепции
 
-- **Источник списка — таблица `<schema>.subscribers`** (для CozyCorner —
-  `cozycorner.subscribers`, миграция 0025). Строка: `id`, `email` (unique,
+- **Источник списка — таблица `<schema>.subscribers`** (CozyCorner —
+  `cozycorner.subscribers`, миграция 0025; Avocado Kiss —
+  `avocado_kiss.subscribers`, миграция 0018). Строка: `id`, `email` (unique,
   регистронезависимо), `created_at`. По GDPR таблица минимальна — **ни имени, ни
   IP**; «информация о подписчике» = email + дата подписки.
 - **Запись НЕ из админки.** Подписки собирает форма на сайте (`NewsletterForm`) —
-  серверным действием под `service_role` после проверки Turnstile. Админка таблицу
+  на сервере под `service_role` после проверки Turnstile (cozycorner — server
+  action `lib/newsletter.ts`, avocado.kiss — Route Handler
+  `app/api/newsletter/route.ts`; для админки разницы нет). Админка таблицу
   **только читает и удаляет** (RLS `Admin manage subscribers`, `is_admin()`) —
   insert-политики для admin нет и не нужно (импорта нет).
 - **Никакого service-role ключа в админке** (как и в остальных разделах): чтение и
@@ -63,6 +66,18 @@
 
 ## 5. Мультисайтовость
 
-Пункт меню показывается для всех сайтов (как все разделы), но таблица
-`subscribers` сейчас есть только у `cozycorner`. У сайта без неё раздел покажет
-ошибку загрузки — принято осознанно: в реестре сейчас только CozyCorner.
+Раздел работает на generic-коде для любого сайта: `listSubscribers`/
+`deleteSubscriber` ходят через `getDb(site)`, то есть читают
+`<schema>.subscribers` той схемы, что указана в записи сайта. Видимость раздела
+(и nav, и роут) гейтит allowlist `SiteConfig.sections` в
+`web.admin/src/config/sites.ts`.
+
+Сейчас таблица `subscribers` есть у двух сайтов и раздел включён для обоих:
+- **cozycorner** — миграция 0025 (форма в футере);
+- **avocado-kiss** — миграция 0018 (блок «The Culinary Dispatch»); включение
+  раздела = добавление `"subscribers"` в `sections` записи `avocado-kiss`, кода
+  раздела правка не потребовала.
+
+У сайта **без** этой таблицы раздел показал бы ошибку загрузки — поэтому новый
+сайт добавляется в `sections` только после своей миграции `subscribers`
+(без неё пункт просто не показывается, а прямой URL редиректит `SiteLayout`).

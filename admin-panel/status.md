@@ -244,6 +244,27 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
   при необходимости — диспетчеризовать/гейтить и этот роут.
 - Возможные будущие правки самим пользователем (озвучены как «потом будут доработки»).
 
+## Subscribers для Avocado Kiss (2026-08-13)
+
+Раздел **Subscribers** включён для второго сайта — кода админки правка не
+потребовала, раздел с самого начала multi-site (читает `<schema>.subscribers`
+через `getDb(site)`).
+- **Миграция avocado `0018`**: таблица `avocado_kiss.subscribers` (`email` unique
+  lower-case + `created_at`, GDPR-минимум без имени/IP); `revoke all` от anon +
+  `grant all` `authenticated`/`service_role`; RLS без публичных политик,
+  единственная `Admin manage subscribers` (`is_admin()`) — админка читает и
+  удаляет (право на забвение).
+- **Сайт avocado.kiss**: блок «The Culinary Dispatch» (`NewsletterForm`) теперь
+  реально пишет подписки — видимый виджет Turnstile + `POST /api/newsletter`
+  (Turnstile verify → insert под service_role). Новых env-ключей нет: те же
+  `NEXT_PUBLIC_TURNSTILE_SITE_KEY`/`TURNSTILE_SECRET_KEY`/`SUPABASE_SECRET_KEY`,
+  что у рейтингов рецептов.
+- **web.admin**: единственное изменение — `"subscribers"` в allowlist `sections`
+  записи `avocado-kiss` (`src/config/sites.ts`); существующий раздел (список +
+  поиск + Export CSV + удаление) появился для Avocado Kiss как есть.
+- Контракт БД — schema.md §9/§10; раздел — [subscribers.md](subscribers.md);
+  сайт — ../sites/avocado-kiss.md §11.
+
 ## На потом (не забыть)
 
 - **Cloudflare Turnstile**. Ключи у пользователя уже есть: Secret Key → Supabase

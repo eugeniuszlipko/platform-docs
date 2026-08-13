@@ -1,6 +1,6 @@
 # Avocado Kiss — архитектура сайта
 
-> Last updated: 2026-08-01 | Source project: avocado.kiss (AGENTS.md,
+> Last updated: 2026-08-13 | Source project: avocado.kiss (AGENTS.md,
 > sites/avocado-kiss/specs/2026-07-17-avocado-kiss-v1-design.md) — пути файлов
 > относятся к репозиторию `avocado.kiss/`
 
@@ -32,6 +32,8 @@ app/
   shop/page.tsx            # хаб Curated Shop (SSG+ISR): ShopHero + сетка категорий + Editors' picks
   shop/[category]/page.tsx # категория магазина (SSG+ISR): ShopHero + ShopCatalog (ShopFilters + ProductGrid)
   product/[slug]/page.tsx  # товар (SSG+ISR): ProductDetail + «Pairs well with» + «Related reading»
+  api/newsletter/route.ts  # POST подписки: валидация e-mail + Turnstile verify → insert
+                           #   в subscribers под service_role (§11)
   not-found.tsx            # глобальная 404
   sitemap.ts               # sitemap.xml из БД (ISR 60s): главная + категории + опубл. рецепты
   robots.ts                # robots.txt: allow all + sitemap
@@ -54,7 +56,8 @@ components/            # один компонент = файл + CSS Module; SV
   ShopCatalog.tsx       # композиция: держит выбор селектов, транслирует в ProductQuery для ProductGrid (паттерн cozycorner)
   ProductDetail.tsx     # товар: image + brand + title + description + price + «Buy from …» + бэклинк
   RelatedProducts.tsx / RelatedReading.tsx  # «Pairs well with» (товары) / «Related reading» (рецепты)
-  NewsletterBlock.tsx / NewsletterForm.tsx  # блок рассылки; форма валидирует e-mail на фронте (success/error), но в базу пока не пишет (задел на server action)
+  NewsletterBlock.tsx / NewsletterForm.tsx  # блок рассылки «The Culinary Dispatch»; форма — реальная
+                        #   подписка: видимый виджет Turnstile + POST /api/newsletter (§11)
   Footer.tsx            # подвал (текст из footer_settings)
   Reveal.tsx            # GSAP reveal-обёртка (prefers-reduced-motion учтён)
   icons/                # ChevronLeft/Right, ArrowLeft (бэклинк товара), Clock, Menu, Search, Users + соц-иконки XIcon/PinterestIcon/InstagramIcon
@@ -70,7 +73,8 @@ lib/
                         #   типы ProductQuery (categorySlug/brand/priceMin/priceMax/sort) + ProductSort
                         #   (НЕ server-only — ProductGrid зовёт fetchProductsPage из браузера)
   types.ts              # Recipe/Category/Tag/Post/EditorPick/HomeSlot/PageSeo/FooterSettings + HOME_SLOTS;
-                        #   Product/ShopCategory/ReadingItem + SHOP_PAGE_SIZE (магазин)
+                        #   Product/ShopCategory/ReadingItem + SHOP_PAGE_SIZE (магазин);
+                        #   Subscriber/NewSubscriber (рассылка, §11 — сайт только пишет)
 supabase/migrations/    # единственное место изменения схемы БД (workflow — schema.md §7, история — §10)
 mockups/                # исходные SingleFile-макеты Lovable: v1 (home, recipe) + version-2/ (home v2, shop) — referencia для вёрстки
 ```
@@ -295,11 +299,18 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://zwrkphynupdubevzwdzy.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_…   # публичный ключ, не secret!
+# Мутации сайта (рейтинги рецептов §10 + подписка на рассылку §11) — одни и те же ключи.
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=…                 # публичный site key виджета Turnstile
+TURNSTILE_SECRET_KEY=…                           # server-only: проверка токена у Cloudflare
+SUPABASE_SECRET_KEY=sb_secret_…                  # server-only: запись под service_role
 ```
 
-- Обе переменные нужны всегда (главная и рецепты тянут данные при сборке);
-  шаблон — `.env.example`. Service-role сайту не нужен. Схема `avocado_kiss`
-  уже добавлена в **Exposed schemas** (готово, не pending).
+- SUPABASE-переменные нужны всегда (главная и рецепты тянут данные при сборке);
+  шаблон — `.env.example`. Для чтения контента сайту хватает публичного ключа;
+  service-role и секреты Turnstile нужны только двум серверным мутациям —
+  рейтингам рецептов (§10) и подписке на рассылку (§11), новых ключей подписка не
+  добавила. Схема `avocado_kiss` уже добавлена в **Exposed schemas** (готово, не
+  pending).
 - **Деплой на Vercel ещё не настроен** — прод-URL pending. Когда появится
   проект на Vercel: связать с GitHub-репозиторием, задать те же переменные
   окружения (Production + Preview), `NEXT_PUBLIC_SITE_URL` — реальным доменом.
@@ -472,3 +483,63 @@ service-role ключом через RPC `rate_recipe` (server-only секрет
 `searchRecipes`), `e2e/search.spec.ts` (Playwright, :3100, live Supabase: десктоп
 выпадашка → `Enter` → `/search`, прямой переход, empty-state; мобайл триггер →
 оверлей → ввод → закрытие).
+
+## 11. Форма подписки на рассылку (Cloudflare Turnstile)
+
+Блок **«The Culinary Dispatch»** (`NewsletterBlock` + `NewsletterForm`; рендерится
+на главной и на страницах блога) — реальный сбор email в
+`avocado_kiss.subscribers` ([schema.md](../database/schema.md) §9, миграция 0018).
+Тексты блока — из `footer_settings` (newsletter\_\*). Поток:
+
+1. Клиент (`NewsletterForm`, `"use client"`) рендерит **видимый** виджет Turnstile
+   (`components/Turnstile.tsx`) прямо в блоке — тот же паттерн, что у
+   `RatingSection` (рейтинги рецептов, §10), — и получает токен **заранее**, до
+   сабмита. Нет токена → запрос не уходит («Just a moment while we verify…»).
+   Токен Turnstile **одноразовый**, поэтому после каждой завершённой попытки
+   виджет перемонтируется (инкремент `key`) и выдаёт свежий — иначе вторая
+   подписка с той же страницы получила бы 403.
+2. Email + токен уходят `POST /api/newsletter`
+   (`app/api/newsletter/route.ts`, Route Handler). На сервере: валидация email,
+   проверка токена у Cloudflare (`challenges.cloudflare.com/turnstile/v0/siteverify`,
+   `TURNSTILE_SECRET_KEY` + `remoteip`), затем insert через
+   `lib/supabase/service.ts` (`createServiceClient()`, **service_role**, схема
+   `avocado_kiss`). Email пишется в lower-case.
+3. Коды ответа: **400** — невалидный email или битое тело; **403** — токена нет
+   или он не прошёл проверку; **200 `{ok:true}`** — записано; **200 `{ok:true}`**
+   и на `unique_violation` `23505` (дубликат = успех, идемпотентно; факт того, что
+   адрес уже подписан, наружу не раскрывается); **500** — прочие ошибки БД.
+4. Форма показывает статус: Subscribing… / Thanks for subscribing! / текст ошибки.
+
+**Отличие от cozycorner (осознанное):** cozy использует **невидимый** виджет
+(`execution: "execute"`) и Server Action `lib/newsletter.ts`; avocado.kiss
+переиспользует **свою** конвенцию — видимый виджет + Route Handler, как у
+рейтингов. Site key Turnstile **один на весь сайт** (общий для рейтингов и
+подписки); режим виджета настраивается в дашборде Cloudflare и общий для обоих.
+
+**Почему service_role, а не anon INSERT:** публичный anon-ключ есть в браузере;
+разреши анону INSERT — бот слал бы POST прямо в Supabase REST в обход Turnstile.
+Запись только под service_role убирает публичный путь записи → Turnstile реально
+гейтит каждую строку. Таблица закрыта для анона полностью (дефолтный schema-grant
+`select` снят явным `revoke`), публичных RLS-политик нет; смотреть/удалять может
+только admin (`Admin manage subscribers`, `is_admin()`) — право на забвение GDPR.
+Данные минимальны: только email + дата, без имени и IP.
+
+**Ключи — новых нет.** Подписке служат те же три переменные, что уже были у
+рейтингов рецептов (§7, `.env.example`): `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+(клиент, вшивается в билд), `TURNSTILE_SECRET_KEY` и `SUPABASE_SECRET_KEY`
+(оба server-only, никогда не `NEXT_PUBLIC_`). В настройках виджета Cloudflare
+должен быть добавлен домен прода, иначе токен не пройдёт; локально — тестовые
+всегда-проходящие ключи Cloudflare.
+
+**Privacy Policy — правок не потребовалось:** политика avocado.kiss уже покрывает
+и email рассылки, и Turnstile. `pages.body` для slug=`privacy` пуст → рендерится
+код-версия `app/privacy/page.tsx` (искать текст в БД не нужно).
+
+**Админка:** список/поиск/экспорт CSV/удаление — раздел **Subscribers** в
+`web.admin` (multi-site, читает `<schema>.subscribers`); для Avocado Kiss включён
+добавлением `"subscribers"` в allowlist `sections` записи `avocado-kiss`
+(`web.admin/src/config/sites.ts`). Правила раздела —
+[../admin-panel/subscribers.md](../admin-panel/subscribers.md).
+
+Это API-роут (не страница) — нового публичного PAGE-роута нет, `sitemap.ts` не
+меняется.

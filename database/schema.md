@@ -695,6 +695,29 @@ cozy). Засеян distinct-значениями `products.brand`. Rename бр�
 
 Строка `pages.shop` (SEO хаба) добавлена миграцией 0007 — см. `pages` выше.
 
+### subscribers — подписчики рассылки (миграция 0018)
+
+Реальный сбор email из блока «The Culinary Dispatch» (`NewsletterBlock` /
+`NewsletterForm` — главная и страницы блога), по образцу `cozycorner.subscribers`
+(миграция 0025). `id`, `email` (`unique`, регистронезависимо — сервер пишет в
+lower-case), `created_at`. Данные минимальны (GDPR): без IP/имени. Запись —
+ТОЛЬКО через Route Handler `app/api/newsletter/route.ts` под `service_role`
+(`lib/supabase/service.ts`, обходит RLS) ПОСЛЕ серверной проверки токена
+Cloudflare Turnstile, поэтому запись реально гейтится, а не только UI; дубликат
+email (`unique_violation` `23505`) отдаётся как успех — идемпотентно и не
+раскрывает, подписан ли адрес. Ключи те же, что у рейтингов рецептов:
+`SUPABASE_SECRET_KEY` и `TURNSTILE_SECRET_KEY` (server-only),
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` (клиент). Гранты/RLS: анону не дано **ничего** —
+дефолтный `select` схемы снят явным `revoke all … from anon` (без этого весь
+список подписчиков читался бы публичным anon-ключом), `grant all` —
+`authenticated` + `service_role`; RLS включён, публичных политик нет,
+единственная политика `Admin manage subscribers` (`public.is_admin()`) —
+просмотр/удаление/экспорт CSV в админке (раздел Subscribers,
+[../admin-panel/subscribers.md](../admin-panel/subscribers.md); удаление = право
+на забвение GDPR). Privacy Policy уже покрывает email рассылки и Turnstile, и
+`pages.body` для slug=`privacy` пуст → рендерится код-версия
+`app/privacy/page.tsx` — правок текста политики не потребовалось.
+
 ## 10. История миграций (репозиторий avocado.kiss, `supabase/migrations/`)
 
 0001 схема `avocado_kiss` (categories, admin_folders, recipes, home_slots,
@@ -748,6 +771,14 @@ singleton-таблицы `about_content` (intro/story/3 карточки) и `co
 RLS, триггеры, сид по строке. Роуты `/about /contact /privacy /terms` (RSC, ISR);
 футер-флаг `STATIC_PAGES_ENABLED` включён. Правятся в web.admin: Pages → редактор
 по slug.
+· **0018 subscribers** (реальная подписка на рассылку «The Culinary Dispatch»):
+`id` + `email` (`unique`, lower-case) + `created_at`, GDPR-минимум (ни имени, ни
+IP); `revoke all` от anon (снимает дефолтный schema-grant `select` — load-bearing)
++ `grant all` для `authenticated`/`service_role`; RLS без публичных политик —
+запись только под service_role из `app/api/newsletter/route.ts` после проверки
+Turnstile, чтение/удаление только admin (`Admin manage subscribers`,
+`is_admin()`). Шаблон — cozycorner 0025. Раздел Subscribers в web.admin включён
+для `avocado-kiss` через allowlist `sections`.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
