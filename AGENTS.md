@@ -29,9 +29,10 @@ Read these files only when the task requires it:
 
 ## Workflow rules
 1. Before starting a task — check if a relevant doc file exists in the index above
-2. After completing a task that changes architecture, API, or DB — update the relevant doc file
-3. Never write feature details into AGENTS.md — put them in the appropriate doc file above
-4. When creating a new site project — add it to "Projects" section, create sites/[site-name].md, AND wire testing: register it in the root `../AGENTS.md` project registry and follow methodology/testing.md → «Добавление нового проекта» (so any AI agent auto-picks it up for test routing)
+2. Before writing code or tests against an external library API — verify it with **Context7 MCP** (`resolve-library-id` → `query-docs`); the workspace runs recent majors (Next.js 16, React 19, Vite 8, Vitest 4), so model memory is often stale. Our own specs (this index) stay the source of truth for schema, features, and conventions — see root `../AGENTS.md` → «Внешняя документация — Context7»
+3. After completing a task that changes architecture, API, or DB — update the relevant doc file
+4. Never write feature details into AGENTS.md — put them in the appropriate doc file above
+5. When creating a new site project — add it to "Projects" section, create sites/[site-name].md, AND wire testing: register it in the root `../AGENTS.md` project registry and follow methodology/testing.md → «Добавление нового проекта» (so any AI agent auto-picks it up for test routing)
 
 ## Context discipline
 - AGENTS.md = index only (you are reading it now)

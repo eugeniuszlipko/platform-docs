@@ -24,6 +24,7 @@
 | Unit / integration | **Vitest 4 + React Testing Library** | Стандарт для App Router; в web.admin переиспользует уже настроенный Vite. Jest не вводим — на React 19 / Next 16 / Vite 8 он даёт больше трения. |
 | E2E | **Playwright** | Рекомендуемый e2e и для Next, и для SPA. Cypress не добавляем, чтобы не держать два раннера под одну цель. |
 | Agent-driven browser QA | **Playwright MCP** (project-level `.mcp.json`) | Контентные сайты + формы админки — реальный кейс для проверки UI-флоу агентом в браузере. |
+| Сверка API раннеров | **Context7 MCP** | Vitest 4 / Playwright / RTL на React 19 меняются быстро: API матчеров, локаторов, конфигов сверяем через `resolve-library-id` → `query-docs`, а не по памяти. Обязательно при непонятном падении теста и при миграции версий. |
 
 Асинхронные Server Components Vitest пока не рендерит — их поведение проверяется
 чистыми unit-тестами лоадеров и сквозными e2e, а не рендером RSC в jsdom.
