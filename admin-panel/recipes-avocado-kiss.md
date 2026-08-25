@@ -76,8 +76,8 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 
 ## 6. Чего в разделе НЕТ (осознанно)
 
-- **Курирование главной** (`home_slots`: hero/сетки/wide/Editor's Picks) — отдельная
-  итерация; сейчас слоты правятся только через БД/коннектор.
+- **Курирование главной** (`home_slots`: hero/сетки/wide/Editor's Picks) — сделано
+  отдельным разделом **Home** (2026-08-25), см. [home-avocado-kiss.md](home-avocado-kiss.md).
 - **«Pairs well with» / «Related reading» товаров** — сделаны в форме товара
   (2026-08-25), см. [products.md](products.md) §3a.
 - **Preview черновика** на сайте: у avocado нет `posts/recipes.preview_token`, RLS отдаёт

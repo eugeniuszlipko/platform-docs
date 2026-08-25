@@ -286,8 +286,9 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 - **Фронт avocado.kiss не менялся** — он уже читает ровно эту структуру
   (`ingredients`/`steps` как `text[]`, категория по имени, теги через `recipe_tags`).
 - Прогон: `npm run build` + `npm run lint` чисто, `npx vitest run` — 97 зелёных.
-- Отложено: курирование главной (`home_slots`/Editor's Picks), `product_reading`
-  («Pairs well with» / «Related reading» товаров), preview черновиков, ручная e2e-приёмка.
+- Отложено: курирование главной (`home_slots`/Editor's Picks) — **сделано ниже,
+  раздел Home**; `product_reading` («Pairs well with» / «Related reading» товаров)
+  — **сделано ниже**; preview черновиков, ручная e2e-приёмка.
 
 ## Связи страницы товара для Avocado Kiss (2026-08-25)
 
@@ -298,6 +299,37 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 `src/lib/productRelations.ts`, `src/features/products/{ProductRelationsEditor,useRelationField}`;
 у cozycorner блоки скрыты (`productRelationsEnabled` по `site.schema`). Правила —
 [products.md](products.md) §3a. Прогон: build+lint чисто, vitest 108 зелёных.
+
+## Курирование главной для Avocado Kiss (2026-08-25)
+
+Раздел **Home** — последняя таблица, которую правили только через БД
+(`avocado_kiss.home_slots`). Миграций нет (схема из 0001/0004/0005). Экран
+сгруппирован по слотам в порядке макета, внутри слота — стрелки ↑/↓
+(оптимистичный reorder), добавление через существующие пикеры
+`RecipePickerDialog`/`PostPickerDialog`, оверрайды в модалке (RHF+Zod),
+`is_published` слота, удаление с подтверждением. Ёмкости («2 / 3») мягкие —
+предупреждают, но не блокируют. Правила — [home-avocado-kiss.md](home-avocado-kiss.md).
+Новое: `src/lib/homeSlots.ts`, `src/features/home/{HomePage,HomeSlotEditDialog,homeSlotForm}`;
+`home` в `NAV_ITEMS` + роут + allowlist **только у avocado**.
+
+- 🐛 **Постановка расходилась с кодом сайта**: просили редактировать
+  `eyebrow_secondary` «только в picks», но после редизайна v2 это поле **не
+  читается нигде** — `fetchEditorsPicks` селектит лишь `id, slot, description,
+  is_published`, а метки Editor's Picks берутся из тегов элемента. Заодно
+  `eyebrow` не доходит до picks, а `description` из карточек мозаики выводит
+  только `grid_large` и баннер. Разложено в таблицу — [home-avocado-kiss.md](home-avocado-kiss.md) §2.
+- **Решение**: редактор показывает поле, если сайт его рендерит **или** значение
+  уже лежит в строке (иначе легаси не вычистить); игнорируемое поле подписано
+  «Stored but not shown on the site». Карта живёт в `SLOT_META.renders` и
+  зафиксирована юнит-тестами.
+- **Метка «Item is a draft»** в строке: сайт джойнит `recipes!inner` + фильтр
+  `is_published`, поэтому слот с черновиком выпадает из выдачи целиком — без
+  метки редактор видел бы полный слот и дыру на сайте.
+- **Фронт avocado.kiss не менялся.**
+- Прогон: `npm run build` + `npm run lint` чисто, `npx vitest run` — 130 зелёных
+  (22 новых: ёмкости/маппинг слотов + карта рендеринга полей).
+- Отложено: превью главной, замена элемента на месте, чистка легаси
+  `eyebrow_secondary` в проде (4 строки), ручная e2e-приёмка.
 
 ## На потом (не забыть)
 

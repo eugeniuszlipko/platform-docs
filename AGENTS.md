@@ -19,6 +19,7 @@ Read these files only when the task requires it:
 | Admin Blog/SEO Posts (cozycorner) | platform-docs/admin-panel/blog.md | Editing cozycorner Blog or SEO Posts sections |
 | Admin Blog editor (Avocado Kiss) | platform-docs/admin-panel/blog-avocado-kiss.md | Building the Avocado Kiss Blog (Article) editor in web.admin |
 | Admin Recipes section (Avocado Kiss) | platform-docs/admin-panel/recipes-avocado-kiss.md | Editing the Avocado Kiss Recipes section or Recipe categories |
+| Admin Home section (Avocado Kiss) | platform-docs/admin-panel/home-avocado-kiss.md | Curating the Avocado Kiss homepage (`home_slots`, Editor's Picks) |
 | Admin Pages section | platform-docs/admin-panel/pages.md | Editing Pages section |
 | Admin status & roadmap | platform-docs/admin-panel/status.md | Planning admin work; checking pending tasks |
 | Sites overview | platform-docs/sites/overview.md | Starting work on any public-facing site |
