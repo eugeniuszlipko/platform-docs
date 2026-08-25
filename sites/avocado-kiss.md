@@ -313,9 +313,10 @@ SUPABASE_SECRET_KEY=sb_secret_…                  # server-only: запись �
   рейтингам рецептов (§10) и подписке на рассылку (§11), новых ключей подписка не
   добавила. Схема `avocado_kiss` уже добавлена в **Exposed schemas** (готово, не
   pending).
-- **Деплой на Vercel ещё не настроен** — прод-URL pending. Когда появится
-  проект на Vercel: связать с GitHub-репозиторием, задать те же переменные
-  окружения (Production + Preview), `NEXT_PUBLIC_SITE_URL` — реальным доменом.
+- **Прод сейчас — `https://avocado-kiss.vercel.app`** (2026-08-25, деплой на Vercel).
+  Это **временный адрес**: при переезде на кастомный домен обновить `NEXT_PUBLIC_SITE_URL`
+  на сайте И поле `frontendUrl` записи `avocado-kiss` в `web.admin/src/config/sites.ts`
+  (из него строятся ссылки на фронт из админки, напр. превью черновика).
 - Интеграция с общей админкой `web.admin` — **фаза B**, по разделам. Сделано:
   запись в `SITES` (slug `avocado-kiss`, `sections` allowlist), разделы **Media**
   и **Curated Shop** (Products / Categories = `shop_categories` / Brands — на
