@@ -265,6 +265,30 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 - Контракт БД — schema.md §9/§10; раздел — [subscribers.md](subscribers.md);
   сайт — ../sites/avocado-kiss.md §11.
 
+## Recipes + Recipe categories для Avocado Kiss (2026-08-25)
+
+Последний CPT сайта заведён в админку — **без миграций** (таблицы/RLS/папки/учёт
+картинок были готовы с миграций 0001/0005/0012). Контракт раздела —
+[recipes-avocado-kiss.md](recipes-avocado-kiss.md).
+- **Новое в web.admin**: `src/lib/recipes.ts` (полный CRUD + replace-all `recipe_tags`),
+  `src/lib/recipeCategories.ts`, `src/features/recipes/` (`RecipesPage` — список с
+  папками/поиском/фильтрами Category+Status/bulk; `RecipeEditPage`; чистый `recipeForm.ts`
+  +тесты; `ListEditor` — ingredients/steps со стрелками ↑/↓), раздел
+  **Recipe categories** на generic `features/taxonomy/` (`recipeCategoryConfig` +
+  `RecipeCategoryEditDialog`).
+- **Правки общего кода**: `TaxonomyConfig.usageNoun` (счётчик ряда/диалог удаления
+  считают рецепты, а не товары) + ветка в `TaxonomyManager`; `TagsField` умеет
+  **создавать теги** (`createTag`); `FolderSection`/`SECTION_TABLES` знают `recipes`;
+  `NAV_ITEMS` + роуты + allowlist `sections` (у **cozycorner теперь явный список** —
+  иначе он получил бы рецептные пункты).
+- **Отклонение от конвенции**: slug рецепта редактируемый (пусто → `null` → триггер
+  пересоберёт из title); везде ещё slug не отправлялся вовсе.
+- **Фронт avocado.kiss не менялся** — он уже читает ровно эту структуру
+  (`ingredients`/`steps` как `text[]`, категория по имени, теги через `recipe_tags`).
+- Прогон: `npm run build` + `npm run lint` чисто, `npx vitest run` — 97 зелёных.
+- Отложено: курирование главной (`home_slots`/Editor's Picks), `product_reading`
+  («Pairs well with» / «Related reading» товаров), preview черновиков, ручная e2e-приёмка.
+
 ## На потом (не забыть)
 
 - **Cloudflare Turnstile**. Ключи у пользователя уже есть: Secret Key → Supabase

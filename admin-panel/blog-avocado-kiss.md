@@ -1,6 +1,6 @@
 # Avocado Kiss — Blog (Article) editor — контракт для web.admin
 
-> Last updated: 2026-08-08 | Site: **avocado.kiss** (схема `avocado_kiss`, бакет
+> Last updated: 2026-08-25 | Site: **avocado.kiss** (схема `avocado_kiss`, бакет
 > `avocado-kiss-photos`). Раздел в web.admin **ПОСТРОЕН** (2026-08-08) — этот файл
 > остаётся контрактом модели. Реализация: `web.admin/src/features/articles/*` +
 > `src/lib/articles.ts`; роут `/blog` диспетчеризуется по `site.schema`
@@ -74,7 +74,7 @@
 | Slug | `slug` | read-only (edit) / скрыт (create) | — | триггер БД |
 | Type | `template` | Select: essay / interview / roundup | да | default `essay`; управляет hero и видимостью §2.2 |
 | Excerpt | `excerpt` | textarea | нет | анонс; фолбэк карточки/SEO |
-| Hero image | `hero_image_path` | ImagePicker (контракт картинок) | нет | нет → брендовый плейсхолдер |
+| Cover image | `hero_image_path` | ImagePicker (контракт картинок) | нет | нет → брендовый плейсхолдер |
 | Author | `author_id` | Select из `authors` (§4) | нет | «by {name}» |
 | Tags | `post_tags` (m2m, §4) | мультиселект из `tags` | нет | эйброу + фильтр + Read also |
 | Read time | `read_minutes` | number (мин) | нет | «N min read»; null → скрыто |
@@ -88,7 +88,16 @@
 | Поле | Колонка | Показывать для | Назначение |
 |---|---|---|---|
 | Subtitle (dek) | `posts.subtitle` | interview, roundup | подзаголовок в hero (у essay hero его нет) |
-| Hero caption | `posts.hero_caption` | roundup | подпись под широкой hero-фигурой |
+| Image caption | `posts.hero_caption` | roundup | подпись под широкой hero-фигурой |
+
+> **Лейблы ≠ имена колонок.** Видимые названия «Cover image» и «Image caption»
+> переименованы 2026-08-25 (спека
+> [../sites/avocado-kiss/specs/2026-08-25-links-green-layout-design.md](../sites/avocado-kiss/specs/2026-08-25-links-green-layout-design.md) §4);
+> колонки остались `hero_image_path` / `hero_caption`. Тесты `web.admin`
+> обращаются к полям **по видимому лейблу** (`getByLabelText`) — переименование
+> лейбла обязано идти вместе с правкой теста. В разделе Pages то же поле
+> `hero_image_path` называется «Background image»: там это фон hero-баннера
+> страницы, а не обложка материала.
 
 Смена Type не переносит контент секций — только меняет hero. Значения `subtitle`/
 `hero_caption` можно не очищать при переключении (сайт их просто не покажет).
