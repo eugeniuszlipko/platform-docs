@@ -65,7 +65,7 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 ## 4. Удаление рецепта
 
 `recipes` каскадит: `recipe_tags`, `recipe_ratings`, `home_slots` (слоты главной!),
-`product_reading` («Pairs well with» у товаров), `post_related` (Read also);
+`product_reading` («Related reading» у товаров), `post_related` (Read also);
 `post_sections.recipe_id` обнуляется (SET NULL). Диалог удаления об этом предупреждает.
 
 ## 5. Гейт разделов
@@ -78,7 +78,8 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 
 - **Курирование главной** (`home_slots`: hero/сетки/wide/Editor's Picks) — отдельная
   итерация; сейчас слоты правятся только через БД/коннектор.
-- **«Pairs well with» / «Related reading» товаров** (`product_reading`) — не в админке.
+- **«Pairs well with» / «Related reading» товаров** — сделаны в форме товара
+  (2026-08-25), см. [products.md](products.md) §3a.
 - **Preview черновика** на сайте: у avocado нет `posts/recipes.preview_token`, RLS отдаёт
   анону только опубликованное (как в блоге).
 - Ингредиенты и шаги — плоские строки: групп («For the dough»), разметки и ссылок нет

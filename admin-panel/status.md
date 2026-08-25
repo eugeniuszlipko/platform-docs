@@ -289,6 +289,16 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 - Отложено: курирование главной (`home_slots`/Editor's Picks), `product_reading`
   («Pairs well with» / «Related reading» товаров), preview черновиков, ручная e2e-приёмка.
 
+## Связи страницы товара для Avocado Kiss (2026-08-25)
+
+Блоки **«Pairs well with»** (`product_pairings`, товар → товар) и **«Related reading»**
+(`product_reading`, товар → рецепт) теперь редактируются в форме товара по принципу
+пинов «Read also» из блога: порядок ↑/↓, удаление, добавление через существующие
+пикеры, лимит 3. Миграций нет — таблицы из миграции 0007. Новое:
+`src/lib/productRelations.ts`, `src/features/products/{ProductRelationsEditor,useRelationField}`;
+у cozycorner блоки скрыты (`productRelationsEnabled` по `site.schema`). Правила —
+[products.md](products.md) §3a. Прогон: build+lint чисто, vitest 108 зелёных.
+
 ## На потом (не забыть)
 
 - **Cloudflare Turnstile**. Ключи у пользователя уже есть: Secret Key → Supabase

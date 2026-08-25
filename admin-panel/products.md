@@ -129,6 +129,26 @@ UX-детали — [components.md](components.md) §3.7. Читать этот 
   (`firstFieldErrorMessage` из `src/lib/errors.ts`; фолбэк «Please fix the highlighted
   fields»). Ошибки мутаций — через `humanizeError` (см. [components.md](components.md) §4).
 
+## 3a. Блоки страницы товара «Pairs well with» / «Related reading» (только avocado)
+
+Ручные связи товара живут не в колонках `products`, а в таблицах
+`product_pairings` (товар → товар) и `product_reading` (товар → рецепт),
+у обеих `position` = порядок карточек на сайте (schema.md §8). У cozycorner этих
+таблиц нет — редактор скрыт (`productRelationsEnabled(site)` по `site.schema`).
+
+- Данные — `src/lib/productRelations.ts` (`getProductRelations` / `setProductRelations`,
+  replace-all, максимум 3 на блок).
+- UI — `src/features/products/ProductRelationsEditor.tsx`: тот же принцип, что у
+  пинов «Read also» в блоге — порядок ↑/↓, удаление, добавление через существующие
+  пикеры (`ProductPickerDialog` для товаров, `RecipePickerDialog` для рецептов),
+  кнопка Add исчезает на лимите. Товар не может ссылаться сам на себя (в БД `check`)
+  — свой id исключён из пикера.
+- Состояние — вне RHF (как категории товара): хук `useRelationField` с собственным
+  dirty-флагом, который учитывает гард несохранённых изменений; запись идёт после
+  сохранения самой строки товара (у нового товара — после create).
+- Неопубликованный рецепт остаётся пином, но на сайте отфильтровывается загрузчиком
+  (`recipes!inner` + `is_published`), поэтому блок может показать меньше трёх карточек.
+
 ## 4. Гард несохранённых изменений (важно для будущих CRUD-форм)
 
 - Приложение на **data router** (`createBrowserRouter` в `App.tsx`, экспорт
