@@ -176,6 +176,12 @@
 `src/features/pages/avocadoPageForm.ts` (unit-тесты), тип `AvocadoPageFormValues`
 переиспользуют встроенные редакторы.
 - **hero** — только `shop`/`blog` (`HERO_SLUGS`); у `home` и статических страниц hero нет.
+- **Homepage** (`slug='home'`) — кроме SEO содержит **курирование главной**
+  (`home_slots`: hero / мозаика / Editor's Picks) через `HomeSlotsEditor`; в списке
+  Pages строка подписана «Homepage» (`PAGE_LABELS`). Слоты живут в поле формы
+  `slots`, поэтому Save и гард у страницы общие, а неполный слот **блокирует
+  сохранение**. Отдельного пункта меню у курирования нет. Контракт —
+  [home-avocado-kiss.md](home-avocado-kiss.md).
 - **body (Markdown)** — `privacy`/`terms` (`BODY_SLUGS`), через общий `RichTextEditor`
   (`Controller`), пишется в `pages.body`.
 - **About** (`slug='about'`) — встроенный `AvocadoAboutEditor` (порт cozy

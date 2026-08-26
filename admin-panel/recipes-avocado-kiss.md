@@ -68,6 +68,11 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 `product_reading` («Related reading» у товаров), `post_related` (Read also);
 `post_sections.recipe_id` обнуляется (SET NULL). Диалог удаления об этом предупреждает.
 
+Если рецепт стоит на главной, диалог (и одиночный, и bulk в списке) дополнительно
+показывает, в каких слотах он занят, и даёт ссылку **Open the homepage** на подмену
+— `HomepageUsageWarning` / `HomepageBulkUsageWarning`, см.
+[home-avocado-kiss.md](home-avocado-kiss.md) §5.
+
 ## 5. Гейт разделов
 
 `SiteConfig.sections` теперь **явно задан и у cozycorner** — иначе он получил бы все

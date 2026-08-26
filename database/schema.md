@@ -797,11 +797,12 @@ uuid not null default `gen_random_uuid()` в `recipes` И `posts` (бэкфил�
 from anon` + `grant select (<все колонки, кроме preview_token>) to anon`, отдельно
 для `recipes` и `posts`. ⚠️ Column-level `revoke select (preview_token)` НЕ работает
 (табличный грант его не уменьшает) — тот же урок, что cozycorner выучил нерабочей
-миграцией 0030; проверено на изолированной пробной таблице:
-`has_column_privilege(anon, preview_token) = false`, остальные колонки = true.
-⚠️ Применять ТОЛЬКО ПОСЛЕ деплоя avocado.kiss с явными списками колонок
-(`lib/columns.ts`) — иначе анон-выборки падают с «permission denied for column
-preview_token».
+миграцией 0030. **Применена 2026-08-26**, после деплоя avocado.kiss с явными
+списками колонок (`lib/columns.ts`) — до этого анонимный `?select=preview_token`
+отдавал токены опубликованных материалов. Проверено на проде: анон
+`?select=preview_token` и `select=*` → 401 `42501`; `has_column_privilege(anon,
+'preview_token')` = false, `authenticated`/`service_role` = true; все запросы сайта
+(включая браузерный «Load more» и `/search`) → 200.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
