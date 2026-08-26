@@ -212,9 +212,12 @@ SEO Posts — 2026-07-16). Модель данных — [../database/schema.md]
   ключа в web.admin нет.
 - **Кнопка** «Copy preview link» — `src/features/posts/CopyPreviewLinkButton.tsx`, в
   sticky-панели редактора рядом с Save. Строит
-  `${site.frontendUrl}/preview/blog/${slug}?token=${preview_token}` и копирует в буфер
-  (toast «Preview link copied»). Скрыта, если у сайта не задан `frontendUrl`
+  `${site.frontendUrl}/preview/${segment}/${slug}?token=${preview_token}` и копирует в
+  буфер (toast «Preview link copied»). Скрыта, если у сайта не задан `frontendUrl`
   (`src/config/sites.ts`) или пост ещё не сохранён (нет slug/token).
+  ⚠️ Компонент **общий для сайтов**: проп `segment: 'blog' | 'recipes'` (2026-08-25,
+  ради avocado.kiss). Здесь передаётся `segment="blog"` — поведение cozycorner
+  не изменилось.
 - **Фронт** — cozycorner роут `app/preview/blog/[slug]/page.tsx` (force-dynamic,
   noindex): читает пост service-role клиентом ТОЛЬКО при совпадении токена, показывает
   ВСЕ секции (игнорирует per-section `is_published`). Сетка/ISR/`generateStaticParams`

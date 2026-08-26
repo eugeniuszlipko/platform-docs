@@ -367,7 +367,13 @@ select упал бы; проверено: `has_column_privilege(anon, preview_to
 уже есть, отдельно заводить не нужно. Те же общие соглашения, что в §5:
 `slug` автогенерируется триггером из `title`/`name` (при insert не отправлять,
 если пуст), `updated_at` — триггером, пустые optional-поля — `null`, пути
-картинок — контракт §4. Фаза B (секции админки `web.admin` под эту схему) не
+картинок — контракт §4. ⚠️ **Гранты `recipes`/`posts`:** у `anon` снят
+табличный `select` и выдан column-level `select` на все колонки КРОМЕ
+`preview_token` (0020) — поэтому анон-выборки этих таблиц обязаны перечислять
+колонки явно (`lib/columns.ts` → `PUBLIC_RECIPE_COLUMNS` / `PUBLIC_POST_COLUMNS`),
+а не `select("*")`; иначе «permission denied for column preview_token». Касается и
+embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — только service-role
+(роуты `/preview/*`) и authenticated-админ. Фаза B (секции админки `web.admin` под эту схему) не
 реализована — сейчас правка данных только напрямую в БД.
 
 ### recipes — рецепты
@@ -389,6 +395,7 @@ select упал бы; проверено: `has_column_privilege(anon, preview_to
 | `steps` | text[] (not null, default `{}`) | порядок массива = номера шагов 01, 02, … (не отдельная таблица) |
 | `seo_title` / `seo_description` | text (nullable) | пусто = фолбэк `title`/`excerpt` |
 | `folder_id` | uuid (nullable, FK → admin_folders, on delete set null) | папка админки |
+| `preview_token` | uuid (not null, default `gen_random_uuid()`) | capability-токен превью черновика (0019). НЕ флаг видимости. Анону НЕ выдаётся (column-grant, 0020) — читается только service-role клиентом на роуте `/preview/recipes/[slug]` |
 
 ### recipes — рейтинги (звёзды)
 
@@ -506,6 +513,9 @@ default essay — управляет вариантом hero/лэйаута), `a
 `seo_description`. Миграция 0009 добавила `hero_caption` (подпись hero-фигуры для
 roundup). Миграция 0015 добавила `folder_id` (nullable FK → admin_folders, on
 delete set null — папка админки для раздела Blog в web.admin; сайт поле не читает).
+Миграция 0019 добавила `preview_token` (uuid not null default `gen_random_uuid()`) —
+capability-токен превью черновика, НЕ флаг видимости; анону НЕ выдаётся
+(column-grant, 0020), читается только service-role клиентом на `/preview/blog/[slug]`.
 Публичное чтение — только опубликованные; запись — админ.
 Архив `/blog`, single `/blog/[slug]`. Загрузчики — `lib/blog.ts`.
 
@@ -779,6 +789,19 @@ IP); `revoke all` от anon (снимает дефолтный schema-grant `sel
 Turnstile, чтение/удаление только admin (`Admin manage subscribers`,
 `is_admin()`). Шаблон — cozycorner 0025. Раздел Subscribers в web.admin включён
 для `avocado-kiss` через allowlist `sections`.
+· **0019 preview_token** (превью черновиков на реальном фронте): `preview_token`
+uuid not null default `gen_random_uuid()` в `recipes` И `posts` (бэкфилл дефолтом:
+30 рецептов / 33 поста, все токены различны). Безопасна для уже задеплоенного
+сайта — анонный `select("*")` продолжает работать, просто отдаёт лишнее поле.
+· **0020 column-grant** — отзыв `preview_token` у `anon`: `revoke select on <table>
+from anon` + `grant select (<все колонки, кроме preview_token>) to anon`, отдельно
+для `recipes` и `posts`. ⚠️ Column-level `revoke select (preview_token)` НЕ работает
+(табличный грант его не уменьшает) — тот же урок, что cozycorner выучил нерабочей
+миграцией 0030; проверено на изолированной пробной таблице:
+`has_column_privilege(anon, preview_token) = false`, остальные колонки = true.
+⚠️ Применять ТОЛЬКО ПОСЛЕ деплоя avocado.kiss с явными списками колонок
+(`lib/columns.ts`) — иначе анон-выборки падают с «permission denied for column
+preview_token».
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом

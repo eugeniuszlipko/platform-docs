@@ -21,7 +21,7 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 | Method | `steps text[]` — порядок массива = номера 01, 02, … |
 | Rating baseline | `seed_count`, `seed_sum`, `min_display_rating` |
 | SEO | `seo_title`, `seo_description` (живой фолбэк title/excerpt → `null`) |
-| Панель действий | `is_published` (Draft/Published), Save, Delete |
+| Панель действий | `is_published` (Draft/Published), **Copy preview link**, Save, Delete |
 
 Списки (`ListEditor`) — строки с перестановкой **стрелками ↑/↓** (`useFieldArray.move`,
 тот же паттерн, что у блоков блога), добавлением и удалением; Enter в поле ингредиента
@@ -80,7 +80,24 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
   отдельным разделом **Home** (2026-08-25), см. [home-avocado-kiss.md](home-avocado-kiss.md).
 - **«Pairs well with» / «Related reading» товаров** — сделаны в форме товара
   (2026-08-25), см. [products.md](products.md) §3a.
-- **Preview черновика** на сайте: у avocado нет `posts/recipes.preview_token`, RLS отдаёт
-  анону только опубликованное (как в блоге).
+- ~~**Preview черновика**~~ — **сделано 2026-08-25**, см. §7 ниже.
 - Ингредиенты и шаги — плоские строки: групп («For the dough»), разметки и ссылок нет
   ни в схеме, ни на сайте.
+
+## 7. Превью черновика (preview link, 2026-08-25)
+
+Редактор открывает черновик рецепта на реальном фронте avocado.kiss по спец-ссылке,
+не публикуя его. Модель один-в-один с cozycorner (см. [blog.md](blog.md) §6).
+
+- **Токен** — `recipes.preview_token` (uuid, миграция 0019): capability, НЕ флаг
+  видимости. Админка его только ЧИТАЕТ (`RECIPE_COLUMNS` включает `preview_token`;
+  `RecipeInput` его не содержит — админка токен не пишет). Service-role ключа в
+  web.admin нет.
+- **Кнопка** «Copy preview link» — общий `src/features/posts/CopyPreviewLinkButton.tsx`
+  с пропом `segment="recipes"`, в sticky-панели `RecipeEditPage` рядом с Save. Строит
+  `${site.frontendUrl}/preview/recipes/${slug}?token=${preview_token}`. Скрыта, если у
+  сайта не задан `frontendUrl` или рецепт ещё не сохранён (нет slug/token).
+- **Фронт** — `app/preview/recipes/[slug]/page.tsx` (force-dynamic, noindex): читает
+  рецепт service-role клиентом ТОЛЬКО при совпадении токена, без фильтра
+  `is_published`. Живая страница, ISR и `generateStaticParams` не затрагиваются.
+  Детали — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.2.

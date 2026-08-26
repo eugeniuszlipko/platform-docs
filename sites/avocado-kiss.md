@@ -34,6 +34,9 @@ app/
   product/[slug]/page.tsx  # товар (SSG+ISR): ProductDetail + «Pairs well with» + «Related reading»
   api/newsletter/route.ts  # POST подписки: валидация e-mail + Turnstile verify → insert
                            #   в subscribers под service_role (§11)
+  preview/recipes/[slug]/page.tsx  # превью черновика рецепта (force-dynamic, noindex): строка
+  preview/blog/[slug]/page.tsx     #   через service-role по preview_token; пост — со ВСЕМИ
+                           #   блоками тела. Живая выдача/ISR/sitemap не трогаются (§2.2)
   not-found.tsx            # глобальная 404
   sitemap.ts               # sitemap.xml из БД (ISR 60s): главная + категории + опубл. рецепты
   robots.ts                # robots.txt: allow all + sitemap
@@ -58,6 +61,10 @@ components/            # один компонент = файл + CSS Module; SV
   RelatedProducts.tsx / RelatedReading.tsx  # «Pairs well with» (товары) / «Related reading» (рецепты)
   NewsletterBlock.tsx / NewsletterForm.tsx  # блок рассылки «The Culinary Dispatch»; форма — реальная
                         #   подписка: видимый виджет Turnstile + POST /api/newsletter (§11)
+  RecipeArticle.tsx     # презентация сингла рецепта (JSON-LD + шапка + фото + Ingredients/Method
+                        #   + RatingSection) — общая для /recipes/[slug] и /preview/recipes/[slug];
+                        #   в её RecipeArticle.module.css живёт @media print (§2.1)
+  BlogArticle.tsx       # презентация сингла поста — общая для /blog/[slug] и /preview/blog/[slug]
   Footer.tsx            # подвал (текст из footer_settings)
   Reveal.tsx            # GSAP reveal-обёртка (prefers-reduced-motion учтён)
   icons/                # ChevronLeft/Right, ArrowLeft (бэклинк товара), Clock, Menu, Search, Users + соц-иконки XIcon/PinterestIcon/InstagramIcon
@@ -66,7 +73,12 @@ lib/
   content.ts            # fetchCategories (все), fetchNavCategories (только show_in_nav — для шапки),
                         # fetchCategoryBySlug, fetchHomeSlots (сгруппировано по слоту),
                         # fetchRecipeBySlug, fetchRecipesByCategory (embed'ит recipe_tags → recipe.tags),
-                        # fetchEditorsPicks, fetchRecipeSlugs, fetchPageSeo, fetchFooterSettings
+                        # fetchEditorsPicks, fetchRecipeSlugs, fetchPageSeo, fetchFooterSettings,
+                        # fetchRecipeForPreview (service-role, по preview_token — §2.2)
+  columns.ts            # PUBLIC_RECIPE_COLUMNS / PUBLIC_POST_COLUMNS — явные списки публичных
+                        #   колонок вместо select("*") (анону не выдан preview_token, schema.md §9).
+                        #   НЕ server-only: нужен и в браузере (search.ts, blog.ts)
+  blog.ts               # загрузчики блога + fetchPostForPreview, fetchPostSections({includeUnpublished})
   images.ts             # resolveRecipeImage() (контракт путей картинок рецептов)
   shop.ts               # загрузчики магазина: fetchShopCategories/…/fetchProductsPage/fetchShopFilterOptions/fetchEditorsPicks/
                         #   fetchProductPairings/fetchRelatedReading + resolveProductImage/formatPrice/productPath;
@@ -112,7 +124,7 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
   (опциональный слот `action` у `RecipeMeta`). Компонент `PrintButton.tsx`
   (`'use client'`) по клику вызывает `window.print()` — один клик, без
   навигации и отдельной страницы.
-- Чистый вывод даёт **`@media print` в `app/recipes/[slug]/page.module.css`**:
+- Чистый вывод даёт **`@media print` в `components/RecipeArticle.module.css`**:
   скрываются глобальные `<header>`/`<footer>` (`:global(body > header/footer)`),
   верхний рейтинг-бейдж, hero-картинка, `RatingSection` (обёрнут в
   `.ratingSectionWrap`) и сама кнопка; контент — в одну колонку; белый фон;
@@ -120,6 +132,33 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
   ингредиенты → шаги.
 - Отдельного `/print`-роута **нет** (был удалён как избыточный) — печатается
   сама страница рецепта. Соответственно в `sitemap.ts` печать не добавляется.
+
+### 2.2. Превью черновиков (`/preview/*`)
+
+- **Роуты**: `/preview/recipes/[slug]?token=<uuid>` и `/preview/blog/[slug]?token=<uuid>`.
+  Модель один-в-один с cozycorner (см. [cozycorner.md](cozycorner.md) §«Превью черновика»).
+- `export const dynamic = "force-dynamic"`, `metadata.robots = { index:false, follow:false }`,
+  **без** `generateStaticParams` и ISR, **не** в `sitemap.ts`. `robots.ts` намеренно
+  НЕ трогается: `Disallow` скрыл бы от краулера сам `noindex`.
+- Читают строку **service-role** клиентом (`lib/supabase/service.ts`) через
+  `fetchRecipeForPreview` (`lib/content.ts`) / `fetchPostForPreview` (`lib/blog.ts`)
+  и отдают её ТОЛЬКО при совпадении `preview_token` из query-параметра; иначе —
+  `notFound()` (невалидный токен неотличим от «не найдено»). Сам токен из результата
+  вырезается — в RSC-payload и браузер не попадает (покрыто тестом
+  `lib/preview.test.ts`).
+- Фильтр `is_published` в превью-загрузчиках **не применяется** — в этом весь смысл.
+  Блоки тела поста читаются как `fetchPostSections(…, { includeUnpublished: true })`,
+  то есть превью показывает и неопубликованные блоки.
+- Разметка — те же компоненты, что и на живых страницах: `RecipeArticle` (вынесен из
+  `app/recipes/[slug]/page.tsx` ровно ради переиспользования) и `BlogArticle`.
+  Дублирования вёрстки нет.
+- Живая выдача не затронута: `/recipes/[slug]` и `/blog/[slug]` остаются SSG+ISR,
+  `is_published`-гейт и RLS работают как раньше.
+- Ссылку генерирует web.admin — кнопка «Copy preview link» в редакторах Recipes и Blog.
+- ⚠️ Гранты: `preview_token` анону не выдан, поэтому анон-выборки `recipes`/`posts`
+  обязаны перечислять колонки явно — `lib/columns.ts` (`PUBLIC_RECIPE_COLUMNS`,
+  `PUBLIC_POST_COLUMNS`), никаких `select("*")`, включая embed'ы. Подробности и
+  ловушка — [../database/schema.md](../database/schema.md) §9.
 
 ## 3. Курирование главной — модель `home_slots`
 

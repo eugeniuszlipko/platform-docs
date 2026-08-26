@@ -12,8 +12,8 @@
 > (`posts.folder_id` + секция `posts`); Read-also пины реализованы. **Баннер /blog
 > (§5b) правится через новый avocado-Pages редактор** (`features/pages/
 > AvocadoPageEditPage.tsx`, диспетчер `PagesRoutes.tsx`) — у avocado `pages` баннер
-> в hero_* колонках строки, а не в `hero_sections` (cozy-модель). Preview-ссылки
-> нет (у avocado `posts` нет `preview_token`).
+> в hero_* колонках строки, а не в `hero_sections` (cozy-модель). Preview-ссылка
+> **есть** с 2026-08-25 (`posts.preview_token`, миграция 0019) — см. §7.
 >
 > ⚠️ Это НЕ [blog.md](blog.md) — тот про блог **cozycorner** (две таблицы секций
 > `post_text_sections`/`post_product_sections` + `post_type` blog/seo). У Avocado
@@ -169,3 +169,24 @@
 - Тип блока не ограничивается типом поста (осознанное решение — макс. гибкость).
 - Перенос поста между типами — просто смена `template` (контент секций не
   конвертируется; редактор сам приводит блоки к новому hero, если нужно).
+
+## 7. Превью черновика (preview link, 2026-08-25)
+
+Редактор открывает черновик поста на реальном фронте avocado.kiss по спец-ссылке,
+не публикуя его в ленту. Модель один-в-один с cozycorner (см. [blog.md](blog.md) §6).
+
+- **Токен** — `posts.preview_token` (uuid, миграция 0019): capability, НЕ флаг
+  видимости. Админка его только ЧИТАЕТ (`ARTICLE_COLUMNS` включает `preview_token`;
+  `ArticleInput` его исключает — админка токен не пишет). Service-role ключа в
+  web.admin нет.
+- **Кнопка** «Copy preview link» — общий `src/features/posts/CopyPreviewLinkButton.tsx`
+  с пропом `segment="blog"`, в sticky-панели `ArticleEditPage` рядом с Save. Строит
+  `${site.frontendUrl}/preview/blog/${slug}?token=${preview_token}`. Скрыта, если у
+  сайта не задан `frontendUrl` или пост ещё не сохранён (нет slug/token).
+- **Фронт** — `app/preview/blog/[slug]/page.tsx` (force-dynamic, noindex): читает пост
+  service-role клиентом ТОЛЬКО при совпадении токена, без фильтра `is_published`, и
+  показывает **ВСЕ блоки** `post_sections`, включая `is_published = false`
+  (`fetchPostSections(…, { includeUnpublished: true })`) — то есть черновой блок,
+  добавленный в конструкторе, в превью виден. Архив `/blog`, ISR и
+  `generateStaticParams` не затрагиваются.
+  Детали — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.2.

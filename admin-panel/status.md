@@ -1,6 +1,6 @@
 # Админ-панель — статус, отклонения от спеки, следующие шаги
 
-> Last updated: 2026-07-22 | Source project: web.admin (CLAUDE.md «Статус», сверено с фактическим состоянием репо cozycorner)
+> Last updated: 2026-08-25 | Source project: web.admin (CLAUDE.md «Статус», сверено с фактическим состоянием репо cozycorner)
 
 ## Сделано (хронология по фазам)
 
@@ -141,7 +141,7 @@
     (2) Read-also пины — read-only чип рецепта (без мёртвых кнопок) + дедуп пикеров
     (у `post_related` нет unique-констрейнта). Юнит-тесты: articles/articleForm/
     ArticleEditPage/AvocadoPageEditPage — 71 зелёный, build+lint чисто.
-  - **Preview-ссылки нет** (у avocado `posts` нет `preview_token`).
+  - ~~Preview-ссылки нет~~ — **сделана 2026-08-25**, см. раздел ниже.
 
 ## Отклонения от спеки (актуальные версии инструментов)
 
@@ -237,8 +237,6 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
   предложен, не написан.
 - **CRUD авторов** в админке (сейчас только select существующих `authors`; заводить/
   править — через Supabase-коннектор). Отдельный заход при необходимости.
-- **Preview-ссылка на черновик** для avocado (как cozy `preview_token`) — требует
-  миграции в репо avocado.kiss (`posts.preview_token` + column-grant), сейчас нет.
 - **Edge-case `/avocado-kiss/pages/header`** по прямому URL рендерит cozy
   `HeaderEditPage` (у avocado нет header-редактора) → упадёт. В навигации ссылки нет;
   при необходимости — диспетчеризовать/гейтить и этот роут.
@@ -288,7 +286,7 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 - Прогон: `npm run build` + `npm run lint` чисто, `npx vitest run` — 97 зелёных.
 - Отложено: курирование главной (`home_slots`/Editor's Picks) — **сделано ниже,
   раздел Home**; `product_reading` («Pairs well with» / «Related reading» товаров)
-  — **сделано ниже**; preview черновиков, ручная e2e-приёмка.
+  — **сделано ниже**; preview черновиков — **сделано ниже**; ручная e2e-приёмка.
 
 ## Связи страницы товара для Avocado Kiss (2026-08-25)
 
@@ -340,3 +338,46 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 - Удалить легаси-колонку `posts.content` миграцией в репо сайта.
 - RPC-атомарное сохранение поста (см. [blog.md](blog.md) §5).
 - Тёмная тема (dark-токены есть, переключателя нет).
+
+## Превью черновиков для Avocado Kiss — рецепты и посты (2026-08-25)
+
+Последний пункт паритета с cozycorner: черновик рецепта или поста открывается на
+реальном фронте avocado.kiss по токенизированной ссылке, без публикации. Модель
+повторена один-в-один с cozy (миграции 0029/0031 → здесь 0019/0020).
+
+**БД (проект zwrkphynupdubevzwdzy, схема `avocado_kiss`):**
+- **0019 применена** — `preview_token uuid not null default gen_random_uuid()` в
+  `recipes` И `posts`; бэкфилл дефолтом (30 рецептов / 33 поста, все токены различны).
+- ⚠️ **0020 НЕ применена намеренно** — `revoke select … from anon` + column-grant на
+  все колонки, кроме `preview_token`. Ломает уже задеплоенный сайт, поэтому
+  применяется ТОЛЬКО ПОСЛЕ деплоя avocado.kiss с явными списками колонок. Файл в
+  репо: `supabase/migrations/0020_preview_tokens_column_grant.sql`.
+- Ловушка Postgres (стоила cozy нерабочей миграции 0030): column-level
+  `revoke select (col)` НЕ перекрывает табличный `grant select`. Проверено на
+  изолированной пробной таблице: после `revoke select on <table>` + column-grant
+  `has_column_privilege(anon,'preview_token')` = false, остальные колонки = true.
+
+**avocado.kiss:** роуты `app/preview/{recipes,blog}/[slug]/page.tsx` (force-dynamic,
+noindex, вне sitemap и `generateStaticParams`; `robots.ts` намеренно не трогали).
+Загрузчики `fetchRecipeForPreview`/`fetchPostForPreview` читают через
+`createServiceClient()` и отдают строку только при совпадении токена, вырезая сам
+токен из результата. Блоки тела поста — `includeUnpublished: true`. Новый
+`lib/columns.ts` (`PUBLIC_RECIPE_COLUMNS`/`PUBLIC_POST_COLUMNS`) заменил `select("*")`
+в 7 местах: `fetchHomeSlots` (embed), `fetchRecipeBySlug`, `fetchRecipesByCategory`,
+`POST_SELECT`, `POST_SELECT_TAG`, `searchRecipes`, `searchPosts`. Презентация сингла
+рецепта вынесена в общий `components/RecipeArticle.tsx` (превью и живая страница —
+одна вёрстка); вместе с ней переехал `@media print` в `RecipeArticle.module.css`.
+
+**web.admin:** `preview_token` добавлен в `RECIPE_COLUMNS` и `ARTICLE_COLUMNS` (только
+чтение — из `RecipeInput`/`ArticleInput` исключён). `CopyPreviewLinkButton` обобщён
+пропом `segment: 'blog' | 'recipes'` и вставлен в sticky-панели `RecipeEditPage` и
+`ArticleEditPage`; поведение cozycorner не изменилось.
+
+Прогон: оба репо — `npm run build`, `npm run lint`, `npx vitest run` зелёные
+(avocado 155, web.admin 131). Смоук на живой БД: все 7 переписанных запросов
+отдают 200 под анон-ключом.
+
+- ⚠️ **Не проверено руками**: сами страницы `/preview/*` в браузере (нужен деплой —
+  `SUPABASE_SECRET_KEY` есть на проде, но не локально) и кнопка в UI админки под
+  админом. Проверка запрета анонимного `?select=preview_token` возможна только
+  после применения 0020.
