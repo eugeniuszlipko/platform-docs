@@ -1,0 +1,137 @@
+/* =============================================================================
+   Overlay scrollbar — стили.
+   Канонический источник: platform-docs/methodology/overlay-scrollbar/.
+   Копии в репозиториях обязаны быть побайтово равны — правь здесь, потом вендорь.
+
+   Модуль НЕ содержит собственных цветов и размеров: всё через токены, значения
+   задаёт globals каждого проекта. Фолбэки в var() — на случай подключения
+   модуля до объявления токенов (и чтобы полоса не пропала молча).
+
+     --osb-width       ширина трека (и высота горизонтального), px
+     --osb-inset       отступ бегунка от краёв трека, px
+     --osb-radius      скругление бегунка
+     --osb-thumb       цвет бегунка в покое
+     --osb-thumb-hover цвет бегунка под курсором и во время drag
+     --osb-z           z-index полосы (должен быть выше липкой шапки)
+   ========================================================================== */
+
+/* Обёртка повторяет коробку скролл-контейнера (для окна — весь вьюпорт) и сама
+   кликов не ловит: кликабелен только узкий трек внутри неё. */
+.osb {
+  pointer-events: none;
+  z-index: var(--osb-z, 200);
+}
+
+/* Полоса окна: fixed поверх страницы. Ширину вьюпорта не занимает — ради этого
+   всё и затевалось. */
+.osb--fixed {
+  position: fixed;
+  inset: 0;
+}
+
+/* Полоса контейнера: absolute в его родителе; top/left/width/height проставляет
+   JS по коробке контейнера. */
+.osb--boxed {
+  position: absolute;
+}
+
+.osb-track {
+  position: absolute;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  /* Без этого drag бегунка на трекпаде/пере конкурирует с прокруткой страницы. */
+  touch-action: none;
+}
+
+.osb-track--y {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--osb-width, 10px);
+}
+
+.osb-track--x {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--osb-width, 10px);
+}
+
+/* Обе оси сразу — не даём трекам налезать друг на друга в углу. */
+.osb--both .osb-track--y {
+  bottom: var(--osb-width, 10px);
+}
+
+.osb--both .osb-track--x {
+  right: var(--osb-width, 10px);
+}
+
+/* Видна при скролле и во время drag (классы ставит JS) и под курсором. */
+.osb--visible .osb-track,
+.osb--dragging .osb-track,
+.osb-track:hover {
+  opacity: 1;
+}
+
+/* Контейнер не скроллится — полосы нет и она не перехватывает клики.
+   Правило идёт последним и имеет ту же специфичность, что и .osb--visible выше,
+   поэтому побеждает без !important. */
+.osb .osb-track--disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.osb-thumb {
+  position: absolute;
+  background: var(--osb-thumb, rgba(0, 0, 0, 0.25));
+  border-radius: var(--osb-radius, 999px);
+  transition: background 0.15s ease;
+}
+
+.osb-track--y .osb-thumb {
+  top: 0;
+  left: var(--osb-inset, 3px);
+  right: var(--osb-inset, 3px);
+}
+
+.osb-track--x .osb-thumb {
+  left: 0;
+  top: var(--osb-inset, 3px);
+  bottom: var(--osb-inset, 3px);
+}
+
+.osb-track:hover .osb-thumb,
+.osb--dragging .osb-thumb {
+  background: var(--osb-thumb-hover, rgba(0, 0, 0, 0.45));
+}
+
+/* Скрытие нативной полосы у контейнера, которому назначена своя (класс ставит
+   JS при подключении). Для <html> то же самое живёт в globals каждого проекта.
+   Эта пара — единственная комбинация, покрывающая все целевые движки:
+   scrollbar-width для Firefox 64+, ::-webkit-scrollbar для Chrome/Safari/Edge. */
+.osb-host {
+  scrollbar-width: none;
+}
+
+.osb-host::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .osb-track,
+  .osb-thumb {
+    transition: none;
+  }
+}
+
+/* Тач: нативные полосы там уже оверлейные и ширину не занимают — своя только
+   мешает (перехватывает тапы у края экрана). JS в этом режиме тоже не считает
+   геометрию, см. isCoarse() в overlay-scrollbar.ts. */
+@media (pointer: coarse) {
+  .osb {
+    display: none;
+  }
+}

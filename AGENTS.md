@@ -26,6 +26,7 @@ Read these files only when the task requires it:
 | CozyCorner architecture | platform-docs/sites/cozycorner.md | Any work in the cozycorner repo |
 | Avocado Kiss architecture | platform-docs/sites/avocado-kiss.md | Any work in the avocado.kiss repo |
 | Coding standards | platform-docs/methodology/coding-standards.md | New files, refactoring, code review |
+| Overlay scrollbar module | platform-docs/methodology/overlay-scrollbar/README.md | Touching scrollbars anywhere; vendoring the shared module into a repo |
 | Testing strategy | platform-docs/methodology/testing.md | Writing/running tests; choosing a test tool; CI |
 | Connector content-ops skills | platform-docs/skills/README.md | Loading/editing the claude.ai content-ops skills (per-site content editing) |
 
