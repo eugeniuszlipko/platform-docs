@@ -1,6 +1,6 @@
 # Админ-панель — статус, отклонения от спеки, следующие шаги
 
-> Last updated: 2026-08-25 | Source project: web.admin (CLAUDE.md «Статус», сверено с фактическим состоянием репо cozycorner)
+> Last updated: 2026-08-27 | Source project: web.admin (CLAUDE.md «Статус», сверено с фактическим состоянием репо cozycorner)
 
 ## Сделано (хронология по фазам)
 

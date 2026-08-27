@@ -1,6 +1,6 @@
 # Avocado Kiss — архитектура сайта
 
-> Last updated: 2026-08-25 | Source project: avocado.kiss (AGENTS.md,
+> Last updated: 2026-08-27 | Source project: avocado.kiss (AGENTS.md,
 > sites/avocado-kiss/specs/2026-07-17-avocado-kiss-v1-design.md) — пути файлов
 > относятся к репозиторию `avocado.kiss/`
 
@@ -27,16 +27,20 @@ app/
   layout.tsx              # root layout: Header + Footer, метаданные (SEO/OG), lang="en"
   globals.css              # дизайн-токены (:root) + @font-face Fira Sans + сброс
   page.tsx                 # home: hero-карусель + курируемая сетка + Editor's Picks + newsletter
-  recipes/[slug]/page.tsx  # страница рецепта (SSG+ISR): meta, image, Ingredients/Method; кнопка Print recipe (см. §2.1)
+  recipes/[slug]/page.tsx  # страница рецепта (SSG+ISR): meta, image, Ingredients/Method,
+                           #   блок «Read also» (§13); кнопка Print recipe (см. §2.1)
   category/[slug]/page.tsx # архив категории (SSG+ISR): только сетка RecipeCard (без заголовка/эйброу)
   shop/page.tsx            # хаб Curated Shop (SSG+ISR): ShopHero + сетка категорий + Editors' picks
   shop/[category]/page.tsx # категория магазина (SSG+ISR): ShopHero + ShopCatalog (ShopFilters + ProductGrid)
-  product/[slug]/page.tsx  # товар (SSG+ISR): ProductDetail + «Pairs well with» + «Related reading»
+  product/[slug]/page.tsx  # товар (SSG+ISR): ProductDetail + «Pairs well with» + «Related reading»;
+                           #   оба блока — в своих <Suspense> со скелетонами (§2.3)
   api/newsletter/route.ts  # POST подписки: валидация e-mail + Turnstile verify → insert
                            #   в subscribers под service_role (§11)
   preview/recipes/[slug]/page.tsx  # превью черновика рецепта (force-dynamic, noindex): строка
   preview/blog/[slug]/page.tsx     #   через service-role по preview_token; пост — со ВСЕМИ
                            #   блоками тела. Живая выдача/ISR/sitemap не трогаются (§2.2)
+  */loading.tsx            # скелетоны маршрутов (8 шт.: blog, blog/[slug], category/[slug],
+                           #   product/[slug], recipes/[slug], search, shop, shop/[category]) — §2.3
   not-found.tsx            # глобальная 404
   sitemap.ts               # sitemap.xml из БД (ISR 60s): главная + категории + опубл. рецепты
   robots.ts                # robots.txt: allow all + sitemap
@@ -66,15 +70,25 @@ components/            # один компонент = файл + CSS Module; SV
                         #   в её RecipeArticle.module.css живёт @media print (§2.1)
   BlogArticle.tsx       # презентация сингла поста — общая для /blog/[slug] и /preview/blog/[slug]
   Footer.tsx            # подвал (текст из footer_settings)
+  ReadAlso.tsx          # «Read also»: до 3 карточек (рецепт | пост | товар) — страницы поста И рецепта
+  Skeleton.tsx          # базовый мерцающий прямоугольник; из него собраны все скелетоны (§2.3)
+  *Skeleton.tsx         # посекционные фолбэки: Article/ProductDetail/ProductCard/RecipeCard/PostCard/
+                        #   ShopHero/ShopFilters/BlogFilters/ShopCategoryCard/RelatedProducts/RelatedReading
   Reveal.tsx            # GSAP reveal-обёртка (prefers-reduced-motion учтён)
   icons/                # ChevronLeft/Right, ArrowLeft (бэклинк товара), Clock, Menu, Search, Users + соц-иконки XIcon/PinterestIcon/InstagramIcon
 lib/
   supabase/client.ts / server.ts  # браузерный/серверный клиенты (db.schema='avocado_kiss'), тип DbClient
+  relations.ts          # ОБЩИЙ резолвер блоков рекомендаций (resolveRelated) для поста,
+                        #   рецепта и товара: пины → скоринг → детерминированный фолбэк (§13).
+                        #   НЕ server-only: тянется из blog.ts/shop.ts, а те живут и в браузере
   content.ts            # fetchCategories (все), fetchNavCategories (только show_in_nav — для шапки),
                         # fetchCategoryBySlug, fetchHomeSlots (сгруппировано по слоту),
                         # fetchRecipeBySlug, fetchRecipesByCategory (embed'ит recipe_tags → recipe.tags),
                         # fetchEditorsPicks, fetchRecipeSlugs, fetchPageSeo, fetchFooterSettings,
-                        # fetchRecipeForPreview (service-role, по preview_token — §2.2)
+                        # fetchRecipeForPreview (service-role, по preview_token — §2.2),
+                        # fetchRecipeRelated (блок «Read also» рецепта — §13),
+                        # fetchLayoutShellCached (unstable_cache: шапка+футер+соцсети одним
+                        #   набором запросов на такт ISR — шелл рендерится на каждой странице)
   columns.ts            # PUBLIC_RECIPE_COLUMNS / PUBLIC_POST_COLUMNS — явные списки публичных
                         #   колонок вместо select("*") (анону не выдан preview_token, schema.md §9).
                         #   НЕ server-only: нужен и в браузере (search.ts, blog.ts)
@@ -151,7 +165,8 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
   то есть превью показывает и неопубликованные блоки.
 - Разметка — те же компоненты, что и на живых страницах: `RecipeArticle` (вынесен из
   `app/recipes/[slug]/page.tsx` ровно ради переиспользования) и `BlogArticle`.
-  Дублирования вёрстки нет.
+  Дублирования вёрстки нет. Оба принимают проп `related` и рендерят блок
+  рекомендаций (§13), поэтому превью показывает страницу целиком, «как на сайте».
 - Живая выдача не затронута: `/recipes/[slug]` и `/blog/[slug]` остаются SSG+ISR,
   `is_published`-гейт и RLS работают как раньше.
 - Ссылку генерирует web.admin — кнопка «Copy preview link» в редакторах Recipes и Blog.
@@ -162,10 +177,12 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
 - ⚠️ **Загрузчики под service-role не могут полагаться на RLS.** Превью читает
   service-role клиентом, который RLS обходит, поэтому любой загрузчик, который
   переиспользуется в превью, обязан фильтровать `is_published` **в коде**. Так уже
-  сделано в `fetchRelatedReading` (и для пинов-постов, и для пинов-рецептов — второе
-  чинили 2026-08-26: на живой странице неопубликованный рецепт отсекала RLS, в превью
-  он попадал в «Read also» ссылкой на 404). Правило действует для любого нового
-  загрузчика, который позовут из `/preview/*`.
+  сделано в общем резолвере `lib/relations.ts` (§13) — он проверяет `is_published`
+  в коде и для пинов, и для авто-подбора, поэтому правило соблюдают ВСЕ блоки
+  рекомендаций разом (раньше это чинилось точечно в `fetchRelatedReading`: на живой
+  странице неопубликованный рецепт отсекала RLS, а в превью он попадал в «Read also»
+  ссылкой на 404). Правило действует для любого нового загрузчика, который позовут
+  из `/preview/*`.
 
 **Известные ограничения превью (осознанные, 2026-08-26):**
 
@@ -183,6 +200,48 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
   origin), но это опора на дефолт — при желании ужесточается `referrer:
   'no-referrer'` в метадате роутов. Ответы уже отдаются с
   `cache-control: private, no-store`.
+
+### 2.3. Скелетоны и стриминг (loading.tsx + Suspense)
+
+Пока страница генерируется (первый заход, истёкший ISR-такт, клиентская
+навигация), пользователь видит не пустой экран, а скелетон её раскладки.
+
+- **Уровень маршрута** — `loading.tsx` рядом с `page.tsx` (8 штук: `/blog`,
+  `/blog/[slug]`, `/category/[slug]`, `/product/[slug]`, `/recipes/[slug]`,
+  `/search`, `/shop`, `/shop/[category]`). Next оборачивает сегмент в
+  `<Suspense>` с этим фолбэком автоматически.
+- **Уровень секции** — `<Suspense>` прямо в `page.tsx` вокруг блоков, чьи
+  запросы не должны держать первый экран. Сейчас так сделана страница товара:
+  «Pairs well with» и «Related reading» вынесены в отдельные server-компоненты
+  (`PairingsBlock` / `ReadingBlock`) и стримятся после `ProductDetail`. Раньше
+  `Promise.all` собирал оба блока до первого байта разметки.
+- **Кирпич** — `components/Skeleton.tsx`: мерцающий прямоугольник, `aria-hidden`.
+  Геометрию задаёт вызывающая сторона, **переиспользуя CSS-модуль реальной
+  секции**, поэтому подстановка контента не двигает layout. Состояние загрузки
+  объявляет контейнер через `aria-busy="true"`, а не пустые блоки для скринридера.
+- Статичный текст, известный до запроса (например заголовок «Pairs well with»),
+  скелетоном НЕ закрывается — он отдаётся сразу.
+- `loading.tsx` маршрута покрывает только первый экран; секции со своими
+  Suspense-границами в нём не дублируются.
+- **Клиентские сетки** — скелетоны работают и без навигации. Смена фильтра
+  (`ProductGrid`) или тега (`BlogArchive`) подменяет карточки скелетонами **в том
+  же кадре**, а число скелетонов равно числу карточек на экране, поэтому сетка не
+  меняет высоту. Догрузка «Load more» карточки НЕ трогает — там меняется только
+  подпись кнопки.
+  ⚠️ Раньше на время загрузки оставалась старая сетка (класс `.leaving`, гасились
+  только клики). На проде это читалось как «клик проглотили»: между нажатием и
+  подменой карточек экран не менялся вовсе (замер ~170 мс локально, на реальной
+  сети заметно больше). Не возвращать это поведение — реакция должна быть видимой.
+- **Подложка под картинками.** Каждая обёртка картинки красится в `--muted` —
+  тот же тон, что у скелетона. Без неё сквозь обёртку светится белый фон карточки,
+  и появление фото читается как вспышка (особенно когда картинок много и они
+  приходят вразнобой).
+  ⚠️ Фейд картинки по `onLoad` НЕ применять: он требует стартовать с `opacity: 0`,
+  то есть прятать серверную разметку до гидратации — та же ошибка, что у `Reveal`.
+
+⚠️ Скелетоны обязаны повторять раскладку реального блока. Расходится вёрстка
+секции — правь и её скелетон в том же изменении, иначе при подстановке контента
+страница дёрнется.
 
 ## 3. Курирование главной — модель `home_slots`
 
@@ -472,11 +531,18 @@ Supabase; **не** `server-only` — `ProductGrid` вызывает `fetchProduc
   **главная категория** товара, наименьший `position` из M2M) +
   «Pairs well with» (`fetchProductPairings` → 3 товара, без само-ссылки) +
   «Related reading» (`fetchRelatedReading` → 3 **опубликованных** рецепта).
+  Оба блока — в собственных `<Suspense>` со скелетонами (§2.3), поэтому их
+  запросы не держат первый экран.
 
-**Курация:** `fetchRelatedReading` embed'ит `recipes!inner` +
-`eq('recipe.is_published', true)` — неопубликованные рецепты в блок не
-протекают (паттерн `fetchHomeSlots`); проекция рецепта → `ReadingItem`
-(`href=/recipes/{slug}`). Связь товар↔категория — **M2M `product_categories`**
+**Курация (с 2026-08-26 — общий резолвер, §13):** оба блока строит
+`resolveRelated` из `lib/relations.ts`: ручные пины (`product_pairings` /
+`product_reading`) → авто-подбор по общей категории → детерминированный
+случайный фолбэк. **Раньше блоки показывали только пины и пустели без них** —
+теперь не пустеют. Фильтр `is_published` для рецептов делается **в коде**
+резолвера, а не embed'ом `recipes!inner` (так загрузчик безопасен и под
+service-role); проекция рецепта → `ReadingItem` (`href=/recipes/{slug}`).
+`fetchProductPairings` догидрирует полные строки товаров по порядку резолвера —
+`ProductCard` нужны бренд, цена и `referral_url`. Связь товар↔категория — **M2M `product_categories`**
 (→ `shop_categories`): `fetchProductsPage` фильтрует категорию через membership
 (`slug → id → product_id`, затем `.in("id", …)`), `attachCategoryNames` достраивает
 главную категорию (`primaryCategory`, наименьший `position`), а
@@ -824,6 +890,12 @@ Sans все веса ~18–25 КБ и близки друг к другу; фа�
 «Pairs well with» рендерит `ProductCard` (нужны бренд/цена/referral_url),
 поэтому `fetchProductPairings` догидрирует полные строки товаров по порядку,
 который вернул резолвер.
+
+На странице товара оба блока обёрнуты в `<Suspense>` (§2.3) — резолвер ходит в
+БД дважды (пины + пул кандидатов, плюс гидрация товаров), и держать этим первый
+экран незачем. Фолбэки — `RelatedProductsSkeleton` / `RelatedReadingSkeleton`,
+оба переиспользуют CSS-модули своих секций, поэтому подстановка карточек не
+двигает layout.
 
 **Известное ограничение.** Категории магазина (slug'и `shop_categories`) и
 категории рецептов (текстовое `recipes.category`) — разные пространства имён,

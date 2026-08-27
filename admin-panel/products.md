@@ -1,6 +1,6 @@
 # Раздел Products — правила и концепции
 
-> Last updated: 2026-07-22 | Source project: web.admin (docs/products.md) — пути `src/…` относятся к репозиторию `web.admin/`
+> Last updated: 2026-08-27 | Source project: web.admin (docs/products.md) — пути `src/…` относятся к репозиторию `web.admin/`
 
 Документ фиксирует, как устроен раздел Products админки: контракты с данными,
 поведение операций и решения по UI, принятые в ходе разработки (2026-07-10,

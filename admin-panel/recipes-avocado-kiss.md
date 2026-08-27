@@ -1,6 +1,6 @@
 # Раздел Recipes (Avocado Kiss) — контракт админки
 
-> Last updated: 2026-08-25 | Проект: web.admin, `src/features/recipes/` + справочник
+> Last updated: 2026-08-27 | Проект: web.admin, `src/features/recipes/` + справочник
 > `src/features/taxonomy/` (recipe categories). Сайт-потребитель — avocado.kiss.
 > Схема БД — [../database/schema.md](../database/schema.md) §9; страница рецепта на
 > сайте — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.

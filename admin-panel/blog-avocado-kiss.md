@@ -1,6 +1,6 @@
 # Avocado Kiss — Blog (Article) editor — контракт для web.admin
 
-> Last updated: 2026-08-25 | Site: **avocado.kiss** (схема `avocado_kiss`, бакет
+> Last updated: 2026-08-27 | Site: **avocado.kiss** (схема `avocado_kiss`, бакет
 > `avocado-kiss-photos`). Раздел в web.admin **ПОСТРОЕН** (2026-08-08) — этот файл
 > остаётся контрактом модели. Реализация: `web.admin/src/features/articles/*` +
 > `src/lib/articles.ts`; роут `/blog` диспетчеризуется по `site.schema`

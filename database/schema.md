@@ -1,6 +1,6 @@
 # База данных — Supabase (все сайты)
 
-> Last updated: 2026-08-01 | Source project: cozycorner (CLAUDE.md, docs/admin-app-spec.md, docs/page-content.md, docs/multisite-migration.md) + web.admin
+> Last updated: 2026-08-27 | Source project: cozycorner (CLAUDE.md, docs/admin-app-spec.md, docs/page-content.md, docs/multisite-migration.md) + web.admin
 
 Единый источник правды о структуре БД и контрактах с данными. Схема **версионируется
 миграциями в репозитории `cozycorner/supabase/migrations/`** — менять её из других мест
