@@ -190,6 +190,32 @@ authenticated, `public.is_admin()`) — как у categories. Миграция `
 - `post_product_sections`: `heading` (nullable), `columns` (2|3, default 3),
   `product_ids uuid[]` — реальные id из `products`, порядок массива = порядок карточек.
 
+### recipe_related — «Read also» страницы рецепта (миграция 0021)
+
+Ручные пины блока рекомендаций рецепта. Зеркалит `post_related`, но полиморфна на
+**три** типа: `id`, `recipe_id` (FK → recipes, on delete cascade — источник),
+`position`, `related_recipe_id` (FK → recipes), `post_id` (FK → posts),
+`product_id` (FK → products) с check `num_nonnulls(related_recipe_id, post_id,
+product_id) = 1` и check `recipe_related_no_self` (`related_recipe_id <>
+recipe_id`). Индекс `(recipe_id, position)`. Публичное чтение `using (true)`;
+запись — админ. **Применена 2026-08-26**; проверено на проде:
+`has_table_privilege(anon, …, 'select')` = true, insert = false, RLS включён,
+2 политики.
+
+⚠️ Unique-констрейнта на полиморфные колонки нет (как и в `post_related`) —
+от дублей защищает админка: пикеры исключают уже закреплённые id.
+
+### Общий резолвер рекомендаций (сайт)
+
+Все четыре таблицы пинов (`post_related`, `recipe_related`, `product_pairings`,
+`product_reading`) читает ОДИН алгоритм — `avocado.kiss/lib/relations.ts`
+(`resolveRelated`): пины по `position` → авто-подбор по скорингу (общая
+категория +3, общий тег +2 с потолком 4, тот же тип контента +1, тай-брейк
+`published_at desc`) → детерминированный случайный фолбэк (seeded по id
+источника), чтобы блок не пустел. Единая таблица `content_relations`
+намеренно НЕ вводилась: унифицирован слой алгоритма, а не хранилище — так
+сохранены FK-каскады и RLS. Подробности — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §13.
+
 ### pages — страницы + SEO
 
 Фиксированный набор из 7 строк (`home`, `shop`, `blog`, `terms`, `privacy`, `about`,
@@ -803,6 +829,13 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 `?select=preview_token` и `select=*` → 401 `42501`; `has_column_privilege(anon,
 'preview_token')` = false, `authenticated`/`service_role` = true; все запросы сайта
 (включая браузерный «Load more» и `/search`) → 200.
+
+· **0021 recipe_related** — ручные пины «Read also» страницы рецепта
+(полиморфно рецепт | пост | товар, см. таблицу выше), гранты/RLS шаблона 0008.
+Аддитивна: новая таблица, существующие данные и политики не тронуты. **Применена
+2026-08-26.** Вместе с ней сайт перешёл на общий резолвер `lib/relations.ts`, а
+блоки товара («Pairs well with», «Related reading») получили авто-подбор и
+фолбэк, которых у них раньше не было (пустели без ручных пинов).
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом

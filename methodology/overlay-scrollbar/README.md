@@ -42,7 +42,7 @@ md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner}/components,web.admin
 |---|---|---|
 | `avocado.kiss` | `app/layout.tsx` | `SearchBox` (мобильный оверлей), `MobileMenu` |
 | `cozycorner` | `app/layout.tsx` | `SearchBox` (мобильный оверлей) |
-| `web.admin` | `components/AppShell.tsx` | `dialog.tsx` (`DialogBody`), `dropdown-menu.tsx`, `command.tsx`, `table.tsx` (ось X) |
+| `web.admin` | `src/main.tsx` | `dialog.tsx` (`DialogBody`), `dropdown-menu.tsx`, `command.tsx`, `table.tsx` (ось X) |
 
 ## Токены
 
@@ -124,6 +124,12 @@ return <div ref={listRef} className="overflow-y-auto">…</div>
   под Vitest и внутри iframe.
 - **Radix Select трогать не нужно.** Там скроллится Viewport, а не Content, и
   Radix прячет его полосу собственным стилем, заменяя её кнопками прокрутки.
+- **Печать.** Модуль убирает полосу в `@media print`: в покое она прозрачна, но
+  печать в пределах секунды после скролла застала бы её видимой. У `avocado.kiss`
+  печать рецепта — штатный сценарий (`PrintButton`).
+- **Полосу страницы монтируем в самой внешней точке приложения**, а не в шелле
+  авторизованной зоны: экраны вне шелла (логин в `web.admin`) иначе останутся со
+  скрытой нативной полосой и без замены.
 - **Radix + модалки.** Со скрытой нативной полосой `react-remove-scroll` меряет
   её ширину как 0, и компенсирующий `padding-right` на body становится no-op —
   открытие модалки перестаёт сдвигать контент. Поэтому `scrollbar-gutter: stable`

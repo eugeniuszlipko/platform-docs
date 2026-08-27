@@ -65,7 +65,8 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 ## 4. Удаление рецепта
 
 `recipes` каскадит: `recipe_tags`, `recipe_ratings`, `home_slots` (слоты главной!),
-`product_reading` («Related reading» у товаров), `post_related` (Read also);
+`product_reading` («Related reading» у товаров), `post_related` (Read also),
+`recipe_related` (пины «Read also» — и как источник, и как цель);
 `post_sections.recipe_id` обнуляется (SET NULL). Диалог удаления об этом предупреждает.
 
 Если рецепт стоит на главной, диалог (и одиночный, и bulk в списке) дополнительно
@@ -85,6 +86,7 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
   отдельным разделом **Home** (2026-08-25), см. [home-avocado-kiss.md](home-avocado-kiss.md).
 - **«Pairs well with» / «Related reading» товаров** — сделаны в форме товара
   (2026-08-25), см. [products.md](products.md) §3a.
+- ~~**«Read also» рецепта**~~ — **сделано 2026-08-26**, см. §8 ниже.
 - ~~**Preview черновика**~~ — **сделано 2026-08-25**, см. §7 ниже.
 - Ингредиенты и шаги — плоские строки: групп («For the dough»), разметки и ссылок нет
   ни в схеме, ни на сайте.
@@ -106,3 +108,23 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
   рецепт service-role клиентом ТОЛЬКО при совпадении токена, без фильтра
   `is_published`. Живая страница, ISR и `generateStaticParams` не затрагиваются.
   Детали — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.2.
+
+
+## 8. «Read also» — ручные пины рецепта (`recipe_related`, 2026-08-26)
+
+У рецепта появился свой блок рекомендаций — раньше страница рецепта не показывала
+ничего. Модель та же, что у блога, но таблица полиморфна на **три** типа:
+`recipe_related(recipe_id, position, related_recipe_id | post_id | product_id)`,
+ровно одна ссылка на строку (миграция 0021, schema.md §9).
+
+- UI — тот же общий `src/features/shared/RelationsEditor.tsx`
+  (`sourceKind="recipe"`, `slot="related"`): кнопки «Pin recipe» / «Pin post» /
+  «Pin product», порядок ↑/↓, удаление, лимит 3. Рецепт не может закрепить сам
+  себя (в БД `check recipe_related_no_self`) — свой id исключён из пикера.
+- Состояние — `useRelationField` (вне RHF), запись `setRelations` после
+  сохранения строки рецепта; у нового рецепта — после create. Dirty-флаг пинов
+  включён в гард несохранённых изменений и в `beforeunload`.
+- **Пустой список = авто-подбор**, а не скрытый блок: сайт добирает карточки по
+  общей категории и общим тегам, затем детерминированным случайным фолбэком
+  (`lib/relations.ts`, см. [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §13).
+  Авто-добор ведётся рецептами и постами; товар попадёт в блок только ручным пином.

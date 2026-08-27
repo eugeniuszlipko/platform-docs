@@ -297,6 +297,45 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 `src/lib/productRelations.ts`, `src/features/products/{ProductRelationsEditor,useRelationField}`;
 у cozycorner блоки скрыты (`productRelationsEnabled` по `site.schema`). Правила —
 [products.md](products.md) §3a. Прогон: build+lint чисто, vitest 108 зелёных.
+> ⚠️ **Устарело с 2026-08-26** (см. «Единая система рекомендаций» ниже): эти три
+> файла заменены общими `src/lib/contentRelations.ts` +
+> `src/features/shared/{RelationsEditor,useRelationField}`.
+
+## Единая система рекомендаций: посты + рецепты + товары (2026-08-26)
+
+Три несогласованные реализации блока «что дальше» сведены к одной.
+
+**Сайт (avocado.kiss).** Новый общий резолвер `lib/relations.ts`
+(`resolveRelated`): пины по `position` → авто-подбор по скорингу (категория +3,
+тег +2 с потолком 4, тот же тип +1) → **детерминированный** случайный фолбэк
+(seed = id источника), чтобы блок не пустел. Загрузчики стали обёртками:
+`fetchRelatedReading` (блог), `fetchProductPairings`/`fetchRelatedReading` (шоп —
+получили авто-подбор и фолбэк, которых у них не было), новый `fetchRecipeRelated`.
+Страница рецепта впервые показывает блок (`ReadAlso` внутри `RecipeArticle`, скрыт
+в `@media print`), в том числе на `/preview/recipes/[slug]`. Подробности и
+известное ограничение (нет общего словаря категорий магазина и рецептов) —
+[../sites/avocado-kiss.md](../sites/avocado-kiss.md) §13.
+
+**БД.** Миграция **0021 `recipe_related`** (полиморфно рецепт | пост | товар),
+применена 2026-08-26; привилегии `anon` проверены явно.
+
+**Админка.** `RelatedEditor` + `ProductRelationsEditor` → один
+`src/features/shared/RelationsEditor.tsx` (+ `useRelationField`,
+`src/lib/contentRelations.ts` с общим реестром связей). Подключён к постам
+(через `Controller` на RHF-поле `related` — поведение блога сохранено), товарам и
+**рецептам (новое)**. Во всех блоках подпись «Optional — auto-filled if empty».
+
+**Прогон:** avocado.kiss — build + lint чисто, vitest **198 зелёных** (24 новых на
+резолвер); web.admin — build + lint чисто, vitest **178 зелёных** (10 новых на
+`RelationsEditor`). Детерминированность фолбэка подтверждена сравнением двух
+независимых сборок.
+
+**Осталось:** `cozycorner/lib/products.ts` → `fetchRelatedProducts` — третий
+вариант той же идеи (авто-подбор по категории, без ручных пинов и без фолбэка).
+В эту задачу не входил намеренно. Для приведения к общей схеме нужны: таблица
+пинов `product_related` в схеме cozycorner, порт `lib/relations.ts` (у cozy своя
+модель категорий — FK, а не текст), подключение `RelationsEditor` в форме товара
+через `contentRelationsEnabled`.
 
 ## Курирование главной для Avocado Kiss (2026-08-25)
 
