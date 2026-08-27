@@ -121,6 +121,9 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
   (`sourceKind="recipe"`, `slot="related"`): кнопки «Pin recipe» / «Pin post» /
   «Pin product», порядок ↑/↓, удаление, лимит 3. Рецепт не может закрепить сам
   себя (в БД `check recipe_related_no_self`) — свой id исключён из пикера.
+- Место в форме — **после блока Rating, перед SEO**: порядок полей формы намеренно
+  повторяет порядок блоков на самой странице рецепта (ингредиенты → метод →
+  рейтинг → Read also).
 - Состояние — `useRelationField` (вне RHF), запись `setRelations` после
   сохранения строки рецепта; у нового рецепта — после create. Dirty-флаг пинов
   включён в гард несохранённых изменений и в `beforeunload`.
