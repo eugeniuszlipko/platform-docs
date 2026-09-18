@@ -124,6 +124,9 @@ supabase/migrations/  # единственное место изменения �
   минуя `/_next/image`, поэтому их хосты в `remotePatterns` добавлять не нужно.
   Почему не allowlist: широкий `remotePatterns` тратил бы квоту оптимизации Vercel
   на чужие CDN и делал бы `/_next/image` открытым прокси. Не менять этот подход.
+  Точечный (не глобальный) концепт снижения веса конкретных внешних картинок —
+  [methodology/external-image-rehosting.md](../methodology/external-image-rehosting.md)
+  (не реализовано, зафиксировано 2026-09-17).
 - **Стиль отображения** задаёт `products.image_style`: `photo` — «живое» фото,
   `object-fit: cover` вплотную к краям; `cutout` — товар без фона / на белом
   (Amazon JPEG), `contain` с паддингами на **белой** плитке. Автоопределения нет
@@ -186,9 +189,23 @@ SUPABASE_SERVICE_ROLE_KEY=sb_secret_…            # server-only: запись �
   anon. `NEXT_PUBLIC_*` вшиваются в билд → после их добавления нужен **redeploy**.
   Схема `cozycorner` должна быть в Exposed schemas.
 - Vercel связан с GitHub-репо `nowmdr/cozycorner`: **пуш в `main` → авто-деплой**.
-- Прод: **https://cozycorner-omega.vercel.app** (личный Hobby-scope — через
-  Vercel MCP/CLI не виден, проверять прод напрямую по URL). Старые URL мертвы:
-  `cozycorner-one.vercel.app` — 404, `cozycorner.vercel.app` — чужой проект.
+- **Канонический прод — https://www.cozycorner.me** (кастомный домен, apex
+  `cozycorner.me` → 308 → www). Vercel-алиас **`cozycorner-omega.vercel.app`**
+  (личный Hobby-scope — через Vercel MCP/CLI не виден, проверять прод напрямую
+  по URL) остаётся живым и **НЕ редиректит** на www — оба домена параллельно
+  отдают идентичный контент. Старые URL мертвы: `cozycorner-one.vercel.app` —
+  404, `cozycorner.vercel.app` — чужой проект.
+- 🐛→✅ **`NEXT_PUBLIC_SITE_URL` на Vercel не задана** (найдено SEO-аудитом
+  2026-09-14) — `app/robots.ts`/`app/sitemap.ts` брали её с фолбэком на
+  `cozycorner-omega.vercel.app`, поэтому весь sitemap.xml и `robots.txt`
+  указывали на служебный домен, а не на `www.cozycorner.me`. **2026-09-17**:
+  фолбэк в коде (`app/robots.ts`, `app/sitemap.ts`, `app/layout.tsx`
+  `metadataBase`) переключён на `https://www.cozycorner.me` — сайт теперь
+  корректен даже без переменной в Vercel. Переменную в Vercel всё равно стоит
+  завести явно (`NEXT_PUBLIC_SITE_URL=https://www.cozycorner.me`,
+  Production → redeploy) — самодокументируемо и не завязано на дефолт в коде.
+  ⚠️ Правка кода на момент записи — только в рабочем дереве, не закоммичена и
+  не задеплоена.
 - Если правки контента «не доходят» до сайта — сперва проверить в дашборде Vercel,
   что авто-деплой прошёл и домен указывает на актуальный production-деплой.
 - Быстрая проверка, из какой БД собран прод: `curl -sL <прод-URL> | grep -o

@@ -19,7 +19,7 @@
 | Сайт | Репозиторий | Схема / бакет | Прод | Детали |
 |---|---|---|---|---|
 | CozyCorner | `cozycorner/` | `cozycorner` / `cozycorner-photos` | https://cozycorner-omega.vercel.app | [cozycorner.md](cozycorner.md) |
-| Avocado Kiss | `avocado.kiss/` | `avocado_kiss` / `avocado-kiss-photos` | прод pending | [avocado-kiss.md](avocado-kiss.md) |
+| Avocado Kiss | `avocado.kiss/` | `avocado_kiss` / `avocado-kiss-photos` | https://www.avocadokiss.com | [avocado-kiss.md](avocado-kiss.md) |
 
 ## Общие свойства сайтов
 

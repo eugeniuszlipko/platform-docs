@@ -28,6 +28,7 @@ Read these files only when the task requires it:
 | Coding standards | platform-docs/methodology/coding-standards.md | New files, refactoring, code review |
 | Overlay scrollbar module | platform-docs/methodology/overlay-scrollbar/README.md | Touching scrollbars anywhere; vendoring the shared module into a repo |
 | Testing strategy | platform-docs/methodology/testing.md | Writing/running tests; choosing a test tool; CI |
+| External image re-hosting (concept, not implemented) | platform-docs/methodology/external-image-rehosting.md | Considering fixing unoptimized Amazon/Unsplash image weight on a site |
 | Connector content-ops skills | platform-docs/skills/README.md | Loading/editing the claude.ai content-ops skills (per-site content editing) |
 
 ## Workflow rules
