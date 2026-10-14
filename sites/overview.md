@@ -33,6 +33,15 @@
   (контракт — [../database/schema.md](../database/schema.md) §4).
 - SEO-посты (`post_type='seo'`): скрыты из лент/поиска, доступны по прямому URL,
   включены в sitemap; **без cloaking** (редиректы/UA-логика/noindex запрещены).
+- **Аналитика — только за согласием.** GA4 есть на cozycorner (`G-7CZ6DW45ED`) и
+  avocado.kiss (`G-RT7QVR7EJ4`); компонент `GoogleAnalytics` грузит gtag лишь после
+  «Accept» в cookie-баннере (`lib/consent.ts`), иначе — ни одного запроса к Google.
+  Любой новый необязательный скрипт — через тот же гейт, а Privacy Policy сайта
+  обновляется в том же изменении. Новому сайту: баннер + `consent.ts` + `GoogleAnalytics`
+  копируются с cozycorner.
+- **`sitemap.ts` — собственный `export const revalidate = 60`.** Segment config из
+  layout на metadata-роуты не действует; без константы sitemap статичен до редеплоя.
+  В Google Search Console sitemap подаётся вручную (Sitemaps → `sitemap.xml`).
 - **Прод-адрес сайта зашит НЕ в одном месте.** Как минимум: `NEXT_PUBLIC_SITE_URL`
   в окружении Vercel (инлайнится в билд → нужен редеплой; питает `sitemap.ts` и
   `robots.ts`), `frontendUrl` записи сайта в `web.admin/src/config/sites.ts`

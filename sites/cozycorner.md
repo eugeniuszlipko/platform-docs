@@ -52,7 +52,7 @@ components/           # один компонент = файл + CSS Module; к�
   RecommendedPosts.tsx / RelatedProducts.tsx / RelatedArticles.tsx  # «related»-блоки
   ProductGrid.tsx     # сетка 3 колонки + бесконечный скролл + скелетоны
   ProductCardSkeleton.tsx / ImageWithFallback.tsx / CustomScrollbar.tsx
-  CookieConsent.tsx / LegalArticle.tsx / ProductDetail.tsx / MarkdownText.tsx
+  CookieConsent.tsx / GoogleAnalytics.tsx (GA4 после Accept, §2) / LegalArticle.tsx / ProductDetail.tsx / MarkdownText.tsx
   BackLink.tsx / PagePlaceholder.tsx / Button.tsx / icons/
 lib/
   supabase/client.ts / server.ts / admin.ts  # anon браузер/сервер + service_role (server-only, §7)
@@ -61,7 +61,7 @@ lib/
                       # + fetchRelatedProducts + resolveProductImage + formatPrice
   categories.ts / posts.ts / search.ts / content.ts  # загрузчики сущностей
   markdown.ts         # stripMarkdown() — плоский текст для мета-тегов
-  consent.ts          # cookie-согласие (гейт аналитики)
+  consent.ts          # cookie-согласие (гейт аналитики) + subscribeConsent для GoogleAnalytics
   types.ts            # Product/Category/Post, PAGE_SIZE, POSTS_PAGE_SIZE
 supabase/migrations/  # единственное место изменения схемы БД (см. schema.md §6–§7)
 ```
@@ -88,6 +88,17 @@ supabase/migrations/  # единственное место изменения �
   `fetchFooterSettings` в `lib/content.ts`).
 - `/search` — динамическая (`await searchParams` в Next 16 сам делает роут
   динамическим), `noindex, follow`.
+- **Аналитика GA4** (с 2026-10-14): Measurement ID `G-7CZ6DW45ED`
+  (`GA_MEASUREMENT_ID` в `lib/site.ts`, переопределяется
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID`). Компонент `GoogleAnalytics` в `app/layout.tsx`
+  грузит gtag **только после «Accept»** в `CookieConsent` (`useSyncExternalStore` +
+  `subscribeConsent`), в dev не грузится; при «Decline» к Google не уходит ничего.
+  Privacy Policy описывает GA4. Решение «GA только через гейт» — общее правило
+  платформы, см. [overview.md](overview.md). Тесты — `components/GoogleAnalytics.test.tsx`.
+- **sitemap.xml**: `export const revalidate = 60` в самом `app/sitemap.ts`
+  (на metadata-роуты `revalidate` из layout не распространяется). **Search Console:**
+  раздел Sitemaps заполняется только вручную поданным `sitemap.xml`; robots.txt его
+  не заполняет.
 
 ## 3. Откуда страницы берут hero и SEO
 

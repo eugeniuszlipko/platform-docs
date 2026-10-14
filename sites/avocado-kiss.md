@@ -42,7 +42,7 @@ app/
   */loading.tsx            # скелетоны маршрутов (8 шт.: blog, blog/[slug], category/[slug],
                            #   product/[slug], recipes/[slug], search, shop, shop/[category]) — §2.3
   not-found.tsx            # глобальная 404
-  sitemap.ts               # sitemap.xml из БД (ISR 60s): главная + категории + опубл. рецепты
+  sitemap.ts               # sitemap.xml из БД (ISR: свой `export const revalidate = 60`, см. §2): главная + категории + опубл. рецепты
   robots.ts                # robots.txt: allow all + sitemap
 components/            # один компонент = файл + CSS Module; SVG-иконки — в icons/
   Header.tsx / CategoryNav (внутри Header) / MobileMenu.tsx  # шапка + навигация категорий
@@ -75,9 +75,13 @@ components/            # один компонент = файл + CSS Module; SV
   *Skeleton.tsx         # посекционные фолбэки: Article/ProductDetail/ProductCard/RecipeCard/PostCard/
                         #   ShopHero/ShopFilters/BlogFilters/ShopCategoryCard/RelatedProducts/RelatedReading
   Reveal.tsx            # GSAP reveal-обёртка (prefers-reduced-motion учтён)
+  CookieConsent.tsx     # cookie-баннер Accept/Decline (порт из cozycorner, 2026-10-14) — §2.4
+  GoogleAnalytics.tsx   # GA4 (gtag.js) — грузится ТОЛЬКО после Accept (useSyncExternalStore) — §2.4
   icons/                # ChevronLeft/Right, ArrowLeft (бэклинк товара), Clock, Menu, Search, Users + соц-иконки XIcon/PinterestIcon/InstagramIcon
 lib/
   supabase/client.ts / server.ts  # браузерный/серверный клиенты (db.schema='avocado_kiss'), тип DbClient
+  consent.ts            # cookie-согласие в localStorage (`avk_cookie_consent`) + subscribeConsent:
+                        #   гейт любой необязательной аналитики (§2.4)
   relations.ts          # ОБЩИЙ резолвер блоков рекомендаций (resolveRelated) для поста,
                         #   рецепта и товара: пины → скоринг → детерминированный фолбэк (§13).
                         #   НЕ server-only: тянется из blog.ts/shop.ts, а те живут и в браузере
@@ -125,6 +129,23 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
   `fetchRecipeSlugs` (анон видит только опубликованные — RLS `is_published`);
   категории и товары — публичные целиком. `robots.ts` — allow all + ссылка на
   sitemap.
+- ⚠️ **`revalidate` в `layout.tsx` на `sitemap.ts` НЕ распространяется.**
+  Metadata-роут без собственного `export const revalidate = 60` собирается один
+  раз на билде (в таблице `next build` — `○ /sitemap.xml` без колонки Revalidate),
+  и новый рецепт/пост/товар из админки не попадал бы в sitemap до редеплоя. Так
+  было до 2026-10-14; теперь константа стоит в `app/sitemap.ts`. Проверка:
+  `npx next build` → у `/sitemap.xml` должно быть `1m`.
+- **Canonical** есть у всех страниц, включая статические (`/about`, `/contact`,
+  `/privacy`, `/terms`, `/shop`, `/blog` — добавлено 2026-10-14): относительный
+  `alternates: { canonical: "/путь" }` в `generateMetadata`, резолвится через
+  `metadataBase`. Новая страница без canonical — дефект.
+- **`<title>` должен быть уникальным по сайту.** Рецепты и посты живут в разных
+  таблицах и могут получить одинаковый `title`; тогда задавай одной из сущностей
+  отдельный `seo_title` (так сделано для поста `20-pies-our-readers-cant-stop-making`
+  и одноимённого рецепта, 2026-10-14).
+- **Search Console:** раздел Sitemaps заполняется только вручную поданными файлами —
+  строка `Sitemap:` в robots.txt его не заполняет. Подать `sitemap.xml` нужно в
+  property, покрывающей `https://www.…` (apex редиректит на www).
 - ⚠️ **Правило: любой новый или изменённый публичный роут обновляет
   `app/sitemap.ts` в том же изменении** (и `generateStaticParams` страницы, если
   роут динамический). Sitemap строится из БД-загрузчиков (`lib/content.ts`,
@@ -242,6 +263,24 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
 ⚠️ Скелетоны обязаны повторять раскладку реального блока. Расходится вёрстка
 секции — правь и её скелетон в том же изменении, иначе при подстановке контента
 страница дёрнется.
+
+### 2.4. Аналитика (GA4) и согласие на cookies
+
+- **GA4**: Measurement ID `G-RT7QVR7EJ4` (`GA_MEASUREMENT_ID` в `lib/site.ts`,
+  переопределяется `NEXT_PUBLIC_GA_MEASUREMENT_ID`; пустая строка отключает).
+  Компонент `GoogleAnalytics` стоит в `app/layout.tsx` рядом с `CookieConsent`.
+- **Гейт согласия — жёсткое правило**: gtag не грузится до «Accept» и вообще не
+  грузится при «Decline»/без выбора (ни одного запроса к Google). Выбор лежит в
+  localStorage (`avk_cookie_consent`), `subscribeConsent()` сообщает подписчикам о
+  смене в этой и других вкладках — GA включается сразу, без перезагрузки. В `dev`
+  не грузится. Любой другой необязательный скрипт подключать только через тот же гейт.
+- Нажатие «Decline» после «Accept» уже загруженный скрипт не выгружает — действует
+  со следующего визита. UI для смены выбора (ссылка «Cookie settings») пока нет.
+- Privacy Policy (`app/privacy/page.tsx`) описывает GA4 и согласие — менять текст и
+  `updated` при любом изменении набора трекеров. Тело страницы из БД (`pages.body`)
+  перекрывает этот JSX; на 2026-10-14 `body` у `privacy`/`terms` пуст.
+- Тесты: `components/GoogleAnalytics.test.tsx`, `lib/consent.test.ts`. В тестах
+  импорты `@/…` внутри `*.test.*` не резолвятся — только относительные.
 
 ## 3. Курирование главной — модель `home_slots`
 
