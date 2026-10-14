@@ -93,7 +93,10 @@ supabase/migrations/  # единственное место изменения �
   `NEXT_PUBLIC_GA_MEASUREMENT_ID`). Компонент `GoogleAnalytics` в `app/layout.tsx`
   грузит gtag **только после «Accept»** в `CookieConsent` (`useSyncExternalStore` +
   `subscribeConsent`), в dev не грузится; при «Decline» к Google не уходит ничего.
-  Privacy Policy описывает GA4. Решение «GA только через гейт» — общее правило
+  Privacy Policy описывает GA4. ⚠️ На cozycorner `pages.body` у `privacy`/`terms`
+  **заполнен** и перекрывает JSX `app/privacy/page.tsx` — текст политики реально
+  правится в БД (так обновлено 2026-10-14), JSX остаётся лишь фолбэком; меняя
+  набор трекеров, правь оба. Решение «GA только через гейт» — общее правило
   платформы, см. [overview.md](overview.md). Тесты — `components/GoogleAnalytics.test.tsx`.
 - **sitemap.xml**: `export const revalidate = 60` в самом `app/sitemap.ts`
   (на metadata-роуты `revalidate` из layout не распространяется). **Search Console:**
