@@ -1,6 +1,6 @@
 # Overlay scrollbar — общий модуль
 
-> Last updated: 2026-08-26 | Канонический источник кода — эта папка
+> Last updated: 2026-10-15 | Канонический источник кода — эта папка
 
 Единая оверлейная полоса прокрутки для всех проектов воркспейса. Нативный скролл
 остаётся нативным (колесо, клавиатура, тач, скролл-якоря), нативная **полоса**
@@ -25,7 +25,7 @@ npm-пакета нет. Поэтому файлы **копируются** в �
 
 ```bash
 SRC=platform-docs/methodology/overlay-scrollbar
-for P in avocado.kiss/components cozycorner/components web.admin/src/components; do
+for P in avocado.kiss/components cozycorner/components urban.gardener/components web.admin/src/components; do
   cp "$SRC"/overlay-scrollbar.{ts,css} "$SRC"/OverlayScrollbar.tsx "$SRC"/overlay-scrollbar.test.ts "$P/overlay-scrollbar/"
 done
 ```
@@ -33,7 +33,7 @@ done
 Проверка расхождений (должен быть один хеш на файл):
 
 ```bash
-md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner}/components,web.admin/src/components}/overlay-scrollbar/overlay-scrollbar.ts | sort -u
+md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner,urban.gardener}/components,web.admin/src/components}/overlay-scrollbar/overlay-scrollbar.ts | sort -u
 ```
 
 ## Где подключено
@@ -42,6 +42,7 @@ md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner}/components,web.admin
 |---|---|---|
 | `avocado.kiss` | `app/layout.tsx` | `SearchBox` (мобильный оверлей), `MobileMenu` |
 | `cozycorner` | `app/layout.tsx` | `SearchBox` (мобильный оверлей) |
+| `urban.gardener` | `app/layout.tsx` (последний элемент `<body>`) | пока нет: в шапке нет собственных скролл-контейнеров (мобильное меню и панель поиска — без `overflow`); появятся — подключать хуком |
 | `web.admin` | `src/main.tsx` | `dialog.tsx` (`DialogBody`), `dropdown-menu.tsx`, `command.tsx`, `table.tsx` (ось X) |
 
 ## Токены
@@ -61,6 +62,7 @@ md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner}/components,web.admin
 |---|---|---|---|
 | `cozycorner` | 12px | `rgba(22,24,29,.25)` / `.45` (значения прежнего прототипа) | 200 |
 | `avocado.kiss` | 10px | `rgba(11,28,44,.22)` / `.40` (от `--foreground`, под тёплый фон) | 200 |
+| `urban.gardener` | 10px | `rgba(35,41,31,.22)` / `.40` (от `--ink`, под тёплый `--paper`) | 200 (шапка — 100, SkipLink — 10000) |
 | `web.admin` | 10px | `var(--border)` / `var(--muted-foreground)` | 40 |
 
 В `web.admin` токены объявлены **и в `:root`, и в `.dark`**: `var()`
@@ -70,6 +72,14 @@ md5 -q {platform-docs/methodology,{avocado.kiss,cozycorner}/components,web.admin
 `--osb-z` подбирается под слои проекта: полоса должна быть выше липкой шапки, но
 ниже полноэкранных оверлеев и модалок — иначе при открытом диалоге она ляжет
 поверх затемнения.
+
+## Новый проект — обязательный шаг
+
+Любой новый сайт воркспейса подключает модуль **сразу при создании** (чек-лист «Добавление нового проекта» в корневом `AGENTS.md`), иначе между страницами
+со скроллом и без него контент «прыгает» на ширину классической полосы (Windows, Linux, macOS с мышью). Так случилось с `urban.gardener`: Фаза 1 создала
+каркас без скроллбара, сдвиг заметили на странице статей (длинная) рядом со страницей-заглушкой (короткая); исправлено 2026-10-15 (см. e2e
+`urban.gardener/e2e/shell.spec.ts` → «overlay scrollbar»). Шаги: скопировать 4 файла (команда выше), задать токены `--osb-*` в `:root`, скрыть нативную
+полосу (блок ниже), смонтировать `<OverlayScrollbar />` последним элементом `<body>`.
 
 ## Скрытие нативной полосы
 

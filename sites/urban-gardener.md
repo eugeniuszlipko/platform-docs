@@ -69,6 +69,11 @@
 | D22 | Сайт читает данные только через `lib/articles.ts`; ошибка Supabase → throw (ISR сохраняет прошлую страницу), статья без автора и «все блоки невалидны» — тоже ошибка, а не пустая страница; неизвестные/пустые блоки пропускаются с `console.warn` |
 | D23 | `NEXT_PUBLIC_SITE_URL` обязателен в production-сборке (canonical, OG, share-ссылки); на preview — `VERCEL_URL`, локально — localhost. Env Supabase (`NEXT_PUBLIC_SUPABASE_URL/ANON_KEY`) заведены в Vercel (production, preview) |
 | D24 | Фильтр уровня — клиентский (`?level=` через `useSearchParams` под `<Suspense>` + `history.replaceState`), страницы статические; canonical без query; сброс фильтра при смене темы — `key` на сетке |
+| D25 | Общий оверлейный скроллбар воркспейса ([../methodology/overlay-scrollbar/README.md](../methodology/overlay-scrollbar/README.md)): нативная полоса скрыта, своя рисуется поверх контента — контент не сдвигается между страницами со скроллом и без. Подключён 2026-10-15 (в Фазе 1 был пропущен) |
+| D26 | Каталог (Фаза 3, решение 2026-10-15): **бейджи** (M2M, публичные пилюли-фильтр) + **категории** (одна на товар, страницы `/shop/<slug>`); правило D18 соблюдено |
+| D27 | Характеристики растения — поля товара (`light`/`water`/`size` текст, `pet_safety` — 3 значения); фильтр «Pet-friendly» вычисляется из `pet_safety`, отдельной сущности «Растение» пока нет (§4 п.2 остаётся отложенным) |
+| D28 | Цены — текстовая подпись «from €34» + «prices change, check the retailer» + disclosure на странице товара; партнёрские ссылки `rel="sponsored noopener noreferrer"`, только https; противоречие About («No affiliate-driven recommendations») снимается в Фазе 5 — блокирует запуск |
+| D29 | «Related items» — автоподбор (тот же бейдж/категория → свежие), ручные пины позже. План — [urban-gardener/plans/2026-10-15-phase-3-shop.md](urban-gardener/plans/2026-10-15-phase-3-shop.md) |
 | D20 | Начальный контент — 10 статей референса (featured + 9 карточек; полный текст есть только у featured). План — [urban-gardener/plans/2026-10-15-phase-2-articles.md](urban-gardener/plans/2026-10-15-phase-2-articles.md) |
 
 ## 3. Инвентарь страниц (объём, не спека)
