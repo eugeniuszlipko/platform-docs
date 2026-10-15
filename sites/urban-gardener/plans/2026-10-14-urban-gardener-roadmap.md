@@ -29,7 +29,7 @@
 | Фаза | Что | Админка | Статус |
 |---|---|---|---|
 | 0 | Фундамент: репо, Vercel, скаффолд, реестр, тесты | — | [x] принято 2026-10-15 |
-| 1 | Дизайн-система и каркас (шапка, футер, токены, reveal) | — | [ ] |
+| 1 | Дизайн-система и каркас (шапка, футер, токены, reveal) | — | [x] принято 2026-10-15 |
 | 2 | Срез **Articles**: листинг, статья, авторы, темы | Articles, Authors, Topics | [ ] |
 | 3 | Срез **Shop**: каталог, товар, категории, бейджи | Products, Categories | [ ] |
 | 4 | **Home** (сборка из статей и товаров) | Pages → Homepage | [ ] |
@@ -81,7 +81,7 @@ Media (бакет `urban-gardener-photos`, менеджер фото) подкл
 
 **Статус 2026-10-15:** 0.1–0.7 выполнены (build/lint/test/e2e зелёные локально). 0.8 выполнен. **Фаза 0 принята владельцем 2026-10-15.**
 
-**Следующий шаг — Фаза 1** (дизайн-система и каркас). Перед кодом: написать детальный план `2026-..-phase-1-design-system.md` в этой папке, сверить брейкпоинты/токены с референсом `mockups/Urban Gardener.html` (строки 8–311 — CSS, 316–352 — шапка, 829–854 — футер). Контекст, чтобы начать с чистого листа: этот файл + `../../urban-gardener.md` + `urban.gardener/AGENTS.md`.
+**Следующий шаг — Фаза 2** (срез Articles): перед кодом подтвердить таксономию статей (Topic + Level), решить маршруты фильтра и написать план `2026-..-phase-2-articles.md` в этой папке.
 
 **Ручная проверка:** временный URL открывается и показывает заглушку; `npm run dev`,
 `npm run build`, `npm run lint`, `npm test` зелёные; пуш в `main` вызывает деплой.
@@ -92,12 +92,14 @@ Media (бакет `urban-gardener-photos`, менеджер фото) подкл
 
 **Цель:** общая оболочка сайта, визуально совпадающая с референсом.
 
-- [ ] 1.1 `globals.css`: токены, сброс, зерно-оверлей, `overflow-x: clip`, SF-стек
-- [ ] 1.2 Header: бренд-лого (SVG-лист), pill-навигация (Home/Articles/Shop/About), соцсети, кнопка Search, мобильное меню (≤860)
-- [ ] 1.3 Footer: 4 колонки, нижняя строка, юр-ссылки
-- [ ] 1.4 Примитивы: Pill/Tag, Button (primary/ghost/find), SectionHead, Card-оболочки, Breadcrumb, `Reveal` (IntersectionObserver, reduced-motion), `Skeleton`
-- [ ] 1.5 Страница-стенд `/design` (не `/_design` — `_` = private folder в Next, не маршрутизируется; не в sitemap, noindex, закрыть в Фазе 9) со всеми примитивами — для сверки с референсом
-- [ ] 1.6 Компонентные тесты примитивов
+- [x] 1.1 `globals.css`: токены, сброс, зерно-оверлей, `overflow-x: clip`, SF-стек
+- [x] 1.2 Header: бренд-лого (SVG-лист), pill-навигация (Home/Articles/Shop/About), соцсети, кнопка Search (оболочка), мобильное меню (≤860), skip-link
+- [x] 1.3 Footer: 4 колонки, нижняя строка, юр-ссылки
+- [x] 1.4 Примитивы: Pill/Tag/Eyebrow, ButtonLink (primary/ghost/find), SectionHead, Breadcrumb, Callout, TipBlock, PageHead, `Reveal` (IntersectionObserver, reduced-motion), `Skeleton`, fade при смене страницы (`app/template.tsx`). Карточки статей/товаров — в срезах Фаз 2–3
+- [x] 1.5 Страница-стенд `/design` (не `/_design` — `_` = private folder в Next, не маршрутизируется; не в sitemap, noindex). **Фаза 9: удалить или закрыть `/design`**
+- [x] 1.6 Тесты: компонентные (Vitest) + `e2e/shell.spec.ts`; страницы Coming soon на `/articles /shop /about /contact /privacy /terms` (временные — заменят Фазы 2–6)
+
+> Статус: **принято владельцем 2026-10-15.** Детали и отчёт — план фазы `2026-10-15-phase-1-design-system.md`.
 
 **Ручная проверка:** стенд рядом с референсом на ширинах 1440 / 900 / 390: шрифт,
 цвета, отступы, hover, мобильное меню, поведение sticky-шапки при скролле.
@@ -180,6 +182,7 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ## Фаза 9 — Запуск
 
+- [ ] 9.0 Удалить/закрыть стенд `/design` (временный, публичный noindex)
 - [ ] 9.1 Домен (когда определён): Vercel Domains, `NEXT_PUBLIC_SITE_URL`, `frontendUrl` в `sites.ts`, Turnstile-хостнеймы, e-mail контактов
 - [ ] 9.2 Финальные тексты (Privacy/Terms, About, контакты, соцссылки вместо `instagram.com` и т.п.)
 - [ ] 9.3 Сквозной чек-лист: build/lint/test/e2e, Lighthouse, a11y-проход, 404, мобильные

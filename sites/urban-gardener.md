@@ -1,8 +1,8 @@
 # Urban Gardener — архитектура и решения сайта
 
 > Last updated: 2026-10-14 | Source: референс `urban.gardener/Urban Gardener.html`
-> (статичный HTML-прототип) + решения владельца от 2026-10-14. Статус: **Фаза 0
-> принята (2026-10-15), заглушка задеплоена; дальше Фаза 1.** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
+> (статичный HTML-прототип) + решения владельца от 2026-10-14. Статус: **Фазы 0 и 1
+> приняты (2026-10-15); дальше Фаза 2 (Articles).** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
 
 Журнал об уходе за комнатными растениями (английский UI) + курируемый каталог
 растений и товаров с внешними ссылками (Amazon), без корзины и оплаты. Часть
@@ -101,7 +101,8 @@
 
 Перенос 1:1 в `app/globals.css`; никаких захардкоженных цветов — только токены.
 
-- **Цвета:** `--paper #f4efe4`, `--paper-2 #ece3d2`, `--ink #23291f`, `--ink-soft #5a614f`, `--moss #2f4a2c`, `--leaf #4d7c3f`, `--clay #bd5b32`, `--clay-soft #d98b5f`, `--line #ddd3bd`, `--cream #fbf8f0`. Градиенты листа hero: `#3f7d33→#9fd567`, `#26391f→#4c8636`.
+- **Цвета:** `--paper #f4efe4`, `--paper-2 #ece3d2`, `--cream #fbf8f0`, `--ink #23291f`, `--ink-soft #5a614f`, `--ink-body #2c3327` (тело статьи), `--moss #2f4a2c`, `--leaf #4d7c3f`, `--clay #bd5b32`, `--clay-soft #d98b5f`, `--clay-strong #a84e28` (фон primary-кнопки, AA), `--clay-text #9c4423` (мелкий clay-текст, AA), `--line #ddd3bd`, `--tip-text #d9e2cf` (текст на moss), `--header-bg rgba(244,239,228,.82)`. Градиенты листа hero: `--leaf-front-from/to #3f7d33→#9fd567`, `--leaf-back-from/to #26391f→#4c8636`. Hex — только в `:root` (`app/globals.css`); стенд `/design` и тест `app/design/palette.test.ts` следят, чтобы подписи не разъехались.
+- **Производные токены (Фаза 1):** радиусы `--radius-sm 10 / -md 12 / -card 16 / -lg 22 / -pill 40`; тени `--shadow-card`, `--shadow-nav`, `--shadow-menu`, `--shadow-panel` (лёгкая, панель поиска), `--shadow-step`/`-step-hover` («ступенька» primary-кнопки); каркас `--wrap 1240`, `--narrow 760`, `--gutter 32→20 (≤640)`, `--header-h 81px`; `--ease`, `--focus-ring`.
 - **Шрифт:** системный SF-стек (без веб-шрифтов и без self-hosted woff2): `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif`. Заголовки 600, letter-spacing −.03…−.045em; body 400, lh 1.6, ls −.011em.
 - **Каркас:** контейнер `.wrap` 1240 / `.narrow` 760, паддинг 32 (20 на мобильном); sticky-шапка с blur; pill-навигация; зерно-оверлей `body::before` (SVG feTurbulence, opacity .035, multiply).
 - **Компоненты:** карточка статьи (16px, hover −6px), карточка товара, pill/фильтр, tag, callout, figure, tip-блок (moss, newsletter), кнопки `btn-primary` (clay + «ступенька» moss), `find-btn`, newsletter-модалка, search-панель.
