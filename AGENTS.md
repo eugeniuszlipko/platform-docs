@@ -4,6 +4,7 @@
 - `platform-docs/` — shared documentation (this project)
 - `cozycorner/` — public catalog site for cozy home goods (Next.js 16 App Router + Supabase); live: https://www.cozycorner.me
 - `avocado.kiss/` — culinary recipe magazine (Next.js 16 App Router + Supabase)
+- `urban.gardener/` — houseplant-care journal + curated plant/product catalog (Next.js 16 App Router + Supabase); in kickoff, no production URL yet
 - `web.admin/` — multi-site admin panel for managing site content (Vite + React SPA + Supabase)
 
 ## Documentation index
@@ -25,11 +26,14 @@ Read these files only when the task requires it:
 | Sites overview | platform-docs/sites/overview.md | Starting work on any public-facing site |
 | CozyCorner architecture | platform-docs/sites/cozycorner.md | Any work in the cozycorner repo |
 | Avocado Kiss architecture | platform-docs/sites/avocado-kiss.md | Any work in the avocado.kiss repo |
+| Urban Gardener (decisions, pages, design tokens) | platform-docs/sites/urban-gardener.md | Any work in the urban.gardener repo |
+| Urban Gardener roadmap (phases + checklists) | platform-docs/sites/urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md | Planning or starting a phase of urban.gardener |
 | Coding standards | platform-docs/methodology/coding-standards.md | New files, refactoring, code review |
 | Overlay scrollbar module | platform-docs/methodology/overlay-scrollbar/README.md | Touching scrollbars anywhere; vendoring the shared module into a repo |
 | Testing strategy | platform-docs/methodology/testing.md | Writing/running tests; choosing a test tool; CI |
 | External image re-hosting (concept, not implemented) | platform-docs/methodology/external-image-rehosting.md | Considering fixing unoptimized Amazon/Unsplash image weight on a site |
 | Per-repo GitHub account (SSH setup) | platform-docs/methodology/github-account-per-repo.md | Moving a repo to a different GitHub account (Vercel Hobby plan limits), setting up push access locally |
+| ECC subset (external skills + reviewers) | platform-docs/skills/ecc/README.md | Choosing which skill/reviewer agent to use for React, a11y, DB migrations, SEO; adding or updating vendored skills |
 | Connector content-ops skills | platform-docs/skills/README.md | Loading/editing the claude.ai content-ops skills (per-site content editing) |
 
 ## Workflow rules

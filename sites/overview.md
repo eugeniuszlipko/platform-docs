@@ -20,6 +20,7 @@
 |---|---|---|---|---|
 | CozyCorner | `cozycorner/` | `cozycorner` / `cozycorner-photos` | https://cozycorner-omega.vercel.app | [cozycorner.md](cozycorner.md) |
 | Avocado Kiss | `avocado.kiss/` | `avocado_kiss` / `avocado-kiss-photos` | https://www.avocadokiss.com | [avocado-kiss.md](avocado-kiss.md) |
+| Urban Gardener *(в старте, кода нет)* | `urban.gardener/` | `urban_gardener` / `urban-gardener-photos` (планируется) | временный `*.vercel.app` (после Фазы 0) | [urban-gardener.md](urban-gardener.md) |
 
 ## Общие свойства сайтов
 

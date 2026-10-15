@@ -1,5 +1,7 @@
 # Skills store (Supabase-connector content operations)
 
+> Внешние скиллы и ревьюеры-агенты (подмножество ECC для нашего стека) — отдельно: [ecc/README.md](ecc/README.md).
+
 Canonical, version-controlled home for the **content-ops skills** — operating
 manuals for the claude.ai agent that edits each site's content through the
 **Supabase connector**. They live here (visible, in git) instead of only in the

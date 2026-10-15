@@ -1,0 +1,73 @@
+# ECC subset — внешние скиллы и агенты под наш стек
+
+> Last updated: 2026-10-15 | Решение владельца: брать **только релевантное** из плагина
+> [affaan-m/ECC](https://github.com/affaan-m/ECC) (v2.2.3, commit `b92f181`, MIT). Плагин целиком **не ставим**.
+
+## Что и почему не ставим целиком
+
+ECC — это 71 агент, 311 скиллов, 97 команд и ~25 хуков на каждый вызов инструмента. Для нашего стека
+(Next.js 16, React 19, Vite, Supabase, Vitest/Playwright) релевантно ≈10%. Плагин-режим добавил бы хуки
+(блокировка `npm run dev` вне tmux, блок коммитов, GateGuard, запись наблюдений о каждом вызове в
+`~/.local/share/ecc-homunculus/`), которые конфликтуют с нашим процессом, и сотни нерелевантных описаний в контекст.
+**Хуки, continuous-learning, команды и правила ECC не используются.**
+
+Что взято — обычные markdown-файлы (текст, не исполняется), прочитаны целиком и просканированы на команды и инъекции 2026-10-15.
+Источник правды — эти копии; обновление апстрима — только осознанным ре-вендорингом (см. ниже).
+
+## Что взято
+
+Файлы лежат здесь, в `platform-docs/skills/ecc/` (в git), а Claude Code находит их через симлинки
+`.claude/skills/<name>` и `.claude/agents/<name>.md` (как у content-ops скиллов, см. [../README.md](../README.md)).
+В начале каждого файла — блок **Workspace notes** (источник, приоритеты, что неприменимо к нам).
+
+### Скиллы (`skills/<name>/SKILL.md`)
+
+| Скилл | Для чего у нас | Когда подключать |
+|---|---|---|
+| `frontend-a11y` | Формы, ARIA, клавиатура, фокус, reduced-motion для React/Next | Любой интерактивный компонент: шапка/меню/поиск (Ф1), формы Contact и Newsletter (Ф6), модалки |
+| `react-patterns` | Границы server/client, Suspense + error boundary, формы React 19, дерево выбора state | Любая работа с React-компонентами и RSC |
+| `react-performance` | Правила Vercel Engineering: waterfalls, bundle, RSC, ререндеры | Страницы с данными (Ф2–4), поиск (Ф7), перед запуском (Ф9) |
+| `react-testing` | RTL, `userEvent`, запросы по ролям, hooks, async-паттерны | Написание компонентных тестов (в паре с `testing`) |
+| `e2e-testing` | Playwright: flaky-паттерны, артефакты, структура | Новые e2e и разбор нестабильных (в паре с `testing`) |
+| `seo` | Технический SEO, мета, JSON-LD, sitemap/robots, Core Web Vitals | Метаданные страниц, Фаза 8, SEO-аудиты |
+| `postgres-patterns` | Индексы, RLS-паттерны, типы, пагинация, поиск (GIN/FTS) | Проектирование таблиц (Ф2–3), поиск по БД (Ф7) |
+| `database-migrations` | Безопасные миграции: forward-only, expand-contract, бэкфилл отдельно | Любая миграция `supabase/migrations/` |
+
+### Агенты (`agents/<name>.md`) — ревью только читает, код не правит
+
+| Агент | Роль | Когда запускать |
+|---|---|---|
+| `react-reviewer` | Хуки, RSC-границы, a11y, производительность, безопасность React | После каждого заметного изменения `.tsx` |
+| `typescript-reviewer` | Типы, async, безопасность, идиомы TS | Вместе с `react-reviewer`; отдельно — для `lib/`, `app/api/` |
+| `a11y-architect` | WCAG 2.2 AA: дизайн компонентов, дерево доступности | Шапка/меню/формы/поиск; финальный a11y-проход (Ф9) |
+| `database-reviewer` | Схема, индексы, RLS, производительность | Каждая миграция и новая таблица; перед применением на проде |
+| `seo-specialist` | Аудит мета, canonical, JSON-LD, sitemap, CWV | Фаза 8, Фаза 9, после смены домена |
+| `silent-failure-hunter` | Проглоченные ошибки, опасные fallback'ы | API-роуты (newsletter, поиск), `lib/content.ts`, загрузчики данных |
+
+## Что осталось за бортом (и почему)
+
+`frontend-patterns` (дублирует `react-patterns`), `nextjs-turbopack`/`vite-patterns` (есть Context7 и docs в `node_modules`),
+`accessibility` (iOS/Android), `security-review`/`code-review`/`simplify` (есть встроенные в Claude Code), `gateguard`/`safety-guard`/
+`hookify` (хуки), `continuous-learning-v2` (лог всех вызовов), `tdd-workflow` (у нас свой протокол — [../../methodology/testing.md](../../methodology/testing.md)),
+остальные ~290 скиллов и агенты других стеков. Пересмотр — по запросу владельца.
+
+## Правила использования (для любого агента и любого чата)
+
+1. **Приоритет:** корневой `AGENTS.md` → спеки и схема в `platform-docs/` → скилл `testing` и `methodology/testing.md` → скиллы ECC.
+   Если совет ECC расходится с нашей конвенцией — действует наша; в отчёте это отмечается.
+2. **Читай до работы, а не «по памяти»:** перед задачей из колонки «Когда подключать» загрузи нужный скилл
+   (Claude Code: `Skill`; другие агенты: прочитай `platform-docs/skills/ecc/skills/<name>/SKILL.md`).
+3. **Ревью-гейт перед «готово»:** после реализации фазы/среза и **до** просьбы владельцу о приёмке запусти подходящих ревьюеров
+   (Claude Code: субагент по имени; другие агенты: прочитай `agents/<name>.md` и выполни как чек-лист):
+   `react-reviewer` + `typescript-reviewer` для `.tsx`/`.ts`, `database-reviewer` для миграций, `silent-failure-hunter` для API/загрузчиков,
+   `a11y-architect` для интерактивных компонентов. Находки CRITICAL/HIGH — исправить или вынести владельцу; MEDIUM — перечислить в отчёте.
+4. **Ревьюеры не заменяют** `npm run build` + `npm run lint` + `npm test` (и не отменяют правило «не коммитить без разрешения»).
+5. **Не добавляй зависимости** из примеров скиллов (MSW, jest-axe, focus-trap-react, React Query и т.п.) без согласования с владельцем.
+6. **Новый чат:** субагенты ECC подхватываются после перезапуска сессии Claude Code. Если агента нет в списке — выполни его файл как чек-лист инлайн.
+7. Соответствие «фаза → что подключать» — в roadmap Urban Gardener ([../../sites/urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](../../sites/urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md), «Скиллы и агенты по фазам»).
+
+## Как обновлять / добавлять
+
+- Ре-вендоринг: клонировать апстрим во временную папку, **прочитать diff целиком**, обновить файлы, сохранить блок Workspace notes, поднять commit в README и в нотах.
+- Новый скилл/агент: тот же путь — прочитать полностью, добавить блок Workspace notes (приоритеты + неприменимое), положить в `skills/` или `agents/`, сделать симлинк в `.claude/`, добавить строку в таблицу выше и в корневой `AGENTS.md`.
+- Лицензия апстрима (MIT) — [LICENSE](LICENSE); у `react-performance` внутри есть атрибуция Vercel Labs (MIT).

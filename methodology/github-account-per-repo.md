@@ -33,12 +33,16 @@
 | `avocado.kiss` | `eugeniuszlipko` | avocado-kiss | ✅ сделан, деплой подтверждён |
 | `cozycorner` | `eugeniuszlipko` | cozycorner | ✅ сделан, деплой подтверждён |
 | `web.admin` | `eugeniuszlipko` | web-admin | ✅ сделан, деплой подтверждён |
+| `urban.gardener` | `eugeniuszlipko` | urban-gardener (team `cozy-corner`) | ✅ сделан 2026-10-15 через `vercel git connect` (см. ⚠️ ниже) |
 | `platform-docs` | `eugeniuszlipko` | — (не деплоится) | не требуется |
 
 Старый аккаунт `nowmdr` (глобальный git identity `Jauhien` /
 `nowmdr@protonmail.com`) с этого момента этими репозиториями не
 используется — он остаётся глобальным дефолтом только на случай появления
 новых, ещё не перенесённых репозиториев за пределами workspace-one.
+
+> ⚠️ `vercel git connect` не парсит SSH-алиас remote (`git@github-avocado:…`) —
+> на время вызова поставить `https://github.com/<acc>/<repo>.git`, затем вернуть алиас.
 
 ## §1. SSH-ключ под новый аккаунт (один раз на аккаунт)
 
