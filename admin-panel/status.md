@@ -406,6 +406,14 @@ Save с жёсткой валидацией. Правила — [home-avocado-ki
 - Отложено: превью главной, замена элемента на месте, атомарный Save (RPC),
   ручная e2e-приёмка.
 
+## Urban Gardener: Articles, Topics, Levels, Authors (2026-10-15)
+
+Фаза 2D сайта urban.gardener. Сайт добавлен в `sites.ts` (`sections: media, articles, topics, levels, authors`). Раздел **Articles** — отдельная
+feature-папка `features/ug-articles` (модель Topic+Level, 5 типов блоков text/heading/callout/image/list; редактор тем с порядком, первая = основная; правила
+публикации; сохранение — одной транзакцией в БД, RPC `save_article`). **Topics/Levels** — тот же `TaxonomyManager`, расширенный `config.usage` (счётчик по id, свои
+кэши); Topics с модалкой (intro + SEO) и защитой удаления. **Authors** — новый CRUD (у Avocado автор только select). Контракт —
+[articles-urban-gardener.md](articles-urban-gardener.md). Код Avocado Blog не менялся.
+
 ## На потом (не забыть)
 
 - **Cloudflare Turnstile**. Ключи у пользователя уже есть: Secret Key → Supabase

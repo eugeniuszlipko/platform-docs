@@ -1,8 +1,8 @@
 # Urban Gardener — архитектура и решения сайта
 
-> Last updated: 2026-10-14 | Source: референс `urban.gardener/Urban Gardener.html`
+> Last updated: 2026-10-15 | Source: референс `urban.gardener/Urban Gardener.html`
 > (статичный HTML-прототип) + решения владельца от 2026-10-14. Статус: **Фазы 0 и 1
-> приняты (2026-10-15); дальше Фаза 2 (Articles).** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
+> приняты (2026-10-15); Фаза 2 (Articles) в работе: 2A–2C и тесты готовы, 2D (админка) ждёт утверждения спеки.** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
 
 Журнал об уходе за комнатными растениями (английский UI) + курируемый каталог
 растений и товаров с внешними ссылками (Amazon), без корзины и оплаты. Часть
@@ -36,9 +36,9 @@
 | GitHub | `eugeniuszlipko/urban-gardener`, remote `git@github-avocado:eugeniuszlipko/urban-gardener.git`, ветка `main` |
 | Vercel | team `cozy-corner` (Hobby), проект `urban-gardener`, Git привязан, пуш в `main` → автодеплой (~30 с) |
 | Временный URL | https://urban-gardener.vercel.app (публичный алиас; ссылки вида `…-<hash>-cozy-corner.vercel.app` закрыты Vercel-защитой деплоев) |
-| Env (production) | `NEXT_PUBLIC_SITE_URL` = временный URL (код пока не читает) |
+| Env (production) | `NEXT_PUBLIC_SITE_URL` = временный URL (читает `lib/site-url.ts`); `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (production + preview) |
 | Индексация | `robots: noindex` в `app/layout.tsx` — **снять в Фазе 9** |
-| Supabase | проект base-one; схема/бакет ещё не созданы (Фаза 2) |
+| Supabase | проект base-one; схема `urban_gardener` и бакет `urban-gardener-photos` созданы (Фаза 2B). ⚠️ Схему нужно добавить в **Exposed schemas** (Data API) — ручной шаг |
 | CLI | Vercel CLI залогинен у агента (`vercel whoami`); всегда передавать `--scope cozy-corner`. `vercel git connect` не понимает SSH-алиас — на время вызова ставить https-remote |
 | `npm install` с нуля | падает (`edgesOut`); lock-файл взят у `avocado.kiss` — не удалять `package-lock.json` |
 
@@ -65,6 +65,10 @@
 | D17 | Таксономии статей (решение 2026-10-15): **Topic** (M2M, первая по порядку = основная) + **Level** (одна на статью); поля референса `tag`/`cat` отдельными таксономиями не переносятся. Карточка: бейдж Level на фото, внизу «N min · основная тема» |
 | D18 | **Правило фильтров:** каждая таксономия, создаваемая в админке и приписываемая к контенту, имеет публичный фильтр (и, где нужно для SEO, свою страницу). Несостыковки референса в схему данных не копируем |
 | D19 | Маршруты статей: `/articles`, `/articles/[slug]`, отдельная индексируемая страница темы `/topics/[slug]` (для SEO); фильтр Level — клиентский, `?level=` не индексируется (canonical без query) |
+| D21 | Модель данных статей (миграции `urban.gardener/supabase/migrations/0001–0004`, схема — [../database/schema.md](../database/schema.md) §10): `authors`, `topics`, `levels`, `articles`, `article_topics` (M2M, `position` минимальная = основная тема), `article_blocks` (5 типов: text/heading/callout/image/list); `media`/`admin_folders` — только админ. RLS: anon видит только опубликованные статьи и их блоки/связи |
+| D22 | Сайт читает данные только через `lib/articles.ts`; ошибка Supabase → throw (ISR сохраняет прошлую страницу), статья без автора и «все блоки невалидны» — тоже ошибка, а не пустая страница; неизвестные/пустые блоки пропускаются с `console.warn` |
+| D23 | `NEXT_PUBLIC_SITE_URL` обязателен в production-сборке (canonical, OG, share-ссылки); на preview — `VERCEL_URL`, локально — localhost. Env Supabase (`NEXT_PUBLIC_SUPABASE_URL/ANON_KEY`) заведены в Vercel (production, preview) |
+| D24 | Фильтр уровня — клиентский (`?level=` через `useSearchParams` под `<Suspense>` + `history.replaceState`), страницы статические; canonical без query; сброс фильтра при смене темы — `key` на сетке |
 | D20 | Начальный контент — 10 статей референса (featured + 9 карточек; полный текст есть только у featured). План — [urban-gardener/plans/2026-10-15-phase-2-articles.md](urban-gardener/plans/2026-10-15-phase-2-articles.md) |
 
 ## 3. Инвентарь страниц (объём, не спека)
@@ -74,8 +78,8 @@
 | Страница | В референсе | Источник данных (предв.) |
 |---|---|---|
 | Home | hero + pills тем, «This week's read» (featured), «From the journal» (6 статей), «Plants & everything they need» (3 товара), newsletter-блок | статьи, товары, настройки главной |
-| Articles | листинг + фильтр-pills по темам, newsletter-блок | статьи |
-| Article | хлебные крошки, шапка (тег, заголовок, подзаголовок, автор), обложка, тело-блоки, теги, share-bar, «Keep reading» | статья, автор, блоки |
+| Articles | листинг + пилюли тем и уровней (фильтр уровня клиентский), счётчик; `/topics/[slug]` — страница темы. **Построено (Фаза 2).** Newsletter-блок — Фаза 6 | статьи, темы, уровни |
+| Article | хлебные крошки, шапка (тема · уровень, заголовок, подзаголовок, автор), обложка, тело-блоки, пилюли тем и уровня, share-bar, «Keep reading». **Построено (Фаза 2)** | статья, автор, блоки |
 | Shop | листинг + фильтры, newsletter-блок | товары, категории, бейджи |
 | Product | крошки, фото, бейдж, цена, описание, «Find on Amazon», «Related items» (в CSS есть spec-list: свет/вода/размер/pet — в референсе не выводится) | товар |
 | About | история, 3 ценности, newsletter-блок (в CSS есть «team», в разметке нет) | страница (`pages`), authors |
@@ -134,5 +138,5 @@ urban.gardener/
 
 ## 7. Разделы админки (предварительный объём)
 
-Media · Articles (+ Topics, Authors) · Products (+ Categories) · Pages (Home, About, Privacy, Terms, SEO) · Subscribers. (Messages — только если решим подключить Contact-форму, D9.) Каждый раздел строится в
+Media · Articles (+ Topics, Levels, Authors — **построены в Фазе 2D**, контракт: [../admin-panel/articles-urban-gardener.md](../admin-panel/articles-urban-gardener.md)) · Products (+ Categories) · Pages (Home, About, Privacy, Terms, SEO) · Subscribers. (Messages — только если решим подключить Contact-форму, D9.) Каждый раздел строится в
 своём срезе после фронта на тестовой структуре (D13); порядок — в roadmap.

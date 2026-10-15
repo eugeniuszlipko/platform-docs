@@ -111,11 +111,11 @@ Media (бакет `urban-gardener-photos`, менеджер фото) подкл
 **Детальный план:** [2026-10-15-phase-2-articles.md](2026-10-15-phase-2-articles.md) (**утверждён 2026-10-15**; старт 2A — по команде владельца).
 Решения владельца 2026-10-15: Topic (несколько на статью) + Level (одна); маршруты `/articles`, `/articles/[slug]`, `/topics/[slug]`; у каждой таксономии есть фильтр; `cat`/`tag` не отдельные таксономии; контент — из референса. Загрузчики — `lib/articles.ts` (вместо `lib/content.ts`).
 
-- [ ] 2A Фронт на тестовых данных: Articles (листинг + фильтр тем), Article (шапка, обложка, блоки text/callout/figure/list, теги, share, «Keep reading»), loading-скелетоны
-- [ ] 2B Миграции: схема `urban_gardener`, гранты по шаблону 0017 cozycorner, бакет `urban-gardener-photos` (шаблон 0018), RLS, сид из референса (9 статей); схему добавить в **Exposed schemas** (дашборд Supabase)
-- [ ] 2C Фронт на БД: `lib/content.ts`, ISR, `generateStaticParams`, 404
-- [ ] 2D Админка: запись в `sites.ts` (`sections`), Media, Authors, Topics, Articles (редактор блоков — по [blog-avocado-kiss.md](../../../admin-panel/blog-avocado-kiss.md)); док раздела в `admin-panel/`
-- [ ] 2E Тесты: unit (мапперы/резолвер картинок), компонентные, e2e «листинг → статья»
+- [x] 2A Фронт на тестовых данных: Articles (листинг + фильтр тем), Article (шапка, обложка, блоки text/callout/figure/list, теги, share, «Keep reading»), loading-скелетоны
+- [x] 2B Миграции (0001–0004 применены; ⚠️ Exposed schemas — ручной шаг владельца): схема `urban_gardener`, гранты по шаблону 0017 cozycorner, бакет `urban-gardener-photos` (шаблон 0018), RLS, сид из референса (9 статей); схему добавить в **Exposed schemas** (дашборд Supabase)
+- [~] 2C Фронт на БД (код и тесты готовы; сборку на живой БД проверить после Exposed schemas): `lib/content.ts`, ISR, `generateStaticParams`, 404
+- [x] 2D Админка (построена 2026-10-15, контракт — admin-panel/articles-urban-gardener.md): запись в `sites.ts` (`sections`), Media, Authors, Topics, Articles (редактор блоков — по [blog-avocado-kiss.md](../../../admin-panel/blog-avocado-kiss.md)); док раздела в `admin-panel/`
+- [~] 2E Тесты (unit/компонентные готовы; e2e написаны, прогон — после Exposed schemas): unit (мапперы/резолвер картинок), компонентные, e2e «листинг → статья»
 - [ ] 2F Ручная проверка
 
 **Ручная проверка:** создать/отредактировать статью в админке → через ≤1 мин видна

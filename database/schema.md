@@ -840,3 +840,51 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
 (не миграцией).
+
+---
+
+## 10. Таблицы схемы `urban_gardener`
+
+Сайт **Urban Gardener** ([../sites/urban-gardener.md](../sites/urban-gardener.md)), бакет `urban-gardener-photos`, проект base-one.
+Миграции живут в репо `urban.gardener/supabase/migrations/` (0001–0006; применены 2026-10-15). Общие функции —
+`public.slugify` / `public.set_updated_at` / `public.is_admin` (как у cozycorner/avocado_kiss). Контракт картинок — §4
+(плоский ключ бакета или внешний URL). Slug везде генерирует БД-триггер (`<table>_set_slug`, при create из админки не отправлять).
+Права — шаблон cozycorner 0017: `anon` читает под RLS, запись — только `public.is_admin()` (политика «Admin all …»).
+
+⚠️ **Ручной шаг:** схему `urban_gardener` нужно добавить в **Exposed schemas** (Supabase → Project Settings → Data API),
+иначе PostgREST отвечает `406 PGRST106 Invalid schema`.
+
+| Таблица | Поля (кроме `id`, `created_at`, `updated_at`) | Чтение anon |
+|---|---|---|
+| `authors` | `name`, `slug` (unique), `role`, `avatar_path`, `bio` | все |
+| `topics` | `name` (unique), `slug` (unique), `description` (вводный абзац `/topics/[slug]`), `seo_title`, `seo_description`, `position` | все |
+| `levels` | `name` (unique), `slug` (unique), `position` | все |
+| `articles` | `slug` (unique), `title`, `subtitle`, `excerpt` (not null, default `''`), `cover_path`, `cover_alt`, `level_id` → levels (**on delete set null**), `author_id` → authors (**NOT NULL, restrict**), `read_minutes` (check > 0), `published_at`, `is_published`, `seo_title`, `seo_description` | только `is_published` |
+| `article_topics` | PK `(article_id, topic_id)`, `position` (**минимальная = основная тема**), cascade с обеих сторон, индекс по `topic_id` | только связи опубликованных статей |
+| `article_blocks` | `article_id` (cascade), `position`, `type` (`text\|heading\|callout\|image\|list`), `text_variant` (`lead\|body`), `heading_level` (2\|3), `title`, `body`, `image_path`, `alt`, `caption`, `credit`, `items jsonb` (`[{label?, text}]`); индекс `(article_id, position)` | только блоки опубликованных статей |
+| `admin_folders` | `section` (check `media`), `name`; unique `(section, name)` | **нет** |
+| `media` | `original_name`, `path` (unique), `mime`, `size`, `folder_id` | **нет** |
+
+- **Блоки.** Одна таблица с типизированными nullable-колонками (как `post_sections` у Avocado). Текст — обычный, абзацы через пустую
+  строку, без markdown; жирный лид-ин только в `list.items[].label`; emoji в `callout.title` допустимы.
+- **Видимость дочерних таблиц.** Политики `article_topics` и `article_blocks` для anon проверяют `exists (… articles … is_published)`:
+  черновик не утекает через связи и блоки (строже, чем «читать всё»). Проверено SQL (anon видит 10 опубликованных; тестовый черновик,
+  его блок и связь — нет; запись → `42501`).
+- **Служебные таблицы.** `media` и `admin_folders` — явный `revoke all … from anon` (default privileges иначе выдали бы `select`) +
+  RLS только для админа.
+- **Колонки статьи для anon.** Сайт читает `articles` явным списком колонок (`PUBLIC_ARTICLE_COLUMNS`), не `select('*')`: когда
+  появится `preview_token` (Фаза 8), его скрывают табличным revoke + column-grant (урок cozycorner 0030/0031).
+- **Индексы.** `articles(is_published, published_at desc, id desc)` (лента), `articles(level_id)`, `articles(author_id)`,
+  `article_topics(topic_id)`, `article_blocks(article_id, position)`, `media(folder_id)`, unique по slug/name.
+
+### Миграции репозитория urban.gardener
+
+· **0001 urban_gardener_schema** — схема, гранты и default privileges, бакет `urban-gardener-photos` (публичное чтение; запись/изменение/удаление — `is_admin()`).
+· **0002 articles_tables** — таблицы выше, триггеры slug/`updated_at`, гранты, RLS и политики.
+· **0004 articles_hardening** — `check (btrim(name) <> '')` на authors/topics/levels; триггеры `touch_article` на `article_blocks` и `article_topics` (правка тела/тем обновляет `articles.updated_at` — для `dateModified`/`lastmod`, Фаза 8).
+· **0005 replace_seed_cover_images** — шесть обложек сида заменены на рабочие Unsplash-фото растений (исходные ссылки референса перестали показывать растения).
+· **0006 save_article_rpc** — функция `urban_gardener.save_article(p_id, p_article, p_blocks, p_topic_ids) → jsonb {id, block_ids}` (`security invoker`, execute только `authenticated`/`service_role`): атомарное сохранение статьи + блоков (diff по id) + тем, серверные правила публикации (обложка, ≥1 тема, время чтения → `23514`), `0` затронутых строк → `P0002`. Триггер `topics_guard_delete` — тему нельзя удалить, если опубликованная статья осталась бы без тем.
+· **0003 seed_articles** — сид из референса (D15): автор Anna Sokolova (Senior editor), 4 уровня (Beginner/Easy/Medium/Essential), 9 тем,
+  10 статей (13 связей статья↔тема, 80 блоков). Тела девяти статей, кроме «How to tell when a plant needs water…», — **черновики агента**,
+  владелец переписывает их в админке до запуска. Картинки — внешние Unsplash-URL референса (перезалив в Storage — Фаза 9,
+  [../methodology/external-image-rehosting.md](../methodology/external-image-rehosting.md)). Идемпотентна; генерируется скриптом из `lib/articles.fixtures.ts`.
