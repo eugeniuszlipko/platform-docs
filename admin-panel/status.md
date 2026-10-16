@@ -520,3 +520,10 @@ sitemap; ответы отдаются с `cache-control: private, no-store`; к
 Товар пишется **только RPC `save_product`** (товар + категории с порядком одной транзакцией), валюта — список EUR/USD/GBP (решение владельца), ссылка только https, публикация требует фото + alt,
 ссылку и ≥1 категорию. Маршруты `/products`, `/categories`, `/brands` общие с Cozy/Avocado: диспетчер по `site.schema` (`ShopRoutes.tsx`), их страницы не менялись. Контракт —
 [shop-urban-gardener.md](shop-urban-gardener.md). Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по чек-листу спеки 3D §6.
+
+## Urban Gardener: Pages → Homepage (2026-10-16)
+
+Фаза 4D сайта urban.gardener. В `sites.ts` Urban добавлен раздел `pages` (меню: Media · Pages · Products · Categories · Brands · Articles · Topics · Levels · Authors).
+Маршруты `pages` общие с Cozy/Avocado: диспетчер по `site.schema` (`PagesRoutes.tsx`; тест на регрессию). Экран Homepage — тексты hero/SEO + три слота (featured 1 / journal до 6 / shop до 3),
+один Save через **RPC `save_home_page`** (страница и слоты одной транзакцией), неполный слот Save не блокирует, при удалении статьи/товара со слотом — предупреждение в диалоге.
+Контракт — [home-urban-gardener.md](home-urban-gardener.md). Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по плану Фазы 4 §6.

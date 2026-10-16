@@ -142,9 +142,15 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ## Фаза 4 — Home
 
-- [ ] 4A Фронт: hero с листом, pills тем, «This week's read», «From the journal», блок магазина, tip-блок (newsletter — заглушка до фазы 6)
-- [ ] 4B Как курируется главная (featured статья, набор товаров) — решить: автоматически по дате/флагу или слоты `home_slots` как у Avocado
-- [ ] 4C БД и админка (Pages → Homepage), тесты, ручная проверка
+> План для владельца — [2026-10-16-phase-4-home.md](2026-10-16-phase-4-home.md); спека — [../specs/2026-10-16-phase-4-home-spec.md](../specs/2026-10-16-phase-4-home-spec.md). Статус: **принята 2026-10-16** (+ правка: иллюстрация hero из админки, D33); ветки `feat/home` в `urban.gardener` и `web.admin` не запушены — ждут выбора способа завершения.
+
+- [x] 4A Фронт: hero с листом, pills тем, «This week's read», «From the journal», блок магазина, tip-блок (newsletter — заглушка до фазы 6)
+- [x] 4B Курирование — ручные слоты `home_slots` (решение H1); миграции 0012–0015, сид по референсу, RPC `save_home_page`
+- [x] 4C Сайт читает БД (ISR 60 с; черновик/скрытая карточка не показываются)
+- [x] 4D Админка Pages → Homepage ([home-urban-gardener.md](../../../admin-panel/home-urban-gardener.md)): тексты hero/SEO + три слота, один Save, предупреждение при удалении статьи/товара
+- [x] 4E Тесты (сайт: unit/компонентные/e2e; админка: unit/компонентные)
+- [x] 4F Ревью-гейт (db, silent-failure, react, a11y, seo — оба репо; typescript-reviewer — см. отчёт) и документация
+- [x] Приёмка владельцем 2026-10-16 (живую проверку админки владелец провёл сам)
 
 ---
 
