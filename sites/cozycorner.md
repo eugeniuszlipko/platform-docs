@@ -46,6 +46,7 @@ components/           # один компонент = файл + CSS Module; к�
   Reveal.tsx          # GSAP reveal-обёртка (prefers-reduced-motion учтён)
   FiltersBar.tsx / ShopCatalog.tsx  # фильтры Brand/Price + связка с сеткой
   CategoryCard.tsx / CategoryGrid.tsx  # карточки категорий на /shop
+  Breadcrumbs.tsx  # крошки; `embedded` — слева в строке фильтров на /shop/[category] (слот `leading` у FiltersBar/ShopCatalog, B-001); на /product/[slug] — над страницей; шрифт --fs-sm
   ProductCard.tsx / PostCard.tsx       # карточки товара/поста (stretched-link)
   PostTextSection.tsx / PostProductsSection.tsx  # секции поста из БД
   BlogPostView.tsx    # общая презентация страницы поста (hero+секции+related) — общий для /blog/[slug] и /preview

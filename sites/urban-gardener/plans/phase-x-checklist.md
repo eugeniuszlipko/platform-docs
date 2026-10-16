@@ -37,6 +37,7 @@
 | Фаза 2 | Заглушка «Test Article» (и подобные тестовые записи) удалена из БД | SQL |
 | Фаза 3 (план) | Плейсхолдеры `affiliate_url` заменены реальными партнёрскими ссылками; нет `rel` без `sponsored` | SQL + e2e |
 | Фаза 3 / B-003 | URL-ы CozyCorner не изменены (проиндексированы); у Urban товар — плоский `/product/<slug>` с canonical | e2e + curl |
+| B-001 | CozyCorner: крошки на `/shop/[category]` в одной строке с фильтрами (слева; фильтры справа), на 390px — друг под другом, дропдауны на всю ширину; шрифт как у фильтров; URL-ы не менялись | браузер + `FiltersBar.test` |
 | backlog | Просмотреть `platform-docs/backlog/`: B-001 (крошки Cozy), B-002 (валюта) — решены/осознанно отложены | чтение |
 | Фаза 3 (план) | Текст About без «No affiliate-driven recommendations», добавлен affiliate-disclosure | ручная |
 
