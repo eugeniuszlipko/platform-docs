@@ -513,3 +513,10 @@ sitemap; ответы отдаются с `cache-control: private, no-store`; к
 `NEXT_PUBLIC_SITE_URL`, из-за чего весь прод-`sitemap.xml` и `robots.txt` ссылаются
 на `http://localhost:3000` — sitemap бесполезен для поисковиков. Чинится
 переменной окружения + редеплоем, см. [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §7.
+
+## Urban Gardener: Products, Categories, Brands (2026-10-16)
+
+Фаза 3D сайта urban.gardener. В `sites.ts` добавлены `products`, `categories`, `brands` (меню: Media · Products · Categories · Brands · Articles · Topics · Levels · Authors).
+Товар пишется **только RPC `save_product`** (товар + категории с порядком одной транзакцией), валюта — список EUR/USD/GBP (решение владельца), ссылка только https, публикация требует фото + alt,
+ссылку и ≥1 категорию. Маршруты `/products`, `/categories`, `/brands` общие с Cozy/Avocado: диспетчер по `site.schema` (`ShopRoutes.tsx`), их страницы не менялись. Контракт —
+[shop-urban-gardener.md](shop-urban-gardener.md). Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по чек-листу спеки 3D §6.

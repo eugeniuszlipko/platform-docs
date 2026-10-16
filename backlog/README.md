@@ -9,3 +9,4 @@
 | [B-001](B-001-cozycorner-category-breadcrumbs.md) | Хлебные крошки на странице категории зажаты между шапкой и баннером | cozycorner | сделано (запушено) |
 | [B-002](B-002-configurable-currency.md) | Настраиваемая валюта сайта/товара (идея фичи) | urban.gardener (и другие) | новая |
 | [B-003](B-003-product-url-structure-seo.md) | Структура URL товара и SEO — вопрос владельца и ответ | cozycorner, urban.gardener | сделано (решение принято) |
+| [B-004](B-004-db-grants-truncate-and-guard-race.md) | Права `grant all` (TRUNCATE) и гонка триггера защиты в старых таблицах | urban.gardener, cozycorner, avocado.kiss | новая |

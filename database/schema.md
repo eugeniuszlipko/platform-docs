@@ -846,7 +846,7 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 ## 10. Таблицы схемы `urban_gardener`
 
 Сайт **Urban Gardener** ([../sites/urban-gardener.md](../sites/urban-gardener.md)), бакет `urban-gardener-photos`, проект base-one.
-Миграции живут в репо `urban.gardener/supabase/migrations/` (0001–0006; применены 2026-10-15). Общие функции —
+Миграции живут в репо `urban.gardener/supabase/migrations/` (0001–0006 — Фаза 2, применены 2026-10-15; 0007–0011 — Фаза 3 (магазин), применены 2026-10-16). Общие функции —
 `public.slugify` / `public.set_updated_at` / `public.is_admin` (как у cozycorner/avocado_kiss). Контракт картинок — §4
 (плоский ключ бакета или внешний URL). Slug везде генерирует БД-триггер (`<table>_set_slug`, при create из админки не отправлять).
 Права — шаблон cozycorner 0017: `anon` читает под RLS, запись — только `public.is_admin()` (политика «Admin all …»).
@@ -862,6 +862,10 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 | `articles` | `slug` (unique), `title`, `subtitle`, `excerpt` (not null, default `''`), `cover_path`, `cover_alt`, `level_id` → levels (**on delete set null**), `author_id` → authors (**NOT NULL, restrict**), `read_minutes` (check > 0), `published_at`, `is_published`, `seo_title`, `seo_description` | только `is_published` |
 | `article_topics` | PK `(article_id, topic_id)`, `position` (**минимальная = основная тема**), cascade с обеих сторон, индекс по `topic_id` | только связи опубликованных статей |
 | `article_blocks` | `article_id` (cascade), `position`, `type` (`text\|heading\|callout\|image\|list`), `text_variant` (`lead\|body`), `heading_level` (2\|3), `title`, `body`, `image_path`, `alt`, `caption`, `credit`, `items jsonb` (`[{label?, text}]`); индекс `(article_id, position)` | только блоки опубликованных статей |
+| `shop_categories` | `name` (unique), `slug` (unique), `description` (вводный абзац `/shop/[slug]`), `image_path`, `image_style` (`photo\|cutout`), `position`, `seo_title`, `seo_description` | все |
+| `brands` | `name` (unique), `slug` (unique), `position` | все |
+| `products` | `slug` (unique), `name`, `short`, `description`, `image_path`, `image_alt` (not null, default `''`), `image_style`, `brand_id` → brands (**on delete set null**), `price numeric(10,2)` (≥ 0, nullable), `currency` (`^[A-Z]{3}$`, default `EUR`), `affiliate_url` (`^https://`), `light`, `water`, `size`, `pet_safety` (`pet_safe\|mildly_toxic\|toxic`), `published_at`, `is_published`, `seo_title`, `seo_description`; CHECK `products_published_needs_photo_link` (опубликованному нужны фото и ссылка) | только `is_published` |
+| `product_categories` | PK `(product_id, category_id)`, `position` (**минимальная = основная категория**), cascade, индекс по `category_id` | только связи опубликованных товаров |
 | `admin_folders` | `section` (check `media`), `name`; unique `(section, name)` | **нет** |
 | `media` | `original_name`, `path` (unique), `mime`, `size`, `folder_id` | **нет** |
 
@@ -884,6 +888,11 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 · **0004 articles_hardening** — `check (btrim(name) <> '')` на authors/topics/levels; триггеры `touch_article` на `article_blocks` и `article_topics` (правка тела/тем обновляет `articles.updated_at` — для `dateModified`/`lastmod`, Фаза 8).
 · **0005 replace_seed_cover_images** — шесть обложек сида заменены на рабочие Unsplash-фото растений (исходные ссылки референса перестали показывать растения).
 · **0006 save_article_rpc** — функция `urban_gardener.save_article(p_id, p_article, p_blocks, p_topic_ids) → jsonb {id, block_ids}` (`security invoker`, execute только `authenticated`/`service_role`): атомарное сохранение статьи + блоков (diff по id) + тем, серверные правила публикации (обложка, ≥1 тема, время чтения → `23514`), `0` затронутых строк → `P0002`. Триггер `topics_guard_delete` — тему нельзя удалить, если опубликованная статья осталась бы без тем.
+· **0007 shop_tables** — `shop_categories`, `brands`, `products`, `product_categories`; триггеры slug/`updated_at`/`touch_product`, гранты, RLS (anon — опубликованное; запись — `is_admin()`), триггер `shop_categories_guard_delete` (категорию нельзя удалить, если опубликованный товар остался бы без категорий).
+· **0008 seed_shop** — сид из референса (D15): 4 категории (Easy care, Low light, Pet-friendly, Statement), 9 товаров (цена в EUR, плейсхолдер-ссылки Amazon без партнёрского тега — **владелец вносит реальные до запуска**), 11 связей; идемпотентна, генерируется из `lib/shop.fixtures.ts`.
+· **0009 save_product_rpc** — `urban_gardener.save_product(p_id, p_product, p_category_ids) → jsonb {id}` (`security invoker`, execute только `authenticated`/`service_role`): товар + категории одной транзакцией, правила публикации (фото, https-ссылка, ≥1 категория → `23514`), `0` строк → `P0002`.
+· **0010 shop_hardening** — ревью `database-reviewer`: у `anon`/`authenticated` отозваны TRUNCATE/REFERENCES/TRIGGER на таблицах магазина; триггер удаления категории блокирует строки товаров (`for update`) перед подсчётом; CHECK публикации (фото + ссылка); `touch_product` не трогает товар повторно в той же транзакции.
+· **0011 seed_example_brands** — два **вымышленных примерных** бренда (Fern & Fable Nursery, Verdant Lane) по просьбе владельца, чтобы фильтр Brand работал; привязаны к 8 из 9 товаров. Заменить настоящими или удалить до запуска.
 · **0003 seed_articles** — сид из референса (D15): автор Anna Sokolova (Senior editor), 4 уровня (Beginner/Easy/Medium/Essential), 9 тем,
   10 статей (13 связей статья↔тема, 80 блоков). Тела девяти статей, кроме «How to tell when a plant needs water…», — **черновики агента**,
   владелец переписывает их в админке до запуска. Картинки — внешние Unsplash-URL референса (перезалив в Storage — Фаза 9,
