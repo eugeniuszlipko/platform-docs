@@ -154,11 +154,15 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ---
 
-## Фаза 5 — About, Privacy, Terms
+## Фаза 5 — About, Privacy, Terms и настройки сайта
 
-- [ ] 5A Фронт: About (история, ценности), Privacy, Terms
-- [ ] 5B Тексты: правки под Urban Gardener, убрать несоответствия (affiliate, аналитика), черновик юр-текстов
-- [ ] 5C `pages` (тело markdown) + админка Pages ([pages.md](../../../admin-panel/pages.md)), тесты, ручная проверка
+> План для владельца — [2026-10-16-phase-5-static-pages.md](2026-10-16-phase-5-static-pages.md); спека — [../specs/2026-10-16-phase-5-static-pages-spec.md](../specs/2026-10-16-phase-5-static-pages-spec.md). Статус: план **утверждён 2026-10-16**, старт — «Начинаем фазу 5» (код не начат).
+
+- [ ] 5A Фронт: About (по референсу), Privacy, Terms (markdown), футер/соцсети/оговорки на пропсах — на тестовых данных
+- [ ] 5B БД: `pages.body`, `about_content`, `site_settings`, RPC `save_about_page`/`save_site_settings`, сид (тексты Privacy/Terms — адаптация Cozy/Avocado)
+- [ ] 5C Сайт читает БД (ISR 60, layout с `revalidate`), фолбэки на код
+- [ ] 5D Админка Pages: About, Privacy, Terms, Site settings (описание экранов → «утверждаю»)
+- [ ] 5E Тесты, 5F ревью-гейт и документация
 
 ---
 
