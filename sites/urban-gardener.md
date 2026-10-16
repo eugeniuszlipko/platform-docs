@@ -2,7 +2,7 @@
 
 > Last updated: 2026-10-15 | Source: референс `urban.gardener/Urban Gardener.html`
 > (статичный HTML-прототип) + решения владельца от 2026-10-14. Статус: **Фазы 0 и 1
-> приняты (2026-10-15); Фаза 2 (Articles) в работе: 2A–2C и тесты готовы, 2D (админка) ждёт утверждения спеки.** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
+> приняты (2026-10-15); Фаза 2 (Articles) выполнена и проверена владельцем на проде (2026-10-15); план Фазы 3 (Shop) утверждён.** Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
 
 Журнал об уходе за комнатными растениями (английский UI) + курируемый каталог
 растений и товаров с внешними ссылками (Amazon), без корзины и оплаты. Часть
@@ -70,10 +70,10 @@
 | D23 | `NEXT_PUBLIC_SITE_URL` обязателен в production-сборке (canonical, OG, share-ссылки); на preview — `VERCEL_URL`, локально — localhost. Env Supabase (`NEXT_PUBLIC_SUPABASE_URL/ANON_KEY`) заведены в Vercel (production, preview) |
 | D24 | Фильтр уровня — клиентский (`?level=` через `useSearchParams` под `<Suspense>` + `history.replaceState`), страницы статические; canonical без query; сброс фильтра при смене темы — `key` на сетке |
 | D25 | Общий оверлейный скроллбар воркспейса ([../methodology/overlay-scrollbar/README.md](../methodology/overlay-scrollbar/README.md)): нативная полоса скрыта, своя рисуется поверх контента — контент не сдвигается между страницами со скроллом и без. Подключён 2026-10-15 (в Фазе 1 был пропущен) |
-| D26 | Каталог (Фаза 3, решение 2026-10-15): **бейджи** (M2M, публичные пилюли-фильтр) + **категории** (одна на товар, страницы `/shop/<slug>`); правило D18 соблюдено |
-| D27 | Характеристики растения — поля товара (`light`/`water`/`size` текст, `pet_safety` — 3 значения); фильтр «Pet-friendly» вычисляется из `pet_safety`, отдельной сущности «Растение» пока нет (§4 п.2 остаётся отложенным) |
-| D28 | Цены — текстовая подпись «from €34» + «prices change, check the retailer» + disclosure на странице товара; партнёрские ссылки `rel="sponsored noopener noreferrer"`, только https; противоречие About («No affiliate-driven recommendations») снимается в Фазе 5 — блокирует запуск |
-| D29 | «Related items» — автоподбор (тот же бейдж/категория → свежие), ручные пины позже. План — [urban-gardener/plans/2026-10-15-phase-3-shop.md](urban-gardener/plans/2026-10-15-phase-3-shop.md) |
+| D26 | Каталог (Фаза 3, решение 2026-10-16): **структура как у CozyCorner** — главная структура **категории** (товар↔категории many-to-many, первая = основная), бывшие «бейджи» референса (Easy care, Low light, Pet-friendly, Statement) стали категориями; отдельной таксономии «бейджи» нет; **бренды** заводятся (на старте пусты); фильтры на странице категории — dropdown **Brand и Price**; хаб `/shop` — карточки категорий с фото; шапка Urban без фото-баннера, крошки внутри шапки; бесконечная прокрутка |
+| D27 | Характеристики растения — поля товара (`light`/`water`/`size` текст, `pet_safety` — 3 значения), только spec-list; «Pet-friendly» — обычная категория; отдельной сущности «Растение» нет (§4 п.2 отложен) |
+| D28 | Цена — **число + валюта у товара** (по умолчанию EUR); настраиваемая валюта — возможная фича [B-002](../backlog/B-002-configurable-currency.md); оговорка «prices may change» + disclosure (страница товара + строка внизу `/shop`); партнёрские ссылки `rel="sponsored noopener noreferrer"`, только https; противоречие About («No affiliate-driven recommendations») снимается в Фазе 5 — блокирует запуск |
+| D29 | Адрес товара — плоский `/product/<slug>` (как у Cozy; [B-003](../backlog/B-003-product-url-structure-seo.md) — SEO-обоснование; URL-ы CozyCorner не меняем); «Related items» — автоподбор по общим категориям. План — [urban-gardener/plans/2026-10-15-phase-3-shop.md](urban-gardener/plans/2026-10-15-phase-3-shop.md), спека — [urban-gardener/specs/2026-10-16-phase-3-shop-spec.md](urban-gardener/specs/2026-10-16-phase-3-shop-spec.md) |
 | D20 | Начальный контент — 10 статей референса (featured + 9 карточек; полный текст есть только у featured). План — [urban-gardener/plans/2026-10-15-phase-2-articles.md](urban-gardener/plans/2026-10-15-phase-2-articles.md) |
 
 ## 3. Инвентарь страниц (объём, не спека)
