@@ -4,6 +4,12 @@
 > **Читать:** план [2026-10-15-phase-3-shop.md](2026-10-15-phase-3-shop.md) (для владельца) → спеку [../specs/2026-10-16-phase-3-shop-spec.md](../specs/2026-10-16-phase-3-shop-spec.md) (она главная для работы) → план/отчёт Фазы 2 [2026-10-15-phase-2-articles.md](2026-10-15-phase-2-articles.md) → [phase-x-checklist.md](phase-x-checklist.md) → `urban.gardener/AGENTS.md`, `platform-docs/sites/urban-gardener.md` (D1–D29), `platform-docs/backlog/`, код CozyCorner (список в спеке).
 > Правила: формат общения — мета-скилл; коммит/пуш — только по явной команде; шаг 3D (админка) — сначала спека и утверждение. План Фазы 3 утверждён 2026-10-16 — стартовать можно по фразе владельца.
 
+## Процесс агента: уровень 3 (Superpowers) — первый боевой прогон
+
+Фаза 3 — **уровень 3** по мета-скиллу `superpowers-routing` (миграции + RLS, сайт + `web.admin`, 2+ репозитория): уровень выбирается без вопросов. Скиллы подключены 2026-10-16 (`platform-docs/skills/superpowers/`, плагин выключен). План владельца и спека уже утверждены, поэтому `brainstorming` не повторять: взять существующую спеку как дизайн (при необходимости builder-check) и идти с `writing-plans` → impl-план **по одному на репозиторий** (`specs/…-phase-3-…-impl-plan.md`) → `subagent-driven-development` или `executing-plans` → `requesting-code-review` + ревьюеры ECC → `verification-before-completion`. Ветки `feat/<slug>` в каждом репо, без worktrees; локальные коммиты на ветках можно, `push`/merge — только по команде.
+
+**Это первая проверка метода — по итогам прогона владелец ждёт заметки (в отчёт фазы):** сколько уходит токенов/времени против прежних фаз; мешали ли правила Superpowers формату `meta-planning`; не слишком ли тяжёл путь на шагах-мелочах (тогда понизить уровень шага); порог «>5 файлов» и список сигналов в `superpowers-routing` §1 — подправить по результату.
+
 ## Состояние окружения (на 2026-10-15)
 
 - **Репозитории** (каждый — свой git, ветка `main`, remote `github-avocado:eugeniuszlipko/…`; пуш в `main` = автодеплой Vercel, team `cozy-corner`, всегда `--scope cozy-corner`): `urban.gardener/`, `web.admin/`, `platform-docs/`. Корневой `AGENTS.md` лежит вне git.

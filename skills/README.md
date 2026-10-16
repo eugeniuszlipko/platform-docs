@@ -2,6 +2,7 @@
 
 > Внешние скиллы и ревьюеры-агенты (подмножество ECC для нашего стека) — отдельно: [ecc/README.md](ecc/README.md).
 > **Мета** (общие правила всех проектов — как планируем и общаемся) — отдельно: [meta/README.md](meta/README.md).
+> Процесс агента для крупных фаз (подмножество Superpowers, подключается по уровням) — отдельно: [superpowers/README.md](superpowers/README.md).
 
 Canonical, version-controlled home for the **content-ops skills** — operating
 manuals for the claude.ai agent that edits each site's content through the
