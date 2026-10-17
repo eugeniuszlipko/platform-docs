@@ -9,10 +9,10 @@
 ## 1. Где живёт
 
 Отдельного пункта меню нет: **Pages → Homepage** (`/:siteSlug/pages/:pageId`, строка `pages` со slug `home`). В меню Urban пункт
-`Pages` добавлен в `sections`. Список Pages — одна строка «Homepage» («curated content»); About/Privacy/Terms добавит Фаза 5
-той же таблицей. Маршруты `pages` общие с Cozy/Avocado: диспетчер по `site.schema` (поведение Cozy/Avocado не менялось, регрессионный
-тест `PagesRoutes.test.tsx`). ⚠️ `PagesEditRoute` пока не смотрит на `:pageId` (любой id = Homepage) — Фаза 5 обязана добавить
-выбор редактора по `page.slug`.
+`Pages` добавлен в `sections`. С Фазы 5 список Pages содержит ещё Site settings, About, Privacy, Terms — см.
+[static-pages-urban-gardener.md](static-pages-urban-gardener.md); `PagesEditRoute` выбирает редактор по `page.slug` (`UgPageEditRoute`), поэтому
+чужой id больше не открывает Homepage («Page not found.»). Маршруты `pages` общие с Cozy/Avocado: диспетчер по `site.schema`
+(поведение Cozy/Avocado не менялось, регрессионный тест `PagesRoutes.test.tsx`).
 
 ## 2. Экран
 

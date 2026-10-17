@@ -156,13 +156,14 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ## Фаза 5 — About, Privacy, Terms и настройки сайта
 
-> План для владельца — [2026-10-16-phase-5-static-pages.md](2026-10-16-phase-5-static-pages.md); спека — [../specs/2026-10-16-phase-5-static-pages-spec.md](../specs/2026-10-16-phase-5-static-pages-spec.md). Статус: план **утверждён 2026-10-16**, старт — «Начинаем фазу 5» (код не начат).
+> План для владельца — [2026-10-16-phase-5-static-pages.md](2026-10-16-phase-5-static-pages.md); спека — [../specs/2026-10-16-phase-5-static-pages-spec.md](../specs/2026-10-16-phase-5-static-pages-spec.md). Статус: **принята владельцем 2026-10-17**; код на ветках `feat/static-pages` обоих репо, не слит и не запушен (ждём команду владельца).
 
-- [ ] 5A Фронт: About (по референсу), Privacy, Terms (markdown), футер/соцсети/оговорки на пропсах — на тестовых данных
-- [ ] 5B БД: `pages.body`, `about_content`, `site_settings`, RPC `save_about_page`/`save_site_settings`, сид (тексты Privacy/Terms — адаптация Cozy/Avocado)
-- [ ] 5C Сайт читает БД (ISR 60, layout с `revalidate`), фолбэки на код
-- [ ] 5D Админка Pages: About, Privacy, Terms, Site settings (описание экранов → «утверждаю»)
-- [ ] 5E Тесты, 5F ревью-гейт и документация
+- [x] 5A Фронт: About (по референсу), Privacy, Terms (markdown), футер/соцсети/оговорки на пропсах — на тестовых данных
+- [x] 5B БД (0017–0020 применены): `pages.body`, `about_content`, `site_settings`, RPC `save_about_page`/`save_site_settings`, сид (тексты Privacy/Terms — адаптация Cozy/Avocado)
+- [x] 5C Сайт читает БД (ISR 60, layout с `revalidate`), фолбэки на код
+- [x] 5D Админка Pages ([static-pages-urban-gardener.md](../../../admin-panel/static-pages-urban-gardener.md)): About, Privacy, Terms, Site settings (описание экранов → «утверждаю»)
+- [x] 5E Тесты, 5F ревью-гейт и документация
+- [x] Приёмка владельцем 2026-10-17 (чек-лист плана §6; добавлено при приёмке: шапка сайта и шапка Privacy/Terms)
 
 ---
 

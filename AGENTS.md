@@ -21,6 +21,7 @@ Read these files only when the task requires it:
 | Admin Blog editor (Avocado Kiss) | platform-docs/admin-panel/blog-avocado-kiss.md | Building the Avocado Kiss Blog (Article) editor in web.admin |
 | Admin Recipes section (Avocado Kiss) | platform-docs/admin-panel/recipes-avocado-kiss.md | Editing the Avocado Kiss Recipes section or Recipe categories |
 | Admin homepage curation (Avocado Kiss) | platform-docs/admin-panel/home-avocado-kiss.md | Curating the Avocado Kiss homepage (`home_slots`, Editor's Picks) — lives in Pages → Homepage |
+| Admin: About / Privacy / Terms / Site settings (Urban Gardener) | platform-docs/admin-panel/static-pages-urban-gardener.md | Pages → Site settings / About / Privacy / Terms (web.admin `features/ug-static/`, `lib/ugStatic.ts`; RPC `save_about_page`, `save_site_settings`) |
 | Admin Pages section | platform-docs/admin-panel/pages.md | Editing Pages section |
 | Admin status & roadmap | platform-docs/admin-panel/status.md | Planning admin work; checking pending tasks |
 | Sites overview | platform-docs/sites/overview.md | Starting work on any public-facing site |

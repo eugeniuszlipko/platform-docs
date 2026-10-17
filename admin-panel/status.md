@@ -527,3 +527,10 @@ sitemap; ответы отдаются с `cache-control: private, no-store`; к
 Маршруты `pages` общие с Cozy/Avocado: диспетчер по `site.schema` (`PagesRoutes.tsx`; тест на регрессию). Экран Homepage — тексты hero/SEO + три слота (featured 1 / journal до 6 / shop до 3),
 один Save через **RPC `save_home_page`** (страница и слоты одной транзакцией), неполный слот Save не блокирует, при удалении статьи/товара со слотом — предупреждение в диалоге.
 Контракт — [home-urban-gardener.md](home-urban-gardener.md). Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по плану Фазы 4 §6.
+
+## Urban Gardener: About / Privacy / Terms и Site settings (2026-10-17)
+
+Фаза 5D сайта urban.gardener. В Pages Urban добавлены: закреплённая строка **Site settings** (оговорка affiliate, price note, e-mail, соцсети, подпись и колонки футера, юр-ссылки), **About** (SEO + Intro/Story/Values/Newsletter block),
+**Privacy** и **Terms** (markdown-редактор с заголовками и ссылками + SEO, «Use the built-in text»). `PagesEditRoute` Urban выбирает редактор по slug страницы. Запись: RPC `save_about_page`, `save_site_settings`, прямой `update pages` (Privacy/Terms).
+Общий `RichTextEditor` получил **опциональные** `headings`/`links` (по умолчанию как раньше, Cozy/Avocado не затронуты). Контракт — [static-pages-urban-gardener.md](static-pages-urban-gardener.md).
+Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по плану Фазы 5 §6, п. 4–8, в том числе что RPC с `where true` проходит `pg_safeupdate`.

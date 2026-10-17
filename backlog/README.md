@@ -10,3 +10,5 @@
 | [B-002](B-002-configurable-currency.md) | Настраиваемая валюта сайта/товара (идея фичи) | urban.gardener (и другие) | новая |
 | [B-003](B-003-product-url-structure-seo.md) | Структура URL товара и SEO — вопрос владельца и ответ | cozycorner, urban.gardener | сделано (решение принято) |
 | [B-004](B-004-db-grants-truncate-and-guard-race.md) | Права `grant all` (TRUNCATE) и гонка триггера защиты в старых таблицах | urban.gardener, cozycorner, avocado.kiss | новая |
+| [B-005](B-005-urban-header-overflow-320.md) | Шапка не помещается в 320px (кнопка меню выступает на 4px) | urban.gardener | новая |
+| [B-006](B-006-admin-global-a11y.md) | Доступность админки: reflow 320px, контраст фокуса, заголовки страниц | web.admin | новая |
