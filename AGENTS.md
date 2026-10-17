@@ -4,7 +4,7 @@
 - `platform-docs/` — shared documentation (this project)
 - `cozycorner/` — public catalog site for cozy home goods (Next.js 16 App Router + Supabase); live: https://www.cozycorner.me
 - `avocado.kiss/` — culinary recipe magazine (Next.js 16 App Router + Supabase)
-- `urban.gardener/` — houseplant-care journal + curated plant/product catalog (Next.js 16 App Router + Supabase); in kickoff, no production URL yet
+- `urban.gardener/` — houseplant-care journal + curated plant/product catalog (Next.js 16 App Router + Supabase); phases 0–6 accepted and deployed to the temporary URL https://urban-gardener.vercel.app (noindex until Phase 9); Phase 7 (Newsletter + Contact) planned
 - `web.admin/` — multi-site admin panel for managing site content (Vite + React SPA + Supabase)
 
 ## Documentation index

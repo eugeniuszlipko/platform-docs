@@ -35,7 +35,7 @@
 | 4 | **Home** (сборка из статей и товаров) | Pages → Homepage | [x] принято 2026-10-16 ([план](2026-10-16-phase-4-home.md)) |
 | 5 | Статичные страницы: About, Privacy, Terms, настройки сайта, шапка | Pages | [x] принято 2026-10-17 ([план](2026-10-16-phase-5-static-pages.md)) |
 | 6 | **Search** по реальной БД | — | [x] принято 2026-10-17 ([план](2026-10-17-phase-6-search.md)) |
-| 7 | **Newsletter** + **Contact** (форма — только скелет) | Subscribers | [ ] |
+| 7 | **Newsletter** + **Contact** (форма принимает сообщения, D38) | Subscribers, Messages, Pages → Contact | [ ] план ждёт утверждения ([план](2026-10-17-phase-7-newsletter-contact.md)) |
 | 8 | SEO, cookie-баннер, GA4, sitemap/robots, **Preview** | — | [ ] |
 | 9 | Запуск: домен, финальные тексты, чек-лист | — | [ ] |
 
@@ -179,12 +179,16 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ---
 
-## Фаза 7 — Newsletter и Contact (скелет)
+## Фаза 7 — Newsletter и Contact
 
-- [ ] 7A Newsletter: порт `/api/newsletter` + Turnstile + таблица `subscribers` (revoke от anon), блоки на страницах, попап на втором переходе (с хранением «уже показан»)
-- [ ] 7B Contact: страница с формой (name, email, subject, message) — **только фронт-скелет**: валидация на клиенте, состояния, без отправки (нет API-роута, БД, Messages). Подключение — отдельное решение владельца (решение 2026-10-15)
-- [ ] 7C Админка: Subscribers ([subscribers.md](../../../admin-panel/subscribers.md))
-- [ ] 7D Тесты, ручная проверка (реальная подписка, дубль e-mail, невалидные данные; форма Contact — состояния без отправки)
+> План для владельца — [2026-10-17-phase-7-newsletter-contact.md](2026-10-17-phase-7-newsletter-contact.md); спека — [../specs/2026-10-17-phase-7-newsletter-contact-spec.md](../specs/2026-10-17-phase-7-newsletter-contact-spec.md). Статус: **план ждёт утверждения** (ответы N1–N8 получены 2026-10-17). Форма Contact **больше не скелет** — принимает и хранит сообщения (D38, заменяет D9).
+
+- [ ] 7A Подписка: миграция 0025 `subscribers` (revoke от anon), `/api/newsletter` + Turnstile (новый виджет Urban), перенос `SUPABASE_SECRET_KEY` из Vercel Avocado (с повторным подтверждением владельца)
+- [ ] 7B Блоки рассылки на Home / Articles / About (тексты референса)
+- [ ] 7C Всплывающее окно на 2-м переходе (раз в N дней; вкл/выкл и N — в админке Site settings)
+- [ ] 7D Contact: страница по референсу, `/api/contact` + Turnstile, таблица `messages` (миграции 0026–0027), тексты страницы редактируются в админке
+- [ ] 7E Админка: Subscribers (включить для Urban), Messages (новый раздел, счётчик непрочитанных), Pages → Contact, Site settings → Newsletter popup — каждый экран с описанием и «утверждаю»
+- [ ] 7F Тесты, ревью-гейт, документация
 
 > Turnstile на `*.vercel.app` и localhost — см. память «avocado turnstile localhost»: тестовые ключи или добавить хостнейм.
 
