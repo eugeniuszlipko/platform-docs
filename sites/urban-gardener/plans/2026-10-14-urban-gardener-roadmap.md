@@ -32,10 +32,10 @@
 | 1 | Дизайн-система и каркас (шапка, футер, токены, reveal) | — | [x] принято 2026-10-15 |
 | 2 | Срез **Articles**: листинг, статья, авторы, темы | Articles, Authors, Topics | [x] принято 2026-10-16 |
 | 3 | Срез **Shop**: каталог, товар, категории, бренды | Products, Categories, Brands | [x] принято 2026-10-16 |
-| 4 | **Home** (сборка из статей и товаров) | Pages → Homepage | [ ] план утверждён 2026-10-16, код не начат ([план](2026-10-16-phase-4-home.md)) |
-| 5 | Статичные страницы: About, Privacy, Terms | Pages | [ ] |
-| 6 | **Newsletter** + **Contact** (форма — только скелет) | Subscribers | [ ] |
-| 7 | **Search** по реальной БД | — | [ ] |
+| 4 | **Home** (сборка из статей и товаров) | Pages → Homepage | [x] принято 2026-10-16 ([план](2026-10-16-phase-4-home.md)) |
+| 5 | Статичные страницы: About, Privacy, Terms, настройки сайта, шапка | Pages | [x] принято 2026-10-17 ([план](2026-10-16-phase-5-static-pages.md)) |
+| 6 | **Search** по реальной БД | — | [ ] |
+| 7 | **Newsletter** + **Contact** (форма — только скелет) | Subscribers | [ ] |
 | 8 | SEO, cookie-баннер, GA4, sitemap/robots, **Preview** | — | [ ] |
 | 9 | Запуск: домен, финальные тексты, чек-лист | — | [ ] |
 
@@ -56,8 +56,8 @@ Media (бакет `urban-gardener-photos`, менеджер фото) подкл
 | 3 Shop | те же + `seo` (JSON-LD Product) | `database-reviewer`, `react-reviewer`, `typescript-reviewer`, `silent-failure-hunter` |
 | 4 Home | `react-performance` (waterfalls: параллельные запросы) | `react-reviewer`, `typescript-reviewer` |
 | 5 About / Privacy / Terms | `seo` | `seo-specialist`, `react-reviewer` |
-| 6 Newsletter / Contact | `frontend-a11y` (формы), `react-testing`, `e2e-testing`, `database-migrations` | `a11y-architect`, `database-reviewer` (`subscribers`), `silent-failure-hunter` (`/api/newsletter`), `typescript-reviewer` |
-| 7 Search | `postgres-patterns` (GIN/FTS vs ILIKE), `react-performance`, `frontend-a11y` (combobox-поиск) | `database-reviewer`, `a11y-architect`, `silent-failure-hunter`, `react-reviewer` |
+| 6 Search | `postgres-patterns` (GIN/FTS vs ILIKE), `react-performance`, `frontend-a11y` (combobox-поиск) | `database-reviewer`, `a11y-architect`, `silent-failure-hunter`, `react-reviewer` |
+| 7 Newsletter / Contact | `frontend-a11y` (формы), `react-testing`, `e2e-testing`, `database-migrations` | `a11y-architect`, `database-reviewer` (`subscribers`), `silent-failure-hunter` (`/api/newsletter`), `typescript-reviewer` |
 | 8 SEO / consent / GA / Preview | `seo`, `database-migrations` (токен превью) | `seo-specialist`, `database-reviewer`, `typescript-reviewer` |
 | 9 Запуск | `seo`, `react-performance`, `frontend-a11y` | `seo-specialist`, `a11y-architect` (финальный проход), `react-reviewer` |
 
@@ -167,22 +167,26 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ---
 
-## Фаза 6 — Newsletter и Contact (скелет)
+## Фаза 6 — Search
 
-- [ ] 6A Newsletter: порт `/api/newsletter` + Turnstile + таблица `subscribers` (revoke от anon), блоки на страницах, попап на втором переходе (с хранением «уже показан»)
-- [ ] 6B Contact: страница с формой (name, email, subject, message) — **только фронт-скелет**: валидация на клиенте, состояния, без отправки (нет API-роута, БД, Messages). Подключение — отдельное решение владельца (решение 2026-10-15)
-- [ ] 6C Админка: Subscribers ([subscribers.md](../../../admin-panel/subscribers.md))
-- [ ] 6D Тесты, ручная проверка (реальная подписка, дубль e-mail, невалидные данные; форма Contact — состояния без отправки)
+> План для владельца — [2026-10-17-phase-6-search.md](2026-10-17-phase-6-search.md); спека — [../specs/2026-10-17-phase-6-search-spec.md](../specs/2026-10-17-phase-6-search-spec.md). Статус: **план УТВЕРЖДЁН 2026-10-17** (ответы S1–S3 получены; фаза поменялась местами с Newsletter/Contact), код не начат — старт «Начинаем фазу 6».
 
-> Turnstile на `*.vercel.app` и localhost — см. память «avocado turnstile localhost»: тестовые ключи или добавить хостнейм.
+- [ ] 6A Фронт на тестовых данных: строка поиска в шапке (combobox: панель 4 статьи + 4 товара, «See all N results»), страница `/search`
+- [ ] 6B БД: RPC `search_content` (миграция 0022, ILIKE + `pg_trgm`, только опубликованное), проверка прав и спецсимволов
+- [ ] 6C Сайт ищет по БД (гонки запросов, ошибки, порядок по ids)
+- [ ] 6D Тесты (unit, компонентные, e2e), ручная проверка
+- [ ] 6E Ревью-гейт и документация
 
 ---
 
-## Фаза 7 — Search
+## Фаза 7 — Newsletter и Contact (скелет)
 
-- [ ] 7A Дизайн поиска: выпадающая панель (топ-4 статьи + топ-4 товара) + страница результатов `/search`
-- [ ] 7B Запрос по БД (где искать, как ранжировать, ILIKE vs full-text — решить в спеке фазы)
-- [ ] 7C Тесты, ручная проверка (пустой результат, спецсимволы, мобильная панель)
+- [ ] 7A Newsletter: порт `/api/newsletter` + Turnstile + таблица `subscribers` (revoke от anon), блоки на страницах, попап на втором переходе (с хранением «уже показан»)
+- [ ] 7B Contact: страница с формой (name, email, subject, message) — **только фронт-скелет**: валидация на клиенте, состояния, без отправки (нет API-роута, БД, Messages). Подключение — отдельное решение владельца (решение 2026-10-15)
+- [ ] 7C Админка: Subscribers ([subscribers.md](../../../admin-panel/subscribers.md))
+- [ ] 7D Тесты, ручная проверка (реальная подписка, дубль e-mail, невалидные данные; форма Contact — состояния без отправки)
+
+> Turnstile на `*.vercel.app` и localhost — см. память «avocado turnstile localhost»: тестовые ключи или добавить хостнейм.
 
 ---
 

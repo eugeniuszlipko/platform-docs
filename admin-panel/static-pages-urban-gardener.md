@@ -33,7 +33,7 @@
 ## 4. About
 
 SEO (title ≤ 60 подсказка, «— Urban Gardener» добавляется автоматически; description 120–155) + блоки Intro (eyebrow, headline, intro), Story (фото из галереи/внешний https-URL,
-**alt обязателен, если фото выбрано**; headline, два абзаца), Values (3 карточки: эмодзи-иконка, title, text), Newsletter block (title с `*акцентом*` и живым превью, text; форма на сайте неактивна до Фазы 6).
+**alt обязателен, если фото выбрано**; headline, два абзаца), Values (3 карточки: эмодзи-иконка, title, text), Newsletter block (title с `*акцентом*` и живым превью, text; форма на сайте неактивна до Фазы 7).
 Один Save → RPC `save_about_page` (SEO страницы `about` + `about_content` одной транзакцией); все 19 ключей `about_content` уходят каждый раз (пустое → `null`). Фото учитывается в Media → «Used by» (`about_content.story_image_path`).
 
 ## 5. Privacy / Terms

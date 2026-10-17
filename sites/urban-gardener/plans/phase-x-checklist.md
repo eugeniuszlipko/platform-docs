@@ -14,7 +14,7 @@
 | D4, D17–D19, D24 | Статьи: блоки text/heading/callout/image/list; Topic (M2M, первая = основная) + Level; `/articles`, `/articles/[slug]`, `/topics/[slug]`; клиентский фильтр уровня, canonical без query; у каждой таксономии есть публичный фильтр | e2e `articles.spec.ts` |
 | D5 | Автор — отдельная сущность; автор со статьями не удаляется | SQL + тест админки |
 | D6, D26–D29 | Каталог как у CozyCorner: хаб — карточки категорий; категории M2M (первая = основная); бренды; фильтры Brand/Price (dropdown); цена числом + валюта; плоский `/product/<slug>`; Related по общим категориям; шапка без фото-баннера, крошки внутри шапки | e2e `shop.spec.ts` (после Фазы 3), сверка с кодом Cozy |
-| D8 | Рассылка: `/api/newsletter` + Turnstile + `subscribers`, только сбор адресов, анти-спам | Фаза 6 |
+| D8 | Рассылка: `/api/newsletter` + Turnstile + `subscribers`, только сбор адресов, анти-спам | Фаза 7 |
 | D9 | Contact — только фронтовый скелет, без API/БД (если владелец не изменил решение) | ручная + grep |
 | D10 | Cookie-баннер, GA4 грузится только после согласия | e2e + Network |
 | D11 | Превью черновиков по токену; токен скрыт от anon (табличный revoke + column-grant) | SQL под ролью anon |
@@ -45,7 +45,7 @@
 
 | Источник | Что проверить / сделать | Чем |
 |---|---|---|
-| a11y-ревью 3 | Контраст границ интерактивных контролей (селекты фильтров, кнопки «Try again»/«Show more»): `--line` на cream ≈ 1.3:1 < 3:1 (WCAG 1.4.11) — нужен отдельный токен границы контрола (решение по внешнему виду, в Фазе 7/дизайн-проходе) | браузер + axe/ручная |
+| a11y-ревью 3 | Контраст границ интерактивных контролей (селекты фильтров, кнопки «Try again»/«Show more»): `--line` на cream ≈ 1.3:1 < 3:1 (WCAG 1.4.11) — нужен отдельный токен границы контрола (решение по внешнему виду, в Фазе 6/дизайн-проходе) | браузер + axe/ручная |
 | SEO-ревью 3 | Фаза 8: добавить `updatedAt` в `Product`/`ShopCategory` (для `dateModified`/`lastmod`), общий хелпер Open Graph (`type`, `siteName`, fallback-картинка, alt, `twitter`), OG у хаба; заголовок хаба с ключом («Shop houseplants»); fallback meta description для товара без `short`/`description`; суффикс «plants» в `categorySeoTitle`, если имя уже содержит «plants» | seo-ревью, grep |
 | SEO-ревью 3 | Товары 13+ в категории не видны краулеру (рендерится только первая страница, `PAGE_SIZE = 12`): к запуску — sitemap (Фаза 8) как страховка и решение: серверная пагинация `/shop/<cat>/page/2` или рендер всех карточек на сервере (при каталоге в десятки товаров) | curl HTML категории, sitemap |
 | react-ревью 3 | Back из карточки товара возвращает категорию на 1-ю страницу без фильтров (состояние ленты только в React; осознанная цена «без searchParams») — при росте каталога сохранять снимок в `sessionStorage`/`history.state` | браузер |
@@ -61,7 +61,7 @@
 
 | Источник | Что проверить / сделать | Чем |
 |---|---|---|
-| Фаза 4 (решение H3) | **Блок рассылки на главной — заглушка** (поле и кнопка неактивны, «Subscribe — coming soon»): к запуску заменён настоящей формой Фазы 6, текст «coming soon» исчез | e2e `home.spec.ts` (обновить), браузер |
+| Фаза 4 (решение H3) | **Блок рассылки на главной — заглушка** (поле и кнопка неактивны, «Subscribe — coming soon»): к запуску заменён настоящей формой Фазы 7, текст «coming soon» исчез | e2e `home.spec.ts` (обновить), браузер |
 | Фаза 4 | `pages.home.seo_title` / `seo_description` в сиде пустые → на `/` дефолты: заголовок «Urban Gardener — Urban Soul of Plants» без ключа, описание 98 символов. Владелец заполняет в админке (Pages → Homepage): title ≤ 60 симв., description 120–155 | админка + curl `<title>`/`<meta description>` |
 | seo-ревью 4 | ~~`description` в `app/layout.tsx` расходился с `SITE_DESCRIPTION`~~ — **закрыто в Фазе 5** (layout = `SITE_DESCRIPTION`); исходное замечание: расходится с `SITE_DESCRIPTION` — страницы About/Contact/Privacy/Terms наследуют короткое; Фаза 5 задаёт им свои описания или layout переходит на `SITE_DESCRIPTION` | curl мета каждой страницы |
 | seo-ревью 4 | Canonical главной берётся от `NEXT_PUBLIC_SITE_URL`; на Vercel без неё подставится `VERCEL_URL` (хост деплоя): к запуску — переменная = боевой домен (опционально `VERCEL_PROJECT_PRODUCTION_URL`) | curl canonical на проде |
@@ -91,8 +91,8 @@
 | Фаза 5 (P5) | **Соцсети — общие адреса** (`instagram.com`, `x.com`, `pinterest.com`): заменить реальными аккаунтами или очистить поле (иконка скроется) | браузер, SQL `site_settings` |
 | Фаза 5 (D36) | **Шапка редактируется в админке** (Header brand + меню 1–6 пунктов): после переименования/удаления пункта «About» ссылки на About в футере и текстах не обновляются сами; при изменении адресов меню проверить подсветку активного раздела и мобильное меню на 390px; миграция 0021 применена | браузер, SQL `site_settings` |
 | Фаза 5 (решение владельца 2026-10-17) | **Название сайта — «Urban Gardener»** (подвал, ©, суффикс заголовков вкладок; остаётся в коде, не меняется). «Urban Soul of Plants» — слоган/надпись рядом с логотипом и в текстах/e-mail; в Фазе 8 (Organization/WebSite JSON-LD) `name` = «Urban Gardener», `alternateName` = «Urban Soul of Plants» | seo-ревью Фазы 8 |
-| Фаза 5 (ревью seo) | Фаза 8 для этих страниц: sitemap (`/about`, `/privacy`, `/terms`, `lastModified` из `pages.updated_at`), Open Graph/Twitter (общий хелпер), JSON-LD (`AboutPage`, `WebPage`, `Organization` с `sameAs` из `site_settings`); в футере две ссылки на `/about` («Our story», «Newsletter») — «Newsletter» направить на настоящую подписку после Фазы 6; `app/layout.tsx` description = `SITE_DESCRIPTION` (сделано) | seo-ревью, grep |
-| Фаза 5 (ревью seo) | `/contact` — заглушка «Coming soon», на неё ссылаются футер и юр-тексты: заменить настоящей страницей (Фаза 6) до снятия `noindex` | e2e `static-pages.spec.ts` |
+| Фаза 5 (ревью seo) | Фаза 8 для этих страниц: sitemap (`/about`, `/privacy`, `/terms`, `lastModified` из `pages.updated_at`), Open Graph/Twitter (общий хелпер), JSON-LD (`AboutPage`, `WebPage`, `Organization` с `sameAs` из `site_settings`); в футере две ссылки на `/about` («Our story», «Newsletter») — «Newsletter» направить на настоящую подписку после Фазы 7; `app/layout.tsx` description = `SITE_DESCRIPTION` (сделано) | seo-ревью, grep |
+| Фаза 5 (ревью seo) | `/contact` — заглушка «Coming soon», на неё ссылаются футер и юр-тексты: заменить настоящей страницей (Фаза 7) до снятия `noindex` | e2e `static-pages.spec.ts` |
 | Фаза 5 (ревью seo) | Админ может очистить нижние юр-ссылки и колонку «About» в футере — тогда `/privacy` и `/terms` теряют внутренние ссылки (единственный путь краулера до sitemap Фазы 8); подсказка в админке или обязательные ссылки | чтение, sitemap |
 | Фаза 5 (ревью) | `seo_title` из админки не должен дублировать « — Urban Gardener» (шаблон layout добавляет сам; в админке подсказка есть; у Homepage — `absolute`) | ручная |
 | Фаза 5 (БД) | Миграции 0017–0020 применены в `base-one`; `0018` **генерируется из** `lib/static-pages.fixtures.ts` — при правке встроенных текстов менять фикстуры, а не SQL; тест `static-pages.fixtures.test.ts` сверяет фолбэк и сид | SQL `pages`/`about_content`/`site_settings`, vitest |
