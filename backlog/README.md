@@ -12,3 +12,4 @@
 | [B-004](B-004-db-grants-truncate-and-guard-race.md) | Права `grant all` (TRUNCATE) и гонка триггера защиты в старых таблицах | urban.gardener, cozycorner, avocado.kiss | новая |
 | [B-005](B-005-urban-header-overflow-320.md) | Шапка не помещается в 320px (кнопка меню выступает на 4px) | urban.gardener | новая |
 | [B-006](B-006-admin-global-a11y.md) | Доступность админки: reflow 320px, контраст фокуса, заголовки страниц | web.admin | новая |
+| [B-007](B-007-e2e-decouple-from-live-data.md) | e2e Urban Gardener зависят от состава живых данных (красные из-за «Test product») | urban.gardener | новая |
