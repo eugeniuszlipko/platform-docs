@@ -52,6 +52,12 @@ npm run test:e2e      # playwright test (поднимает свой dev-сер�
 Первичная установка браузеров e2e: `npx playwright install chromium`
 (кеш браузеров глобальный и общий для всех репо на одной версии Playwright).
 
+**Набор фокуса и клавиатуры** (`e2e/focus.spec.ts`, правило — [focus-policy.md](focus-policy.md)) гоняется ещё и на WebKit (движок Safari)
+и Firefox: `npx playwright install webkit firefox` (~0,5 ГБ, один раз). Остальной e2e остаётся на Chromium — в `playwright.config.ts`
+у проектов `webkit`/`firefox` стоит `testMatch: /focus\.spec\.ts/`. В WebKit Tab ходит как в Safari по умолчанию (только поля ввода),
+поэтому тест нажимает Option+Tab; в Firefox — обычный Tab. Playwright-WebKit — не настоящий Safari и не iPhone: финальный проход в
+Safari на Mac и на iPhone делает владелец по чек-листу фазы.
+
 ### Требования к окружению e2e
 
 - **web.admin** — Supabase не нужен: смоук проверяет экран логина и клиентскую

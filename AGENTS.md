@@ -32,6 +32,7 @@ Read these files only when the task requires it:
 | Coding standards | platform-docs/methodology/coding-standards.md | New files, refactoring, code review |
 | Overlay scrollbar module | platform-docs/methodology/overlay-scrollbar/README.md | Touching scrollbars anywhere; vendoring the shared module into a repo |
 | Testing strategy | platform-docs/methodology/testing.md | Writing/running tests; choosing a test tool; CI |
+| Focus ring and keyboard policy | platform-docs/methodology/focus-policy.md | Any `:focus`/`:focus-visible`/`outline` CSS, modals, menus, search, forms; keyboard (Tab/Esc/return-focus) checks |
 | External image re-hosting (concept, not implemented) | platform-docs/methodology/external-image-rehosting.md | Considering fixing unoptimized Amazon/Unsplash image weight on a site |
 | Оценка Superpowers и замеры процесса (токены, качество, правки; скрипты для повтора) | platform-docs/methodology/superpowers-evaluation-2026-10.md, methodology/process-metrics/README.md | Решение, как вести фазы (один этап — один чат, impl-план, ревьюеры); повторный замер после изменений процесса |
 | Per-repo GitHub account (SSH setup) | platform-docs/methodology/github-account-per-repo.md | Moving a repo to a different GitHub account (Vercel Hobby plan limits), setting up push access locally |
