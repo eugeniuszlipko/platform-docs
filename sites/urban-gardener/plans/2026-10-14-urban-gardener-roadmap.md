@@ -182,18 +182,22 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ## Фаза 7 — Newsletter и Contact
 
-> План для владельца — [2026-10-17-phase-7-newsletter-contact.md](2026-10-17-phase-7-newsletter-contact.md); спека — [../specs/2026-10-17-phase-7-newsletter-contact-spec.md](../specs/2026-10-17-phase-7-newsletter-contact-spec.md). Статус: **план ждёт утверждения** (ответы N1–N8 получены 2026-10-17). Форма Contact **больше не скелет** — принимает и хранит сообщения (D38, заменяет D9).
+> План для владельца — [2026-10-17-phase-7-newsletter-contact.md](2026-10-17-phase-7-newsletter-contact.md); спека — [../specs/2026-10-17-phase-7-newsletter-contact-spec.md](../specs/2026-10-17-phase-7-newsletter-contact-spec.md). Статус: **в работе: план утверждён 2026-10-18; сайт (7A–7D) и админка (7E) собраны и проверены автоматически, ждёт приёмки владельца и ключа `SUPABASE_SECRET_KEY` в Vercel Urban**. Форма Contact **больше не скелет** — принимает и хранит сообщения (D38, заменяет D9).
 
-- [ ] 7A Подписка: миграция 0025 `subscribers` (revoke от anon), `/api/newsletter` + Turnstile (новый виджет Urban), перенос `SUPABASE_SECRET_KEY` из Vercel Avocado (с повторным подтверждением владельца)
-- [ ] 7B Блоки рассылки на Home / Articles / About (тексты референса)
-- [ ] 7C Всплывающее окно на 2-м переходе (раз в N дней; вкл/выкл и N — в админке Site settings)
-- [ ] 7D Contact: страница по референсу, `/api/contact` + Turnstile, таблица `messages` (миграции 0026–0027), тексты страницы редактируются в админке
-- [ ] 7E Админка: Subscribers (включить для Urban), Messages (новый раздел, счётчик непрочитанных), Pages → Contact, Site settings → Newsletter popup — каждый экран с описанием и «утверждаю»
+- [x] 7A Подписка: миграция 0025 `subscribers` (revoke от anon), `/api/newsletter` + Turnstile (новый виджет Urban), перенос `SUPABASE_SECRET_KEY` из Vercel Avocado (с повторным подтверждением владельца)
+- [x] 7B Блоки рассылки на Home / Articles / About (тексты референса)
+- [x] 7C Всплывающее окно на 2-м переходе (раз в N дней; вкл/выкл и N — в админке Site settings)
+- [x] 7D Contact: страница по референсу, `/api/contact` + Turnstile, таблица `messages` (миграции 0026–0027), тексты страницы редактируются в админке
+- [x] 7E Админка: Subscribers (включить для Urban), Messages (новый раздел, счётчик непрочитанных), Pages → Contact, Site settings → Newsletter popup — каждый экран с описанием и «утверждаю»
 - [ ] 7F Тесты, ревью-гейт, документация
 
 > Turnstile на `*.vercel.app` и localhost — см. память «avocado turnstile localhost»: тестовые ключи или добавить хостнейм.
 
 ---
+
+## Предложенная фаза — Фокус и клавиатура (владелец 2026-10-19, место в плане не определено)
+
+> Источник — [B-008](../../../backlog/B-008-focus-and-keyboard-audit.md): двойное кольцо фокуса на полях (окно рассылки), Tab не доходит до кнопок в окне и поиске (сперва проверить настройку/браузер владельца — Safari по умолчанию не ставит кнопки в порядок Tab). Нужна единая политика кольца фокуса и проход по всем интерактивным элементам в Chrome/Safari/Firefox. **Не начинать без «Планируем фазу …» и решения, где она стоит (до Фазы 8 или перед Фазой X).**
 
 ## Фаза 8 — SEO, согласие, аналитика, Preview
 

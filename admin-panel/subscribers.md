@@ -1,6 +1,6 @@
 # Раздел Subscribers — правила и концепции
 
-> Last updated: 2026-08-13 | Source project: web.admin — пути `src/…` относятся к репозиторию `web.admin/`
+> Last updated: 2026-10-18 (Urban Gardener подключён в Фазе 7: `urban_gardener.subscribers`, миграция 0025; раздел включён в `sections` сайта `urban-gardener`, CSV `urban-gardener-subscribers-<дата>.csv`) | Source project: web.admin — пути `src/…` относятся к репозиторию `web.admin/`
 
 Документ фиксирует, как устроен раздел Subscribers админки: контракт с данными и
 решения по UI. Модель данных — [../database/schema.md](../database/schema.md) §5

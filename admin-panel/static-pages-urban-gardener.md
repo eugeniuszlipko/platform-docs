@@ -9,9 +9,9 @@
 ## 1. Где живёт
 
 Всё — в **Pages** (`/:siteSlug/pages`). Список Urban: закреплённая строка **Site settings** (бейдж `global`, маршрут `pages/site-settings`,
-стоит в роутере выше `pages/:pageId`), затем Homepage, About, Privacy, Terms. Строки `pages` заводят миграции (создать/удалить из админки нельзя).
+стоит в роутере выше `pages/:pageId`), затем Homepage, About, Contact, Privacy, Terms. Строки `pages` заводят миграции (создать/удалить из админки нельзя).
 `PagesEditRoute` для Urban — `UgPageEditRoute`: по `:pageId` находит строку и выбирает редактор **по её slug** (`home` → Homepage, `about` → About,
-`privacy`/`terms` → текст); чужой id или страница без редактора (`contact`) → «Page not found.». У Cozy/Avocado поведение не менялось.
+`contact` → Contact, `privacy`/`terms` → текст); чужой id или страница без редактора → «Page not found.». У Cozy/Avocado поведение не менялось.
 
 ## 2. Экраны (общее)
 
@@ -49,6 +49,14 @@ TipTap при сериализации экранирует `_` в тексте 
 
 Ссылки (`isSafeHref`), e-mail (`UG_EMAIL`) и лимиты (4/8/4) совпадают в: БД (миграции 0017/0020: `is_safe_href`, `valid_links`, `valid_footer_columns`, CHECK и RPC), сайте (`lib/static-pages-utils.ts`), админке
 (`src/lib/ugStatic.ts`, `ugStaticForm.ts`). Тексты по умолчанию (`UG_ABOUT_DEFAULTS`, `UG_SETTINGS_DEFAULTS`) — копия `ABOUT_FALLBACK` и констант `lib/site.ts` сайта (placeholder'ы полей); `ugHeroTitle.parseHeroTitle` — как у Homepage.
+
+## 6a. Contact (Фаза 7, миграция 0028)
+
+Pages → Contact (`UgContactPage.tsx`, образец — About). Поля: **SEO** (title/description), **Page header** (eyebrow, headline, line under it — `pages.hero_*`), четыре **карточки** (Email us: заголовок и текст; Press & partnerships: заголовок, текст и **e-mail** для `mailto:` — формат как у e-mail в Site settings; Where we are; Find us on social), **Message form** (заголовок и строка под ним). Пустое поле → `null` → сайт показывает текст референса (placeholder = этот текст). Лимиты = CHECK БД: заголовки ≤ 120, тексты ≤ 400, адрес ≤ 254. **Адрес карточки «Email us» здесь не правится** — он берётся из Site settings → Contact e-mail (один адрес для Privacy/Terms/Contact); иконки соцсетей — из Site settings. Один Save → RPC `save_contact_page(p_page_id, p_page, p_contact)` (pages и contact_content одной транзакцией); ошибки — как в §7. Зеркала текстов по умолчанию: `ugStaticForm.ts` (`UG_CONTACT_DEFAULTS`, `UG_CONTACT_HEAD_DEFAULTS`) ↔ urban.gardener `lib/contact.ts` (`CONTACT_FALLBACK`) и `app/contact/page.tsx` (`HEAD_FALLBACK`) ↔ сид 0028.
+
+## 6b. Site settings → Newsletter popup (Фаза 7, миграция 0026)
+
+Раздел «Newsletter popup»: переключатель **Show the popup** (`newsletter_popup_enabled`, по умолчанию вкл) и поле **Show again no sooner than (days)** (`newsletter_popup_days`, целое 1–365, по умолчанию 30). Поле текстовое (чтобы «7 дней» или пустое не превращалось молча в число); схема требует `^\d+$` и диапазон; в RPC уходит **boolean и число** (строка вместо числа даёт 22023). Читается вместе с остальными настройками (мусор/нет колонок → вкл и 30). Сайт подхватывает за ≤ 60 с (ISR layout).
 
 ## 7. Ошибки сохранения
 

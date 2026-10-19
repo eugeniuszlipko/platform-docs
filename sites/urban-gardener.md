@@ -2,7 +2,7 @@
 
 > Last updated: 2026-10-17 | Source: референс `urban.gardener/mockups/Urban Gardener.html`
 > (статичный HTML-прототип) + решения владельца от 2026-10-14. Статус: **Фазы 0–6 приняты
-> (Фаза 6 «Search» — 2026-10-17, задеплоена); Фаза 7 «Newsletter + Contact» спланирована (2026-10-17), ждёт «утверждаю» владельца, код не начат** (форма Contact принимает сообщения — D38 заменяет D9). Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
+> (Фаза 6 «Search» — 2026-10-17, задеплоена); Фаза 7 «Newsletter + Contact» реализована и проверена автоматически (2026-10-18), ждёт приёмки владельца и ключа `SUPABASE_SECRET_KEY` в Vercel Urban** (форма Contact принимает сообщения — D38 заменяет D9). Этапный план — [urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md](urban-gardener/plans/2026-10-14-urban-gardener-roadmap.md).
 
 Журнал об уходе за комнатными растениями (английский UI) + курируемый каталог
 растений и товаров с внешними ссылками (Amazon), без корзины и оплаты. Часть
