@@ -58,6 +58,15 @@ Pages → Contact (`UgContactPage.tsx`, образец — About). Поля: **S
 
 Раздел «Newsletter popup»: переключатель **Show the popup** (`newsletter_popup_enabled`, по умолчанию вкл) и поле **Show again no sooner than (days)** (`newsletter_popup_days`, целое 1–365, по умолчанию 30). Поле текстовое (чтобы «7 дней» или пустое не превращалось молча в число); схема требует `^\d+$` и диапазон; в RPC уходит **boolean и число** (строка вместо числа даёт 22023). Читается вместе с остальными настройками (мусор/нет колонок → вкл и 30). Сайт подхватывает за ≤ 60 с (ISR layout).
 
+## 6c. Site settings → Analytics (Фаза 8, миграция 0029)
+
+Блок «Analytics» (раздел `<section aria-labelledby="ug-set-analytics">`, под «Newsletter popup»), сохраняется той же кнопкой Save через RPC `save_site_settings`.
+- **GA4 ID** — `G-XXXXXXXXXX` (`^G-[A-Z0-9]{6,14}$`, заглавные буквы и цифры). Пусто → `null` → сайт не грузит ничего; значение грузится только после «Accept» посетителя в cookie-баннере (на сайте формат проверяется ещё раз — ID попадает в inline-скрипт). Неверный формат — ошибка у поля «GA4 ID must look like G-XXXXXXXXXX…», запрос не отправляется.
+- **Search Console verification** (необязательно) — только токен (`content="…"` мета-тега Google), `^[A-Za-z0-9_-]{20,120}$`; вставка целого `<meta …>` отклоняется («Use the token only…»). На сайте — `<meta name="google-site-verification">` (не скрипт, согласия не требует). Не нужно, если домен подтверждается через DNS.
+- Произвольный код (GTM-сниппеты и т.п.) не принимается: решение владельца P1 (XSS / обход согласия).
+- Зеркала форматов — менять во всех местах: БД (CHECK и RPC, 0029), `urban.gardener/lib/analytics.ts`, `web.admin/src/lib/ugStatic.ts` (`UG_GA_ID`, `UG_GSC_TOKEN`).
+- Тесты: `ugStaticForm.test.ts` (форматы, конвертеры), `UgSiteSettingsPage.test.tsx` «analytics» (показ, сохранение trimmed, отказ по формату и по целому мета-тегу, очистка → null, Save без правки Analytics сохраняет значения).
+
 ## 7. Ошибки сохранения
 
 `P0002` → «Not found or not allowed — sign in again and retry» · `22023` → «Invalid data — reload the page and try again» · `23514` → текст проверки БД как есть · прочее — `humanizeError`.

@@ -197,14 +197,16 @@ affiliate-disclosure. Откладывается сущность «Растен
 
 ## Предложенная фаза — Фокус и клавиатура (владелец 2026-10-19, место в плане не определено)
 
-> Источник — [B-008](../../../backlog/B-008-focus-and-keyboard-audit.md): двойное кольцо фокуса на полях (окно рассылки), Tab не доходит до кнопок в окне и поиске (сперва проверить настройку/браузер владельца — Safari по умолчанию не ставит кнопки в порядок Tab). Нужна единая политика кольца фокуса и проход по всем интерактивным элементам в Chrome/Safari/Firefox. **Не начинать без «Планируем фазу …» и решения, где она стоит (до Фазы 8 или перед Фазой X).**
+> Источник — [B-008](../../../backlog/B-008-focus-and-keyboard-audit.md): двойное кольцо фокуса на полях (окно рассылки), Tab не доходит до кнопок в окне и поиске (сперва проверить настройку/браузер владельца — Safari по умолчанию не ставит кнопки в порядок Tab). Нужна единая политика кольца фокуса и проход по всем интерактивным элементам в Chrome/Safari/Firefox. **Место определено владельцем 2026-10-19: после Фазы 8, перед Фазой X.** Не начинать без «Планируем фазу …».
 
-## Фаза 8 — SEO, согласие, аналитика, Preview
+## Фаза 8 — Согласие, аналитика (заготовка), Preview, SEO-каркас
 
-- [ ] 8A Метаданные страниц, OG, JSON-LD (Article, Product), `sitemap.ts` (`revalidate = 60`), `robots.ts`, canonical
-- [ ] 8B `CookieConsent` + `consent.ts` + `GoogleAnalytics` (порт из cozycorner; GA-id позже), обновить Privacy
-- [ ] 8C Preview черновиков по токену (`/preview/articles/[slug]`; миграция токена с column-grant по памяти «preview tokens»)
-- [ ] 8D Тесты, ручная проверка
+> План (**УТВЕРЖДЁН 2026-10-19; **ПРИНЯТА 2026-10-19, влита в main и запушена**): [2026-10-19-phase-8-consent-preview-seo.md](2026-10-19-phase-8-consent-preview-seo.md); спека: [../specs/2026-10-19-phase-8-consent-preview-seo-spec.md](../specs/2026-10-19-phase-8-consent-preview-seo-spec.md). Сайт не live: GA-ID, Search Console и снятие `noindex` — Фаза 9; здесь только механика (пустое поле GA = ничего не грузится).
+
+- [x] 8A Cookie-баннер (всегда) + `consent.ts` + `GoogleAnalytics` с ID из `site_settings` (Site settings → Analytics: GA4 ID + токен GSC; без произвольного кода), «Cookie settings» в подвале, точечная правка Privacy; миграция 0029
+- [x] 8B Preview статей и товаров по токену (`/preview/articles|products/[slug]`, кнопка Preview в админке; миграция 0030, column-grant по памяти «preview tokens»)
+- [x] 8C SEO-каркас без шлифовки: `sitemap.ts` (`revalidate = 60`), `robots.ts`, canonical, общий OG-хелпер, JSON-LD (Organization/WebSite, Article, Product), один переключатель индексации `ALLOW_INDEXING`
+- [x] 8D Тесты (390 px для баннера), ревью-гейт, документация
 
 ---
 
@@ -231,7 +233,7 @@ affiliate-disclosure. Откладывается сущность «Растен
 - [ ] 9.1 Домен (когда определён): Vercel Domains, `NEXT_PUBLIC_SITE_URL`, `frontendUrl` в `sites.ts`, Turnstile-хостнеймы, e-mail контактов
 - [ ] 9.2 Финальные тексты (Privacy/Terms, About, контакты, соцссылки вместо `instagram.com` и т.п.)
 - [ ] 9.3 Lighthouse на боевом домене (прогон build/lint/test/e2e, a11y, 404, мобильные — уже в Фазе X)
-- [ ] 9.4 Sitemap в Google Search Console (вручную), GA4
+- [ ] 9.4 Ввести GA4 ID и токен GSC в админке (Site settings → Analytics), `ALLOW_INDEXING=true` в Vercel Production (снимает `noindex` и открывает `robots.txt`), sitemap в Google Search Console (вручную)
 - [ ] 9.5 Документация: финальный `sites/urban-gardener.md`, `database/schema.md` (раздел urban_gardener), `admin-panel/status.md`, скилл `urban-gardener-content-ops`
 
 ---

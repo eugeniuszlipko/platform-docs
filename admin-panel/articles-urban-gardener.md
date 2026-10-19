@@ -88,3 +88,7 @@ RLS и `is_admin()` действуют как для прямой записи; 
 Vitest: `ugArticleForm` (правила публикации, блоки, конвертеры), `lib/ugArticles` (мапперы, форма RPC-вызова, проверка ответа), `lib/ugTaxonomy`
 (защита удаления темы/автора, «0 строк» = ошибка, счётчики), `lib/ugDb`, `topicForm`, `authorForm`, `config/sites`, компоненты `UgBlocksEditor`, `UgTopicsField`,
 `TaxonomyManager` с `config.usage`. RPC и триггер проверены на живой БД SQL-симуляцией сессии админа в транзакции с откатом (2026-10-15): создание/обновление/перестановка блоков, правила публикации, защита темы, отказ не-админу и anon.
+
+## Preview (Фаза 8, миграция 0030)
+
+Кнопка **Preview** в шапке редактора (рядом с «View on site») открывает `<frontendUrl>/preview/{articles|products}/<slug>?token=<preview_token>` в новой вкладке (`target=_blank`, `rel="noopener noreferrer"`). Видна у любой СОХРАНЁННОЙ записи (черновик или опубликованная); у новой несохранённой (нет slug/токена) и при отсутствии `frontendUrl` кнопки нет. Токен читается вместе с записью (`preview_token` — колонка доступна роли `authenticated`, anon её не видит) и при сохранении НЕ отправляется (исключён из типа input). Компонент — `src/features/shared/PreviewButton.tsx`, сборка ссылки — `src/lib/ugPreview.ts` (`previewUrl`, кодирует slug/токен). Ссылка = пароль к черновику; кнопки смены токена нет (смена — SQL, см. phase-x-checklist «Фаза 8»). Тесты: `PreviewButton.test.tsx`, `UgArticleEditPage.preview.test.tsx`, `UgProductEditPage.test.tsx` («Preview»).

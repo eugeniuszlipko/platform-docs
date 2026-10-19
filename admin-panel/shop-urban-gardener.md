@@ -69,3 +69,7 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 `UgProductEditPage.test.tsx` (публикация без ссылки блокируется, Save → payload, чужая валюта не теряется, подсказки, View on site, удаление с подтверждением),
 `UgCategoriesField.test.tsx`, `shopCategoryForm.test.ts`, `ShopRoutes.test.tsx` (диспетчер по схеме; Cozy/Avocado не затронуты). Сквозной сценарий
 «создать товар → виден на сайте» — ручная проверка владельцем (спека 3D §6): автоматически под админской сессией не гоняется.
+
+## Preview (Фаза 8, миграция 0030)
+
+Кнопка **Preview** в шапке редактора (рядом с «View on site») открывает `<frontendUrl>/preview/{articles|products}/<slug>?token=<preview_token>` в новой вкладке (`target=_blank`, `rel="noopener noreferrer"`). Видна у любой СОХРАНЁННОЙ записи (черновик или опубликованная); у новой несохранённой (нет slug/токена) и при отсутствии `frontendUrl` кнопки нет. Токен читается вместе с записью (`preview_token` — колонка доступна роли `authenticated`, anon её не видит) и при сохранении НЕ отправляется (исключён из типа input). Компонент — `src/features/shared/PreviewButton.tsx`, сборка ссылки — `src/lib/ugPreview.ts` (`previewUrl`, кодирует slug/токен). Ссылка = пароль к черновику; кнопки смены токена нет (смена — SQL, см. phase-x-checklist «Фаза 8»). Тесты: `PreviewButton.test.tsx`, `UgArticleEditPage.preview.test.tsx`, `UgProductEditPage.test.tsx` («Preview»).
