@@ -1,5 +1,5 @@
 # Urban Gardener — Фаза X: итоговая проверка перед запуском
-> Статус: ждёт утверждения (ответы получены 2026-10-19)
+> Статус: ПРИНЯТА 2026-10-19 (владелец: «Принимаю»); закоммичена и запушена на прод в тот же день; миграция 0031 применена к `base-one`
 > Техническая спека (для агента): [../specs/2026-10-19-phase-x-final-check-spec.md](../specs/2026-10-19-phase-x-final-check-spec.md)
 > Источник: накопительный список [phase-x-checklist.md](phase-x-checklist.md), журнал решений D1–D39 ([../../urban-gardener.md](../../urban-gardener.md) §2), правила Фазы X ([meta-planning](../../../skills/meta/meta-planning/SKILL.md) §7).
 
@@ -54,3 +54,58 @@
 
 ## 7. Как начать
 Напишите: **Начинаем фазу X**
+
+## 8. Журнал проверок и отчёт (Фаза X, 2026-10-19)
+
+**Автоматика (после всех правок).** urban.gardener: `tsc` чисто, `eslint` чисто, `npm run build` ок (в т.ч. с `ALLOW_INDEXING=true`), unit **994/994** (83 файла), e2e Chromium+WebKit+Firefox **243 прошло / 2 пропущено / 0 упало** (последний полный прогон, после всех правок) (2 пропуска — тесты превью без `SUPABASE_SECRET_KEY` локально, ожидаемо; положительный путь превью проверен на проде вручную). web.admin: `tsc -b`+`vite build` ок, `oxlint` 0 ошибок, unit **893/893** (65 файлов), e2e 2/2.
+
+### Журнал «решение → как проверено → итог»
+| Источник | Как проверено | Итог |
+|---|---|---|
+| D1, D14 (ISR, без `force-cache`) | `grep revalidate` по `app/`: все контентные страницы + layout + sitemap = 60; `grep force-cache` — пусто; сборка/lint/тесты обоих репо | ✅ |
+| D2 (схема, бакет, ключи) | миграции 0001–0030 = `list_migrations` base-one (без дрейфа); в репо секретов нет (`.env.local` не в git, `SUPABASE_SECRET_KEY` только в серверном `lib/supabase/service.ts`); бакет `urban-gardener-photos`: публичное чтение, запись только админу | ✅ |
+| D3, D28 (Amazon-ссылки) | e2e `shop.spec.ts` (target, `rel="sponsored noopener noreferrer"`, https, canonical); `safeAffiliateUrl` = только https | ✅ |
+| D4, D17–D19, D24 (статьи, темы, фильтр) | e2e `articles.spec.ts` (+390 px), `mobile-sweep` | ✅ |
+| D5 (автор) | SQL: `articles_author_id_fkey` = `ON DELETE NO ACTION` — автор со статьями не удаляется | ✅ |
+| D6, D26–D30 (каталог) | e2e `shop.spec.ts`; ценовые диапазоны фиксированы кодом (не от данных) | ✅ |
+| D8, D38 (рассылка, Contact) | e2e `newsletter`/`contact`; anon: insert в `subscribers`/`messages` → 401; живая запись формы боевым Turnstile — ручная (см. §6) | ✅ авто / ⏳ ручная |
+| D10, D39 (cookie, GA, согласие) | e2e `consent.spec.ts`; **баг найден и исправлен:** «Decline → Accept» в той же вкладке не включал GA обратно (флаг `ga-disable` не снимался) — тест добавлен | ✅ (исправлено) |
+| D11 (превью, токен скрыт) | SQL: `preview_token` у anon без права чтения (articles/products); PostgREST anon → 401; **прод:** черновик «Test preview» с верным токеном → 200, `noindex`, `no-referrer`, `no-store`, без GA; чужой токен/без токена → 404 | ✅ |
+| D12 (поиск по БД) | e2e `search.spec.ts`; **прод:** `/search` ≈0.7–1.1 с в WebKit/Firefox/Chromium, холодный старт до 5 с; WebKit-заглушка из dev на проде не воспроизводится | ✅ |
+| D16 (язык) | ревью React: UI на английском | ✅ |
+| D20–D23 (контент, ISR при сбое, env) | `fetchX` бросают при ошибке Supabase; **усилено:** отсутствие строки `pages.home`/`site_settings`/`about_content`/`contact_content` на проде теперь тоже бросает (раньше — тихо подставлялись константы и кэшировались); `facets.count == null` теперь тоже ошибка | ✅ (улучшено) |
+| D25 (скроллбар) | md5 трёх файлов одинаков в 4 репо и в `platform-docs` | ✅ |
+| D36 (шапка из админки) | e2e `shell.spec.ts` (**исправлено:** тест не привязан к числу/набору соцсетей) | ✅ |
+| Правило Фазы 2: у `[slug]` нет `loading.tsx` | `find loading.tsx`: только `search`, `shop/(hub)`, `articles/(listing)` (route groups); **прод:** `/articles/nope`, `/topics/nope`, `/shop/nope`, `/product/nope`, `/nope` → настоящие 404 | ✅ |
+| Правило Фазы 2: нет `searchParams` на ISR-страницах | `grep`: только `/search` и `/preview/*` (динамические), остальное — клиентский `useSearchParams` | ✅ |
+| Правило Фазы 2: закрытые таблицы | anon → 401 на `media`, `admin_folders`, `subscribers`, `messages`; anon не пишет (PATCH/DELETE/INSERT → 401); RPC `save_*` для anon — `permission denied`; `search_content` открыт намеренно | ✅ |
+| Правило Фазы 2: картинки отвечают 200 | 22 внешних Unsplash-URL + ключ бакета — все 200; `alt` пустой только у черновика «Test preview» | ✅ |
+| Правило Фазы 2: «Test Article»/«Test product» | живые тестовые записи есть (в sitemap тоже) — по решению владельца чистятся в Фазе 9 | ⏳ Фаза 9 |
+| Фаза 5: `safeupdate`, `where true` | `pg_roles.authenticator` = `safeupdate`; `database-reviewer`: все UPDATE/DELETE с WHERE | ✅ |
+| Фаза 6: `/search?q=%00ab` (NUL в поле) | прод: NUL был в HTML (2 строки); **исправлено** (`cleanQueryText`), unit + e2e; на проде проверить после выкладки | ✅ (исправлено) |
+| Фаза 8: robots/sitemap/мета | локальная сборка `ALLOW_INDEXING=true`: `robots.txt` Allow + Sitemap, страницы `index, follow`, `/search` `noindex, follow`, `/design` `noindex,nofollow`, 404 `noindex`; sitemap 41 URL без `/search`, `/design`, `/preview`; JSON-LD Organization+WebSite везде, Article/Product (без `offers`) на своих страницах — валидный JSON; **прод (закрыт):** `Disallow: /`, `noindex, nofollow`, `/sitemap.xml` существует | ✅ |
+| Фокус (B-008) | e2e `focus.spec.ts` на 3 движках; **найден и исправлен** нестабильный тест (1 из 15 падал — гонка с гидрацией), 40/40 после правки | ✅ |
+| 390 px у каждого среза | новый `mobile-sweep.spec.ts`: 12 страниц + 404 на 390 px (нет горизонтального переполнения, один `h1`, нет ошибок в консоли) + прежние мобильные блоки спеков; детектор проверен «от противного» (на 250 px краснеет) | ✅ |
+| B-005 (шапка 320 px) | красный тест до правки (328 px), зелёный после; 7 страниц на 320 px, запас под кольцо фокуса | ✅ |
+| B-007 (e2e и живые данные) | запуск с живыми «Test product €100» и примерными брендами — зелёный; убраны привязки к числу/набору соцсетей и точному списку брендов категории; остаются привязки к сидовым именам (по правилу testing.md) и к примерным брендам — **при замене брендов в Фазе 9 поправить 2 теста** | ✅ |
+| B-004 (права БД) | миграция 0031 применена; `has_table_privilege`: TRUNCATE/REFERENCES/TRIGGER у anon/authenticated — нет ни у одной таблицы схемы; админ сохраняет DML; default-privileges для новых таблиц сняты; защита удаления темы: удаление «единственной темы» опубликованной статьи → `23514`, безопасной темы → 1 строка (оба в откатываемой транзакции) | ✅ |
+| Advisors (security/performance) | security: 3 WARN — не про Urban (`public.is_admin()` исполним ролями — общий для воркспейса и нужен политикам; Leaked password protection выключена в Auth проекта); performance: «multiple permissive policies» (паттерн «Admin all + Public read», безвреден на этих объёмах), unused indexes (пустая база) | ✅ принято |
+
+### Ревью (по одному на слой)
+| Слой | CRITICAL | HIGH | Исправлено | Вынесено |
+|---|---|---|---|---|
+| `database-reviewer` (0001–0031) | 0 | 0 | порядок блокировок/`order by` в guard, default privileges, расширенная страховка миграции | CHECK-и публикации у `articles`, порядок блокировок в `save_article` → B-011 |
+| `silent-failure-hunter` | 0 | 0 | отсутствие строки на проде → ошибка; `facets.count == null`; тестовый секрет Turnstile на проде → «недоступно» | лимит 1000 строк в остальных загрузчиках, тихие потери в админке → B-012 |
+| `react-reviewer` сайт | 0 | 0 | GA после повторного Accept; дубль ключей меню; окно рассылки на `/preview` | `/design` публичен (в списке Фазы 9) |
+| `react-reviewer` админка | 0 | 1 | форма статьи не стирается при сбое фонового обновления (+тест, красный до правки); удаление подписчика «в ноль строк» = ошибка; CSV-формулы; единые проверки ссылок на картинки; guard 1000 строк | атомарность reorder → B-012 |
+| `a11y-architect` | 0 | 1 | меню на низком экране прокручивается; фокус после выбора в баннере; фокус после «Show more plants»; цель «Cookie settings»/юр-ссылок ≥ 24 px; рамка фильтров (решение владельца) | высота зазора под баннер зафиксирована 12rem (→ checklist) |
+| `seo-specialist` | 0 | 1 | meta description у товара без текстов; обрезка анонса статьи до 160; заголовки Shop/About/Contact (решение владельца); Turnstile грузится по требованию | товары 13+ в категории → B-010; Product без `offers` (решение владельца, ожидаемы пометки в Search Console) |
+
+### Скорость (Lighthouse, прод urban-gardener.vercel.app, до правок)
+Мобильный / десктопный перформанс: `/` **71 / 98**, `/articles` 81 / 100, тема 96 / 100, статья 88 / 100, `/shop` 95 / 99, категория 93 / 99, товар 88 / 99, поиск 96 / 99, About 95 / 100, Contact 90 / 99. CLS ≈ 0 везде (0.073 на десктопном `/shop`), TBT ≤ 24 мс; a11y 97–100; best-practices 96; SEO 61–69 — это закрытая индексация (`noindex`), ожидаемо. **Причина слабой главной на телефоне (LCP 9.1 с, элемент — заголовок):** ~900 КБ скриптов Cloudflare Turnstile грузились сразу (форма рассылки на главной) и забивали медленный канал. Исправлено: Turnstile грузится при фокусе/вводе в форме или когда форма подошла к экрану; локальная сборка: перформанс **91**, запросов к Cloudflare при загрузке **0**. Повторить замер на проде после выкладки.
+
+### Что изменилось по сравнению с планом
+- Добавлено по находкам (баги, чинил сам): GA после повторного Accept, редактор статьи при сбое фона, удаление подписчика, CSV-инъекция, фокус после баннера и «Show more», меню на низком экране, «тихие» подстановки при пропавшей строке, тестовый секрет Turnstile, нестабильный e2e.
+- По ответам владельца: миграция 0031 применена; заголовки Shop/About/Contact переписаны (**в коде как встроенные значения** — «Houseplants we recommend», «About — a houseplant care journal», «Contact the team»; суффикс «— Urban Gardener» добавляет шаблон; правятся из админки); рамка Brand/Price — токен `--field-border`.
+- Не делал (по плану): живой контент, Vercel env, B-006.
+
