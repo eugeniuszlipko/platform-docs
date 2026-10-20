@@ -38,6 +38,7 @@ Read these files only when the task requires it:
 | Per-repo GitHub account (SSH setup) | platform-docs/methodology/github-account-per-repo.md | Moving a repo to a different GitHub account (Vercel Hobby plan limits), setting up push access locally |
 | ECC subset (external skills + reviewers) | platform-docs/skills/ecc/README.md | Choosing which skill/reviewer agent to use for React, a11y, DB migrations, SEO; adding or updating vendored skills |
 | Backlog (находки по ходу: баги соседних проектов, идеи фич) | platform-docs/backlog/README.md | Нужно записать находку, не раздувая фазу; посмотреть, что отложено |
+| Фаза Y — чистка тестов и тесты на локальной БД (ОТЛОЖЕНА владельцем 2026-10-20; план и спека готовы) | platform-docs/sites/workspace/plans/2026-10-20-phase-y-test-overhaul.md, backlog/B-021-phase-y-test-overhaul-deferred.md | Владелец говорит «Планируем/Начинаем фазу Y», просит убрать/переписать тесты или поднять тестовую БД |
 | **Мета** (общие правила всех проектов: планирование, вопросы, старт/приёмка фазы, Фаза X) | platform-docs/skills/meta/README.md, skills/meta/meta-planning/SKILL.md | Любое планирование фазы/фичи, вопросы владельцу, старт «Начинаем фазу N», приёмка, итоговая проверка |
 | Connector content-ops skills | platform-docs/skills/README.md | Loading/editing the claude.ai content-ops skills (per-site content editing) |
 
