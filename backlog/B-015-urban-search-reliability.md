@@ -4,4 +4,4 @@
 
 **Гипотезы (не проверены).** `components/search/HeaderSearch.tsx`: (1) ленивый `import()` supabase-js + `searchContent` при первом запросе — холодный старт; пока он идёт, следующий символ запускает cleanup эффекта (`stale = true`), ответ отбрасывается, и всё начинается заново; (2) debounce 250 мс + холодный RPC в Supabase; (3) гонки ответов при быстром наборе; (4) нет кэша повторных запросов и отмены сетевого запроса (AbortController).
 
-**Предложение:** фаза Z — [plans/phase-z-search-reliability.md](../sites/urban-gardener/plans/phase-z-search-reliability.md). **Нужно решение владельца:** нет. **Статус:** в плане (фаза Z).
+**Предложение:** фаза Z — [plans/phase-z-search-reliability.md](../sites/urban-gardener/plans/phase-z-search-reliability.md). **Нужно решение владельца:** нет. **Статус:** сделано в фазе Z 2026-10-20 (ветка `feat/phase-z-search`, не закоммичена; ждёт приёмки). Корень — гипотеза (3)/(1) в уточнённом виде: каждый символ отбрасывал ответ запроса «в полёте» (`stale`), а круг запроса (1–2 с) длиннее паузы между символами. Отчёт — в плане фазы Z. Нагрузка на БД — [B-016](B-016-urban-search-db-scaling.md).

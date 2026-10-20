@@ -20,5 +20,5 @@
 | [B-012](B-012-row-limit-guards-and-admin-silent-drops.md) | Лимит 1000 строк PostgREST и тихие потери в админке Urban | urban.gardener, web.admin | новая |
 | [B-013](B-013-urban-spec-list-hidden.md) | Таблица характеристик товара скрыта на фронте — удалить совсем или вернуть | urban.gardener, web.admin | ждёт решения |
 | [B-014](B-014-urban-dormant-affiliate-columns.md) | Неиспользуемые колонки `affiliate_disclosure`/`price_note` в БД Urban | urban.gardener | новая |
-| [B-015](B-015-urban-search-reliability.md) | Поиск: первые запросы не показывают подсказки, нужна проверка скорости и нагрузки (фаза Z) | urban.gardener | в плане (фаза Z) |
-
+| [B-015](B-015-urban-search-reliability.md) | Поиск: первые запросы не показывают подсказки, нужна проверка скорости и нагрузки (фаза Z) | urban.gardener | сделано в фазе Z (клиент; ждёт приёмки) |
+| [B-016](B-016-urban-search-db-scaling.md) | Поиск Urban: функция в базе читает всю таблицу — стоимость растёт линейно (замер: 3 мс сейчас, ~100 мс при 1000+900) | urban.gardener | новая (вернуться при > ~300 статей/товаров) |
