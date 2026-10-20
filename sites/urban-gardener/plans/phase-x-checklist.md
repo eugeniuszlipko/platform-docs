@@ -10,7 +10,7 @@
 |---|---|---|
 | D1, D14 | Стек и тесты: SSG+ISR `revalidate = 60` на всех контентных страницах, нигде `force-cache` к Supabase; `build`, `lint`, unit, e2e зелёные в обоих репо | grep + прогон |
 | D2 | Схема `urban_gardener` и бакет `urban-gardener-photos`; публичные запросы только publishable-ключом, секретных ключей в репо/Vercel-публичных переменных нет | grep, Vercel env |
-| D3, D28 | Нет корзины и оплаты; кнопка «Find on Amazon» — только https, `rel="sponsored noopener noreferrer"`, новая вкладка; disclosure на странице товара | e2e + компонентные |
+| D3, D28 | Нет корзины и оплаты; кнопка «Find on Amazon» — только https, `rel="sponsored noopener noreferrer"`, новая вкладка; ~~disclosure на странице товара~~ (убран по решению владельца 2026-10-20, D40 — перепроверить юридически до запуска) | e2e + компонентные |
 | D4, D17–D19, D24 | Статьи: блоки text/heading/callout/image/list; Topic (M2M, первая = основная) + Level; `/articles`, `/articles/[slug]`, `/topics/[slug]`; клиентский фильтр уровня, canonical без query; у каждой таксономии есть публичный фильтр | e2e `articles.spec.ts` |
 | D5 | Автор — отдельная сущность; автор со статьями не удаляется | SQL + тест админки |
 | D6, D26–D29 | Каталог как у CozyCorner: хаб — карточки категорий; категории M2M (первая = основная); бренды; фильтры Brand/Price (dropdown); цена числом + валюта; плоский `/product/<slug>`; Related по общим категориям; шапка без фото-баннера, крошки внутри шапки | e2e `shop.spec.ts` (после Фазы 3), сверка с кодом Cozy |

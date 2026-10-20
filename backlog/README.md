@@ -18,4 +18,7 @@
 | [B-010](B-010-shop-category-crawlability.md) | Товары 13+ в категории не видны краулеру (только кнопка «Show more») | urban.gardener | новая (вернуться при > 12 товаров в категории) |
 | [B-011](B-011-urban-db-hardening-leftovers.md) | БД Urban: CHECK-и публикации у `articles`, порядок блокировок | urban.gardener | новая |
 | [B-012](B-012-row-limit-guards-and-admin-silent-drops.md) | Лимит 1000 строк PostgREST и тихие потери в админке Urban | urban.gardener, web.admin | новая |
+| [B-013](B-013-urban-spec-list-hidden.md) | Таблица характеристик товара скрыта на фронте — удалить совсем или вернуть | urban.gardener, web.admin | ждёт решения |
+| [B-014](B-014-urban-dormant-affiliate-columns.md) | Неиспользуемые колонки `affiliate_disclosure`/`price_note` в БД Urban | urban.gardener | новая |
+| [B-015](B-015-urban-search-reliability.md) | Поиск: первые запросы не показывают подсказки, нужна проверка скорости и нагрузки (фаза Z) | urban.gardener | в плане (фаза Z) |
 
