@@ -23,4 +23,7 @@
 | [B-015](B-015-urban-search-reliability.md) | Поиск: первые запросы не показывают подсказки, нужна проверка скорости и нагрузки (фаза Z) | urban.gardener | сделано в фазе Z (клиент; ждёт приёмки) |
 | [B-016](B-016-urban-search-db-scaling.md) | Поиск Urban: функция в базе читает всю таблицу — стоимость растёт линейно (замер: 3 мс сейчас, ~100 мс при 1000+900) | urban.gardener | новая (вернуться при > ~300 статей/товаров) |
 | [B-017](B-017-e2e-on-local-test-db.md) | e2e на локальной тестовой базе вместо живых данных (после Фазы Y, шаг Y3) | cozycorner, avocado.kiss, urban.gardener | новая |
+| [B-018](B-018-skills-download-section.md) | Раздел «Skills» в админке со скачиванием актуального скилла (вариант A: ZIP в браузере из GitHub) + сверка/обновление скиллов в claude.ai, скилл Urban | web.admin, platform-docs | в плане (Фаза P, части 1 и 2; ОТЛОЖЕНА 2026-10-20) |
+| [B-019](B-019-seo-posts-avocado-urban.md) | SEO-посты для Avocado Kiss и Urban Gardener по образцу CozyCorner | avocado.kiss, urban.gardener, web.admin | в плане (Фаза P, часть 1, шаги P4–P5; ОТЛОЖЕНА 2026-10-20) |
+| [B-020](B-020-avocado-shop-drafts.md) | Черновики для магазина Avocado Kiss (сейчас всё публикуется сразу) | avocado.kiss, web.admin | ждёт решения (отложено владельцем 2026-10-20) |
 | [B-021](B-021-phase-y-test-overhaul-deferred.md) | Фаза Y: чистка тестов + интеграционные тесты бэкенда на локальной БД (план и спека готовы) | все репо | отложена владельцем 2026-10-20 |
