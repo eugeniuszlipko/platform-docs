@@ -56,7 +56,7 @@ UX-детали — [components.md](components.md) §3.7. Читать этот 
   diff-sync поверх `updateProduct`. Колонки `products.category` больше нет.
 - **`brand` товара = `brands.name`** (текст, не FK). Редактируется `TaxonomyCombobox`
   (`src/features/taxonomy/`): выбор существующего, создание на месте, None (пустая строка
-  → `null`), Manage…. Brand — таблица `brands` (миграция 0023), не free-text.
+  → `null`), Manage… (кнопка закреплена под поиском, см. components.md §3.11). Brand — таблица `brands` (миграция 0023), не free-text.
 
 ## 2. Список (`src/features/products/ProductsPage.tsx`)
 

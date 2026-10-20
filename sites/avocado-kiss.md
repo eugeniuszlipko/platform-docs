@@ -586,7 +586,7 @@ Supabase; **не** `server-only` — `ProductGrid` вызывает `fetchProduc
 - `/shop` — хаб: `ShopHero` из hero-полей строки `pages.shop`
   (`hero_eyebrow`/`hero_title`/`hero_description`/`hero_image_path`, мигр. 0010;
   фолбэк на код-константу `HUB_HERO`, если поле пусто) + сетка категорий
-  (`fetchShopCategories`, сортировка `position, name`, «N items» из
+  (`fetchShopCategories`, алфавитно по имени без регистра, «N items» из
   `item_count`) + «Editors' picks this month» (`fetchEditorsPicks`, 4 товара).
   SEO и hero-баннер — из одной строки `pages.shop` (`fetchPageSeo('shop')`).
 - `/shop/[category]` — страница категории: `ShopHero` из полей `shop_categories`
@@ -654,7 +654,7 @@ service-role); проекция рецепта → `ReadingItem` (`href=/recipes
 | `searchCategories` | `categories` | name | — | `position, name` |
 | `searchPosts` | `posts` | title, excerpt | `is_published=true` (у posts **нет** `post_type`) | `published_at desc, id desc` |
 | `searchProducts` | `products` | title, description, brand | — (нет `is_published`; наличие = живой) | `created_at desc, id desc` |
-| `searchShopCategories` | `shop_categories` | name | — | `position, name` |
+| `searchShopCategories` | `shop_categories` | name | — | `name` |
 
 - `sanitizeSearchQuery` — обрезает до 100 символов, заменяет ломающие `.or()`
   символы `,()` пробелами, экранирует спецсимволы LIKE `\ % _`; пустая строка на

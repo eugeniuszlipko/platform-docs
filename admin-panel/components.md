@@ -369,6 +369,15 @@ rename/delete каскадят в `products` (см. [products.md](products.md) �
   Hero title, Hero description (Textarea), SEO-секция со свёрткой и живым фолбэком
   (seo_title→name, seo_description→hero_description). Поля `hero_badge` и
   `hero_image_path` в этот заход не редактируются.
+- **Алфавитный порядок категорий (2026-10-20):** у `categoryConfig` и `ugShopCategoryConfig`
+  стоит `alphabetical: true` — список сортирует загрузчик (`listCategories`,
+  `listUgShopCategories`; компаратор `byName` в `src/lib/alphabetical.ts`: по имени без
+  регистра = по первому слову), стрелки ↑/↓ скрыты. `position` в БД не трогаем и не
+  переписываем (reorder-код остаётся, нужен брендам/темам/уровням/recipe categories и
+  если вернём ручной порядок). Тот же порядок — на сайтах: `fetchCategories` (cozycorner),
+  `fetchShopCategories` (avocado.kiss, urban.gardener), поиск категорий — по имени.
+  Не затронуто: Recipe categories (avocado, порядок = меню шапки) и «главная категория»
+  товара (наименьший `position`).
 - **Brands** (без `editor`): имя, счётчик, стрелки, кнопка **Rename** (инлайн-инпут
   Enter/Esc/✓✕, как у папок) и **Delete**. Модалки нет.
 
@@ -377,6 +386,10 @@ Manage… открывает `TaxonomyManager` в модалке). Все пун
 и внутри `CommandGroup` (единый инсет `p-1`), чтобы фон при наведении не «налазил»
 ближе к краю, чем у сгруппированных элементов (`ui/command.tsx` руками не правим —
 только через `className` на `CommandItem`; 2026-07-22).
+**«Manage …»** (2026-10-20) — не пункт списка, а закреплённая кнопка сразу под полем
+поиска (вне `CommandList`, в обёртке `p-1` + `border-b`; те же `rounded-sm px-2 py-1.5
+hover:bg-muted`, что у пунктов): видна без прокрутки длинного списка и не фильтруется
+поиском. «Create "…"» остаётся в списке.
 
 ## 4. Паттерны взаимодействия
 
