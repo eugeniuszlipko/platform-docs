@@ -470,3 +470,7 @@ hover:bg-muted`, что у пунктов): видна без прокрутки
 - Выбор картинок в CRUD — пикер поверх `listImages` (см. [media.md](media.md) §5);
   превью поля — через `ImagePreviewPicker`, bulk-удаление — через `useBulkDelete`
   + `BulkDeleteButton` (§4), не переизобретать.
+
+
+## Clear site cache (2026-10-21)
+В левом меню каждого сайта (`SiteLayout`) под списком разделов — кнопка «Clear site cache» (`components/ClearSiteCacheButton.tsx`): вызывает `<schema>.request_revalidate()` (только админ) → сайт сбрасывает ISR-кэш всех страниц. Кроме кнопки, тот же сброс запускается автоматически после каждой успешной мутации (`lib/siteCache.ts`, `createAppQueryClient`, дебаунс 1,5 с; мутация с `meta: { skipCacheClear: true }` пропускается). Не сбрасывает кэш браузера, `next/image` и Supabase Storage.

@@ -6,4 +6,4 @@
 
 **Предложение.** Новая миграция: `revoke select on avocado_kiss.posts, avocado_kiss.recipes from anon` + `grant select (<все колонки кроме preview_token и publish_at>)` (список из information_schema, как в 0020/0023). Безопасно: публичные загрузчики сайта читают явные списки колонок (`lib/columns.ts`; `select("*")` остался только в `lib/search.ts`, `lib/blog.ts:191`, `lib/shop.ts:86,100` — проверить, не anon ли это по этим таблицам, и перевести на явные списки ДО миграции). Не повторять `grant select on all tables` в будущих миграциях.
 
-**Статус:** новая. Уровень 2–3 (права БД; `database-reviewer`).
+**Статус:** СДЕЛАНО 2026-10-21 (avocado.kiss миграция `0026`, применена к base-one). `preview_token` и `publish_at` anon больше не читает (`has_column_privilege` = false); публичные страницы и полная сборка (139 страниц) работают. Заодно сняты права anon на таблицы только для админа/сервера: `subscribers`, `recipe_ratings`, `admin_folders`, `media` (публичный код их не читает; подписка идёт service-role).

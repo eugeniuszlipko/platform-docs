@@ -27,4 +27,4 @@
 | [B-019](B-019-seo-posts-avocado-urban.md) | SEO-посты для Avocado Kiss и Urban Gardener по образцу CozyCorner | avocado.kiss, urban.gardener, web.admin | в плане (Фаза P, часть 1, шаги P4–P5; ОТЛОЖЕНА 2026-10-20) |
 | [B-020](B-020-avocado-shop-drafts.md) | Черновики для магазина Avocado Kiss (сейчас всё публикуется сразу) | avocado.kiss, web.admin | сделано в D1 (принято 2026-10-20) |
 | [B-021](B-021-phase-y-test-overhaul-deferred.md) | Фаза Y: чистка тестов + интеграционные тесты бэкенда на локальной БД (план и спека готовы) | все репо | отложена владельцем 2026-10-20 |
-| [B-022](B-022-avocado-posts-recipes-anon-table-grant.md) | Avocado: у `posts`/`recipes` снова табличный SELECT для anon — `preview_token` читается (0021 откатила 0020); риск низкий (RLS) | avocado.kiss | новая |
+| [B-022](B-022-avocado-posts-recipes-anon-table-grant.md) | Avocado: у `posts`/`recipes` снова табличный SELECT для anon — `preview_token` читается (0021 откатила 0020); риск низкий (RLS) | avocado.kiss | сделано 2026-10-21 (миграция 0026) |
