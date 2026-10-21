@@ -474,3 +474,4 @@ hover:bg-muted`, что у пунктов): видна без прокрутки
 
 ## Clear site cache (2026-10-21)
 В левом меню каждого сайта (`SiteLayout`) под списком разделов — кнопка «Clear site cache» (`components/ClearSiteCacheButton.tsx`): вызывает `<schema>.request_revalidate()` (только админ) → сайт сбрасывает ISR-кэш всех страниц. Кроме кнопки, тот же сброс запускается автоматически после каждой успешной мутации (`lib/siteCache.ts`, `createAppQueryClient`, дебаунс 1,5 с; мутация с `meta: { skipCacheClear: true }` пропускается). Не сбрасывает кэш браузера, `next/image` и Supabase Storage.
+Под кнопкой — тумблер «Auto-clear after save» (`components/AutoClearCacheToggle.tsx`, `lib/autoClearSetting.ts`): включает/выключает только АВТОсброс; настройка своя для каждого сайта, хранится в localStorage браузера админа (`web-admin:auto-clear-cache:<site>`), по умолчанию включено. Кнопка работает независимо от тумблера.
