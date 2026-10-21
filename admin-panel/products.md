@@ -13,7 +13,7 @@ UX-детали — [components.md](components.md) §3.7. Читать этот 
 ## 1. Главные концепции и контракты
 
 - **Слой данных — `src/lib/products.ts`**: `listProducts` (облегчённый select
-  `id,title,created_at,brand,image_path,folder_id` для списка), `getProduct`, `createProduct`,
+  `id,title,created_at,brand,image_path,folder_id,is_published` для списка), `getProduct`, `createProduct`,
   `updateProduct`, `deleteProduct`. Связь товар↔категория — **many-to-many** через
   `src/lib/productCategories.ts` (`listProductCategories` — карта membership
   `productId → categoryId[]`, `getProductCategoryIds`, `add`/`removeProductFromCategory`,
@@ -23,6 +23,26 @@ UX-детали — [components.md](components.md) §3.7. Читать этот 
   **категории** каскада в товары больше нет: членство — по `category_id`, удаление категории
   чистит связи FK `on delete cascade`. Всё через `getDb(site)` — схема активного сайта,
   RLS-запись только под админом.
+- **Статус «Scheduled» (Фаза D2, cozycorner 0034 / avocado 0024 / urban 0032–0033).** Переключатель статуса в
+  `PublishActionBar` трёхпозиционный (Draft · Published · Scheduled, radiogroup); у Scheduled рядом поле
+  `datetime-local` в часовом поясе браузера с подписью пояса (GMT+2). Форма хранит пару `is_published` +
+  `publish_at` (строка datetime-local), логика — `src/lib/publishState.ts` (`resolvePublish`: будущая дата →
+  `publish_at` в UTC, прошедшая → публикуется сразу с этой датой; Published/Draft сбрасывают расписание).
+  Запланированная запись — черновик (`is_published=false`), cron `<schema>.publish_due_content()` раз в
+  минуту публикует созревшие (сайт — до ~2 мин с ISR 60 с). Urban: запланированные статья/товар проходят
+  те же предусловия, что опубликованные (фото+ссылка+категория / обложка+тема+время чтения), RPC
+  `save_article`/`save_product` принимают `publish_at`. В списках — `StatusBadge` («Scheduled · Oct 25,
+  14:00») и фильтр статуса «Scheduled».
+- **Статус «Draft/Published» и превью (Фаза D1, cozycorner 0032 / avocado 0022).** У товара есть
+  `is_published` (default false; новый товар — черновик, тост «saved as a draft — switch to
+  Published…»; существующие бэкфиллены `true`). Верх редактора — общий компонент
+  `src/features/shared/PublishActionBar` (назад · переключатель статуса · Preview + Copy preview link ·
+  Save · Delete) — тот же во всех шести редакторах записей (товары трёх сайтов, посты, рецепты, статьи).
+  Превью — сегмент `products` → `/preview/products/<slug>?token=` (`preview_token`, при сохранении не
+  отправляется). Если товар в черновике, но вставлен в другие материалы — `ProductDraftNotice`
+  (`src/lib/productUsage.ts`): cozycorner — секции товаров в постах, avocado — Editors' picks, «Pairs well with»
+  других товаров, ссылки из рецептов. Сайт скрывает такой товар молча. В списках — бейдж «Draft» и фильтр
+  статуса (`ProductsPage`, `ProductListRow`).
 - **slug не редактируется в админке.** БД-триггер `products_set_slug`
   (BEFORE INSERT OR UPDATE) генерирует slug из title, если он пуст; при create
   поле slug не отправляется вовсе, при edit показывается read-only.

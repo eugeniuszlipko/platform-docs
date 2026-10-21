@@ -45,6 +45,16 @@ Things that matter for how you operate:
 - **Draft → review → publish.** New content is created as a **draft**
   (`is_published = false`) so a human can review it in the admin and flip the
   switch. Publish immediately only on an explicit instruction.
+- **Scheduled publishing (`publish_at`, migration `0034`, Phase D2).** `posts` and
+  `products` have a nullable `publish_at timestamptz`. To schedule: keep
+  `is_published = false` and set `publish_at` to a **future** instant with an
+  explicit offset (e.g. `'2026-10-25T14:00:00+02:00'`; ask the user's time zone if
+  unclear). A minute cron job (`cozycorner.publish_due_content()`) flips due rows to
+  `is_published = true` (posts also get `published_at = publish_at`) and clears
+  `publish_at`; the site shows it within ~2 min (minute job + 60 s page cache).
+  A CHECK forbids `publish_at` on a published row, so never set both. Cancel = set
+  `publish_at = null`. A past `publish_at` is not "publish now" — publish explicitly
+  instead. Report it as "scheduled for …", not "published".
 - **Multisite.** One Supabase project (**base-one**) hosts several sites, one
   Postgres **schema per site**. CozyCorner lives in schema `cozycorner`. A
   second site (`avocado_kiss`) shares the project but is **not the current
@@ -166,7 +176,12 @@ are in schema `cozycorner`.
   `description` (markdown subset: paragraphs, `-`/`1.` lists, `**bold**`,
   `*italic*`; no links/headings/code), `image_style` (`photo` = full-bleed live
   photo; `cutout` = no-background product on white, padded), optional
-  `seo_title`/`seo_description`. Don't send `slug`. New product with an unknown
+  `seo_title`/`seo_description`. Don't send `slug`. **`is_published`** (since
+  migration `0032`, Phase D1): boolean NOT NULL, **default `false`** — a new
+  product is a **draft**, hidden on the site, in search, in the sitemap and inside
+  post product sections, until `is_published = true`. Always set it explicitly
+  (`false` unless told to publish; existing products were backfilled `true`).
+  `preview_token` is DB-generated — never send it. New product with an unknown
   category/brand → confirm whether to also create that category/brand row.
 - **categories** — cards on `/shop` and `/shop/[slug]` pages. `name` (the join
   key), `position` (order), `image_path` (**always a cutout PNG**), optional

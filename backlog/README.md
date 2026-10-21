@@ -25,5 +25,6 @@
 | [B-017](B-017-e2e-on-local-test-db.md) | e2e на локальной тестовой базе вместо живых данных (после Фазы Y, шаг Y3) | cozycorner, avocado.kiss, urban.gardener | новая |
 | [B-018](B-018-skills-download-section.md) | Раздел «Skills» в админке со скачиванием актуального скилла (вариант A: ZIP в браузере из GitHub) + сверка/обновление скиллов в claude.ai, скилл Urban | web.admin, platform-docs | в плане (Фаза P, части 1 и 2; ОТЛОЖЕНА 2026-10-20) |
 | [B-019](B-019-seo-posts-avocado-urban.md) | SEO-посты для Avocado Kiss и Urban Gardener по образцу CozyCorner | avocado.kiss, urban.gardener, web.admin | в плане (Фаза P, часть 1, шаги P4–P5; ОТЛОЖЕНА 2026-10-20) |
-| [B-020](B-020-avocado-shop-drafts.md) | Черновики для магазина Avocado Kiss (сейчас всё публикуется сразу) | avocado.kiss, web.admin | ждёт решения (отложено владельцем 2026-10-20) |
+| [B-020](B-020-avocado-shop-drafts.md) | Черновики для магазина Avocado Kiss (сейчас всё публикуется сразу) | avocado.kiss, web.admin | сделано в D1 (принято 2026-10-20) |
 | [B-021](B-021-phase-y-test-overhaul-deferred.md) | Фаза Y: чистка тестов + интеграционные тесты бэкенда на локальной БД (план и спека готовы) | все репо | отложена владельцем 2026-10-20 |
+| [B-022](B-022-avocado-posts-recipes-anon-table-grant.md) | Avocado: у `posts`/`recipes` снова табличный SELECT для anon — `preview_token` читается (0021 откатила 0020); риск низкий (RLS) | avocado.kiss | новая |

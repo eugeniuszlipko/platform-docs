@@ -108,6 +108,8 @@
 | `image_style` | text (not null, default `photo`) | `photo` — «живое» фото, cover во всю плитку; `cutout` — товар без фона/на белом, contain с паддингами на белой плитке |
 | `seo_title` / `seo_description` | text (nullable) | SEO-оверрайды; пусто = фолбэк на `title`/`description` |
 | `folder_id` | uuid (nullable, FK → admin_folders) | папка админки (§5 admin_folders); сайт поле не читает |
+| `is_published` | boolean (not null, **default false**) | черновик/опубликован (0032, Фаза D1). Бэкфилл существующих = `true`; новые = черновик. RLS отдаёт анону только `is_published` |
+| `preview_token` | uuid (not null, default `gen_random_uuid()`) | capability-токен превью черновика (0032). Анону НЕ выдаётся (column-grant, 0033, применять ПОСЛЕ деплоя) — читает service-role на `/preview/products/[slug]` |
 
 Категория(и) товара — **many-to-many** через `product_categories` (см. ниже). Прежней
 колонки `products.category` больше нет (миграция 0028); товар может быть в 0..N категориях.
@@ -341,7 +343,16 @@ gen_random_uuid`, бэкфилл существующих строк автом�
 НЕ перекрывает табличный grant select, эффекта нет (has_column_privilege остался true) ·
 0031 корректный отзыв: `revoke select on posts` от anon + `grant select` на все колонки
 КРОМЕ preview_token (применён ПОСЛЕ деплоя явных колонок в анон-выборках — иначе анонный
-select упал бы; проверено: `has_column_privilege(anon, preview_token) = false`).
+select упал бы; проверено: `has_column_privilege(anon, preview_token) = false`) ·
+0032 products.is_published (default false, бэкфилл true) + products.preview_token; политика
+чтения анону `using (is_published)` вместо `true` (Фаза D1) ·
+0033 `revoke select on products` от anon + `grant select` на все колонки КРОМЕ preview_token
+(ПОСЛЕ деплоя cozycorner с явным `PUBLIC_PRODUCT_COLUMNS`).
+0034 (Фаза D2) `publish_at timestamptz` на `posts` и `products` + CHECK `publish_at is null or not is_published`
++ частичный индекс + `cozycorner.publish_due_content()` (security definer, права только postgres/service_role;
+построчный BEGIN/EXCEPTION — сбой одной строки не блокирует остальные, причина в `RAISE WARNING`) и
+pg_cron-задача `publish-due-cozycorner` каждую минуту. `publish_at` анону НЕ выдаётся (колонка вне column-grant).
+Аналогично avocado_kiss 0024 (`posts`, `recipes`, `products`; `publish-due-avocado_kiss`) и urban_gardener 0032 (`articles`, `products`; `publish-due-urban_gardener`; cron перед публикацией перепроверяет правила: обложка/тема/время чтения, категория) + 0033 (`save_article`/`save_product` принимают `publish_at`). Все применены 2026-10-21. Функции: `security definer`, `search_path=''`, execute только у `postgres`; строки берутся `for update skip locked`, условие повторяется в update; сбой строки — `RAISE WARNING`, запись остаётся запланированной. ⚠️ У avocado `posts`/`recipes` anon сейчас имеет табличный SELECT (0021 откатила 0020) — см. B-022.
 
 Нюанс хронологии: 0021 (`add_admin_folders`) и 0022 (`add_content_folders`) применены
 к base-one 2026-07-16 через MCP из админки **до** 0020 (`add_seo_post_type`) — файлы
@@ -679,6 +690,12 @@ admin_folders). RLS: весь CRUD — только `is_admin()`, публичн
 | `referral_url` | text (not null) | «Buy from …» — внешняя ссылка |
 | `folder_id` | uuid (nullable, FK → admin_folders, on delete set null) | папка админки (секция `products`, 0013); сайт не читает |
 | `seo_title` / `seo_description` | text (nullable) | продуктовый SEO (0013); пусто → фолбэк на `title`/`description` |
+| `is_published` | boolean (not null, **default false**) | черновик/опубликован (0022, Фаза D1, закрывает B-020). Бэкфилл существующих = `true`; новые = черновик. Анону RLS отдаёт только `is_published` |
+| `preview_token` | uuid (not null, default `gen_random_uuid()`) | capability-токен превью (0022). Анону НЕ выдаётся (column-grant, 0023, применять ПОСЛЕ деплоя) — читает service-role на `/preview/products/[slug]` |
+
+`shop_categories.item_count` (триггеры 0013 + 0022) считает **только опубликованные** товары:
+`recount_shop_category()` (security definer) вызывается триггерами на `product_categories` и на
+`products.is_published`. Остальные таблицы магазина (категории, бренды, подборки) черновиков не имеют.
 
 Связь с категориями — M2M `product_categories` (ниже). Текстовая колонка
 `products.category` **удалена** миграцией 0014 (данные перенесены в
