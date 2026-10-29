@@ -135,6 +135,14 @@
   превью `hero_image_path`) — аналог `ProductPickerDialog`, но по таблице `recipes`.
 - **Tags** (`post_tags`): мультиселект из `tags` (m2m; строки `post_tags(post_id,
   tag_id, position)`; `position` = порядок в эйброу).
+- **Справочник тегов** — раздел меню **Tags** (`/avocado-kiss/tags`, 2026-10-29):
+  generic `TaxonomyManager` с `tagConfig` (`features/taxonomy/config.ts`, данные —
+  `lib/tags.ts`). Create / inline-Rename / Delete / ↑↓ порядок; счётчик «N items» =
+  посты + рецепты (`tagUsage`: `post_tags` + `recipe_tags`, черновики тоже). Rename
+  меняет только `name` — `slug` остаётся (ссылки `/blog?tag=<slug>` не ломаются).
+  Delete снимает тег с постов/рецептов (FK `on delete cascade`). `tags.position` =
+  порядок пилюль-фильтра на `/blog` (там видны только теги хотя бы одного поста).
+  Кэш `['tags', site.slug]` общий с `TagsField`.
 
 ## 5. «Read also» — ручные пины (`post_related`), опционально
 

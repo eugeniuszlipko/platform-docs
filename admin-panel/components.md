@@ -47,6 +47,7 @@
 /:siteSlug/blog               — список постов блога
 /:siteSlug/blog/new           — создание поста
 /:siteSlug/blog/:postId       — детальная страница поста (edit/delete)
+/:siteSlug/tags               — теги постов и рецептов (avocado-kiss; CRUD + порядок)
 /:siteSlug/seo-posts{,/new,/:postId} — SEO-посты (те же компоненты, конфиг sections.ts)
 /:siteSlug/subscribers        — подписчики рассылки (список + экспорт CSV + удаление)
 *                             — redirect → /dashboard

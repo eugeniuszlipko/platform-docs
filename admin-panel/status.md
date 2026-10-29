@@ -414,6 +414,13 @@ feature-папка `features/ug-articles` (модель Topic+Level, 5 типо�
 кэши); Topics с модалкой (intro + SEO) и защитой удаления. **Authors** — новый CRUD (у Avocado автор только select). Контракт —
 [articles-urban-gardener.md](articles-urban-gardener.md). Код Avocado Blog не менялся.
 
+## Avocado Kiss: раздел Tags (2026-10-29)
+
+Справочник тегов раньше пополнялся только из `TagsField` (создание на лету) — переименовать,
+удалить или упорядочить тег было негде. Добавлен пункт меню **Tags** (`/avocado-kiss/tags`,
+`features/taxonomy/TagsPage.tsx` + `tagConfig`; `lib/tags.ts`: `renameTag`/`deleteTag`/
+`reorderTags`/`tagUsage`). Миграций нет. Подробности — `blog-avocado-kiss.md` §4.
+
 ## На потом (не забыть)
 
 - **Cloudflare Turnstile**. Ключи у пользователя уже есть: Secret Key → Supabase
