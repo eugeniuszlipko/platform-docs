@@ -7,6 +7,7 @@ model: sonnet
 
 > **Workspace notes**
 > - Vendored from affaan-m/ECC v2.2.3 (commit b92f181, MIT; see platform-docs/skills/ecc/LICENSE), read in full and adopted 2026-10-15. Workspace precedence: root AGENTS.md, platform-docs specs/schema and the workspace `testing` skill override generic advice below. References to `rules/...`, `/react-*` commands and skills/agents that are not vendored are inert — ignore them. Stack here: Next.js 16 (App Router, RSC), React 19, Vite 8, Vitest 4, Playwright, Supabase — verify framework APIs via node_modules docs / Context7.
+> - **RETIRED 2026-10-29 (owner decision):** no longer symlinked into `.claude/agents/`. Its only remaining use (large `lib/` converters) is covered by the Superpowers final whole-branch review; data-layer error handling stays with `silent-failure-hunter`. Kept here for reference and possible re-enable.
 
 ## Prompt Defense Baseline
 

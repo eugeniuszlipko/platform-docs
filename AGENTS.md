@@ -6,6 +6,7 @@
 - `avocado.kiss/` — culinary recipe magazine (Next.js 16 App Router + Supabase)
 - `urban.gardener/` — houseplant-care journal + curated plant/product catalog (Next.js 16 App Router + Supabase); phases 0–6 accepted and deployed to the temporary URL https://urban-gardener.vercel.app (noindex until Phase 9); Phase 7 (Newsletter + Contact) planned
 - `web.admin/` — multi-site admin panel for managing site content (Vite + React SPA + Supabase)
+- `agent-kit/` — reusable Claude Code plugin: `researcher`, `security-auditor`, `qa-runner`, `docs-writer` + PreToolUse safety guard; roles and triggers in the root `AGENTS.md` → "Agent orchestration"
 
 ## Documentation index
 Read these files only when the task requires it:
