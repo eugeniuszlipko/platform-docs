@@ -6,7 +6,8 @@ description: "Level 3 only: dispatch a fresh reviewer that checks finished work 
 > **Workspace notes**
 > - Vendored from obra/superpowers v7.0.0 (commit bb92f77, MIT; see platform-docs/skills/superpowers/LICENSE), read in full and adopted 2026-10-16. Loaded only through the `superpowers-routing` meta-skill (level 3). Priority: root AGENTS.md → `meta-planning` → `superpowers-routing` → this file.
 > - `superpowers:<name>` references were rewritten to bare names. Skills NOT vendored (using-git-worktrees, test-driven-development, finishing-a-development-branch, the brainstorming visual companion) are inert: ignore references to them and follow `superpowers-routing` (sections «Тесты», «Git», «Завершение»).
-> - This is the plan-conformance review. After it, the ECC specialists (react-/typescript-reviewer, database-reviewer, a11y-architect, silent-failure-hunter, seo-specialist) still run once per the root AGENTS.md review gate. Reviewers are read-only.
+> - This is the plan-conformance review. After it, the layer specialists (react-reviewer, database-reviewer, security-auditor, a11y-architect, silent-failure-hunter, seo-specialist) still run once per the «Ревьюеры по слоям» table in `platform-docs/skills/ecc/README.md`. Reviewers are read-only.
+> - Model: dispatch this reviewer with `model: opus` when it is the final whole-branch review (one per phase); a mid-task check on a small diff uses `sonnet`. Always pass the model explicitly.
 > - Upstream description (replaced above to stop auto-triggering on small tasks): Use when completing tasks, implementing major features, or before merging to verify work meets requirements
 
 # Requesting Code Review

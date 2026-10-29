@@ -8,7 +8,16 @@ description: "Heavy path only (level 3): execute an implementation plan with a f
 > - `superpowers:<name>` references were rewritten to bare names. Skills NOT vendored (using-git-worktrees, test-driven-development, finishing-a-development-branch, the brainstorming visual companion) are inert: ignore references to them and follow `superpowers-routing` (sections «Тесты», «Git», «Завершение»).
 > - No git worktrees: work on a feature branch `feat/<slug>` in the target repo (never on main). Run the scripts from that repo's root; the plan file may live in platform-docs (outside the repo — handled). Workspace `.superpowers/sdd/` is git-ignored by itself.
 > - «Rulings, not stalls» applies to technical choices only. A ruling that changes data, routes, visible appearance/texts, business rules or cost = STOP and ask the owner (`meta-planning` §4). All rulings go to the report («Что изменилось по сравнению с планом»).
-> - Subagent models: specify explicitly (haiku / sonnet / opus). The test-first mentions follow `superpowers-routing` «Тесты». «Finish» = `superpowers-routing` «Завершение»; push/merge only on the owner's command.
+> - Subagent models (owner decision 2026-10-29) — always pass `model` explicitly on every dispatch; this table replaces the judgment in «Model Selection» below:
+>   | Role | Model |
+>   |---|---|
+>   | Implementer — brief contains the complete code, or a single-file mechanical fix | `haiku` |
+>   | Implementer — anything else (prose brief, multi-file, integration) | `sonnet` |
+>   | Implementer — fix-loop rounds 4–5 (fresh implementer) | `opus` |
+>   | Task reviewer | `sonnet` |
+>   | Scoped re-review of a small fix diff | `haiku`; larger fix → `sonnet` |
+>   | Final whole-branch review (`requesting-code-review`) | `opus` |
+>   Do not set `CLAUDE_CODE_SUBAGENT_MODEL`: it outranks the per-dispatch `model` and would flatten this table. Implementers and reviewers stay `general-purpose` (no custom coder/reviewer agents — revisit only if process metrics show subagents above ~20% of phase cost). The agent-kit safety guard covers subagents too (push, installs, migrations, schema SQL ask the owner). The test-first mentions follow `superpowers-routing` «Тесты». «Finish» = `superpowers-routing` «Завершение»; push/merge only on the owner's command.
 > - Upstream description (replaced above to stop auto-triggering on small tasks): Use when executing implementation plans with independent tasks in the current session
 
 # Subagent-Driven Development
