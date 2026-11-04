@@ -129,8 +129,11 @@
 ## 4. FK-пикеры
 
 - **Author** (`posts.author_id` → `authors`): Select. Таблица `authors` = `name`,
-  `slug` (триггер), `avatar_path` (картинка), `bio`. Отдельного CRUD авторов пока
-  нет — либо простой select существующих, либо мини-редактор (решить при постройке).
+  `slug` (триггер), `avatar_path` (картинка), `bio`. **CRUD авторов (2026-11-04):**
+  раздел Authors (`features/authors`, `lib/ugAuthors.ts`) включён и для Avocado Kiss
+  (`sections` в `sites.ts`). У Avocado нет колонки `role` — поле скрыто; удаление
+  заблокировано, пока на автора ссылаются посты или рецепты. Тот же список
+  (query key `['authors', site.slug]`) питает select автора в редакторе рецепта.
 - **Recipe** (`post_sections.recipe_id` → `recipes`): пикер рецептов (поиск по title,
   превью `hero_image_path`) — аналог `ProductPickerDialog`, но по таблице `recipes`.
 - **Tags** (`post_tags`): мультиселект из `tags` (m2m; строки `post_tags(post_id,

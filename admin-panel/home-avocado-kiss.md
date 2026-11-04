@@ -1,6 +1,6 @@
 # Курирование главной (Avocado Kiss) — контракт админки
 
-> Last updated: 2026-08-26 | Проект: web.admin, `src/features/home/` +
+> Last updated: 2026-11-04 | Проект: web.admin, `src/features/home/` +
 > `src/lib/homeSlots.ts`, встроено в `src/features/pages/AvocadoPageEditPage.tsx`.
 > Сайт-потребитель — avocado.kiss (`app/page.tsx`, `lib/content.ts`). Схема БД —
 > [../database/schema.md](../database/schema.md) §`home_slots`; главная на сайте —
@@ -30,7 +30,7 @@
 
 | Слот | Ёмкость | Что рисует | Посты |
 |---|---|---|---|
-| `hero` | 3 | слайды карусели | — |
+| `hero` | 3 | слайды карусели | да (с 2026-11-04) |
 | `grid_large` | 1 | первый тайл мозаики (3 / 2) | — |
 | `grid_medium` | 2 | тайлы вокруг баннера | — |
 | `mosaic_banner` | 1 | широкий баннер мозаики | — |
@@ -41,8 +41,9 @@
 
 Группы в порядке макета: Hero → Recipe mosaic → Editor's Picks. Внутри слота
 карточки переставляются **стрелками ↑/↓** (DnD в репо не используется). Посты
-разрешены только в `pick`/`pick_feature` (`slotAllowsPost`), хотя в БД
-ограничения на это нет.
+разрешены только в `hero`/`pick`/`pick_feature` (`slotAllowsPost`; для `hero` —
+`SLOT_META.hero.allowsPost = true` с 2026-11-04), хотя в БД ограничения на это нет.
+Пост в hero-слайде на сайте ведёт на `/blog/<slug>`.
 
 ## 3. Черновик и явное сохранение
 
@@ -104,7 +105,7 @@
 
 | Слот | `eyebrow` | `description` | `eyebrow_secondary` |
 |---|---|---|---|
-| `hero` | ✅ (фолбэк «Recipe of the week») | — | — |
+| `hero` | ✅ (фолбэк «Recipe of the week» для рецепта, «From the blog» для поста) | — | — |
 | `grid_large` | ✅ | ✅ | — |
 | `mosaic_banner` | ✅ | ✅ | — |
 | `grid_medium` / `grid_list` / `wide` | ✅ | — | — |

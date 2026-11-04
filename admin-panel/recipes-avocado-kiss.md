@@ -1,6 +1,6 @@
 # Раздел Recipes (Avocado Kiss) — контракт админки
 
-> Last updated: 2026-08-27 | Проект: web.admin, `src/features/recipes/` + справочник
+> Last updated: 2026-11-04 | Проект: web.admin, `src/features/recipes/` + справочник
 > `src/features/taxonomy/` (recipe categories). Сайт-потребитель — avocado.kiss.
 > Схема БД — [../database/schema.md](../database/schema.md) §9; страница рецепта на
 > сайте — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.
@@ -15,13 +15,18 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 | Блок формы | Колонки `avocado_kiss.recipes` |
 |---|---|
 | Шапка | `title`, `category`, `excerpt`, `hero_image_path` |
-| Мета | `author_name`, `published_at`, `time_label`, `servings_label`, `slug` |
+| Мета | `author_id` (Select из `authors`, а не текст), `published_at`, `time_label`, `servings_label`, `slug` |
 | Теги | `recipe_tags` (M2M, `position` = порядок) |
 | Ingredients | `ingredients text[]` — порядок массива = порядок списка на сайте |
 | Method | `steps text[]` — порядок массива = номера 01, 02, … |
 | Rating baseline | `seed_count`, `seed_sum`, `min_display_rating` |
 | SEO | `seo_title`, `seo_description` (живой фолбэк title/excerpt → `null`) |
 | Панель действий | `is_published` (Draft/Published), **Copy preview link**, Save, Delete |
+
+**Автор (2026-11-04, миграция 0028):** свободный текстовый Author заменён на select из
+того же списка `authors`, что и в редакторе блога (query key `['authors', site.slug]`).
+Старая текстовая колонка `recipes.author_name` админка не читает и не пишет (удалить
+после деплоя — B-024).
 
 Списки (`ListEditor`) — строки с перестановкой **стрелками ↑/↓** (`useFieldArray.move`,
 тот же паттерн, что у блоков блога), добавлением и удалением; Enter в поле ингредиента

@@ -426,7 +426,8 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 | `slug` | text (unique, not null) | для `/recipes/[slug]`; автоген из `title` |
 | `excerpt` | text (nullable) | анонс (хедер рецепта, фолбэк описаний карточек) |
 | `category` | text (nullable) | = `categories.name` (текст, FK нет — паттерн products/cozycorner; индекс) |
-| `author_name` | text (nullable) | «by Mark P.» |
+| `author_id` | uuid (nullable, FK → authors, без cascade — как `posts.author_id`) | автор рецепта (миграция 0028); индекс `recipes_author_idx`. Анону выдан column-grant `select (author_id)`. Сайт читает имя через spread-embed `...authors(author_name:name)` |
+| `author_name` | text (nullable) | **устар.:** «by Mark P.». Сайт и админка больше не читают; колонку удалят после деплоя (B-024) |
 | `time_label` | text (nullable) | «45 minutes» — готовая строка |
 | `servings_label` | text (nullable) | «4 servings» — готовая строка |
 | `hero_image_path` | text (nullable) | ключ бакета `avocado-kiss-photos` или внешний URL (§4) |
@@ -510,7 +511,7 @@ categories.name` (без FK). Миграция `0011` добавила `show_in_
 | `is_published` | boolean (default true) | RLS: анону только опубликованные |
 
 Ёмкость слотов по макету (валидирует админка фазы B, сайт рендерит что есть):
-`hero` — 3, `grid_large` — 1, `grid_medium` — 2, `grid_list` — 5, `wide` — 2,
+`hero` — 3 (рецепт или пост — `post_id` допускала БД уже с 0005), `grid_large` — 1, `grid_medium` — 2, `grid_list` — 5, `wide` — 2,
 `pick` — 3, `pick_feature` — 1, `mosaic_banner` — 1 (широкий баннер мозаики
 главной; слот допускает несколько строк — задел под слайдер, сайт рендерит
 первую). Загрузчик сайта джойнит рецепты через
@@ -562,7 +563,9 @@ capability-токен превью черновика, НЕ флаг видим�
 
 `id`, `created_at`, `name`, `slug` (автоген из name, unique — задел под
 `/author/[slug]`), `avatar_path` (контракт картинок), `bio`. Публичное чтение —
-все; запись — админ. `posts.author_id` → authors.
+все; запись — админ. `posts.author_id` → authors и `recipes.author_id` → authors
+(0028); оба FK без cascade, поэтому автора, на которого ссылаются посты или рецепты,
+удалить нельзя.
 
 ### post_sections — блоки тела поста (миграция 0008)
 
@@ -855,6 +858,13 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 2026-08-26.** Вместе с ней сайт перешёл на общий резолвер `lib/relations.ts`, а
 блоки товара («Pairs well with», «Related reading») получили авто-подбор и
 фолбэк, которых у них раньше не было (пустели без ручных пинов).
+
+· **0028 recipe_author_id** — `recipes.author_id uuid` FK → `avocado_kiss.authors(id)`
+(без cascade, как `posts.author_id`), индекс `recipes_author_idx`, бэкфилл: 'Anna I.' →
+автор со slug `anna-ivarsson` ('Mark P.' и 'Test' остались без автора),
+`grant select (author_id) on recipes to anon` (column-grants из 0026). Текстовая
+`recipes.author_name` оставлена, но не читается; будет удалена после деплоя (B-024).
+**Применена к base-one 2026-11-04.**
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом

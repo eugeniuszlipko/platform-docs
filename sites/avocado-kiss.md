@@ -1,6 +1,6 @@
 # Avocado Kiss — архитектура сайта
 
-> Last updated: 2026-08-27 | Source project: avocado.kiss (AGENTS.md,
+> Last updated: 2026-11-04 | Source project: avocado.kiss (AGENTS.md,
 > sites/avocado-kiss/specs/2026-07-17-avocado-kiss-v1-design.md) — пути файлов
 > относятся к репозиторию `avocado.kiss/`
 
@@ -95,7 +95,9 @@ lib/
                         #   набором запросов на такт ISR — шелл рендерится на каждой странице)
   columns.ts            # PUBLIC_RECIPE_COLUMNS / PUBLIC_POST_COLUMNS — явные списки публичных
                         #   колонок вместо select("*") (анону не выдан preview_token, schema.md §9).
-                        #   НЕ server-only: нужен и в браузере (search.ts, blog.ts)
+                        #   НЕ server-only: нужен и в браузере (search.ts, blog.ts).
+                        #   К PUBLIC_RECIPE_COLUMNS добавлен RECIPE_AUTHOR_EMBED
+                        #   (`...authors(author_name:name)` — spread-embed автора, миграция 0028)
   blog.ts               # загрузчики блога + fetchPostForPreview, fetchPostSections({includeUnpublished})
   images.ts             # resolveRecipeImage() (контракт путей картинок рецептов)
   shop.ts               # загрузчики магазина: fetchShopCategories/…/fetchProductsPage/fetchShopFilterOptions/fetchEditorsPicks/
@@ -297,7 +299,7 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
 
 | Слот | Ёмкость | Где на странице (v2) |
 |---|---|---|
-| `hero` | 3 | Hero-карусель (слайды) |
+| `hero` | 3 | Hero-карусель (слайды): рецепт **или** пост блога (см. ниже) |
 | `grid_large` | 1 | Мозаика: feature-карточка c7 (3/2) + подзаголовок |
 | `grid_medium` | 2 | Мозаика: карточки c5 (1/1) и c4 (4/5) |
 | `grid_list` | 5 | Мозаика: карточки c4/c8/c3 (были текстовым списком — теперь плитки с фото) |
@@ -305,6 +307,11 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
 | `mosaic_banner` | 1 | Мозаика: широкий баннер c12 (21/6) с текстом поверх градиента |
 | `pick` | 3 | Editor's Picks — нумерованный список 1–3 |
 | `pick_feature` | 1 | Editor's Picks — карточка справа (sticky, с фото) |
+
+**Hero-карусель (слот `hero`)** принимает рецепт ИЛИ пост блога (БД допускала
+`post_id` ещё с 0005). Загрузчик — `fetchHeroItems` в `lib/content.ts` (обёрнут в
+React `cache()`). Слайд с постом ведёт на `/blog/<slug>`. В админке
+`SLOT_META.hero.allowsPost = true` (`web.admin/src/lib/homeSlots.ts`).
 
 Мозаика (`app/page.tsx`, компоненты `MosaicCard`/`MosaicBanner`) — фиксированный
 шаблон на 12-колоночной сетке, питается **только рецептными** слотами
@@ -314,6 +321,7 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
 Оверрайды и фолбэки (поля `home_slots`, не `recipes`):
 - `eyebrow` — оверрайд лейбла над карточкой/hero-заголовком; пусто →
   категория рецепта (или «Recipe of the week» для hero — фолбэк в `app/page.tsx`).
+  Для hero-слайда с постом фолбэк эйброу — «From the blog».
 - `eyebrow_secondary` — **устар.** (до v2 — второй лейбл picks); метки Editor's
   Picks теперь берутся из тегов элемента, не из этого поля.
 - `description` — оверрайд описания (feature-карточка мозаики, Editor's Picks);
@@ -339,7 +347,10 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
    **Блоки тела** (`post_sections`, единая таблица, дискриминант `type`,
    порядок `position`): `text` (вариант lead/body), `quote`, `image`,
    `recipe_card` (FK → recipes), `qa`, `list_item` — переиспользуемые, редактор
-   добавляет в любом порядке (компонент-диспетчер `PostSections`). Hero-эйброу —
+   добавляет в любом порядке (компонент-диспетчер `PostSections`). Тексты блоков
+   `text` (body/lead) и `list_item` рендерятся как Markdown через
+   `components/MarkdownText.tsx` (абзацы, списки, **жирный**, *курсив*); раньше
+   показывались звёздочки. Жирный = `font-weight: 500` (дизайн-политика). Hero-эйброу —
    теги поста через « · ». **Read also** (`fetchRelatedReading`) — гибрид: ручные
    пины `post_related` (полиморфно recipe/post) сверху, затем авто-добор постами
    (общий тег → свежесть), затем рецептами до 3 карточек.
@@ -471,6 +482,19 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
   сеть не рендерится. Правится в админке: web.admin → Pages → «Footer & socials»
   (один Save пишет `footer_settings` + `site_settings`). `revalidate=60` в layout —
   правки видны в течение минуты. Прежний захардкоженный `SOCIALS` удалён.
+  Цвет иконок задаётся на svg (`.socialIcon`) / внутреннем span (`.socialLabel` в
+  Footer), а не на `<a>`, чтобы посещённая ссылка не получала цвет браузера по
+  умолчанию (тот же подход, что в urban.gardener, коммит `3e64fde`).
+- **Бренд-ассеты (от владельца, папка `assets/`, 2026-11-04):** логотип в шапке и
+  мобильном меню — картинка `public/brand/avocado-kiss-logo.png` (заменила текст
+  «AVOCADO KISS»); фавиконки `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`
+  (`app/icon.svg` удалён); `logo` в JSON-LD Organization →
+  `/brand/avocado-kiss-mark-512.png`.
+- **JSON-LD** выводится через `jsonLdHtml()` из `lib/jsonld.ts`, экранирующую `<`
+  (все 6 мест вызова).
+- **Автор рецепта** — `recipes.author_id` → `authors` (миграция 0028); имя сайт читает
+  spread-embed'ом `...authors(author_name:name)` (`RECIPE_AUTHOR_EMBED` в
+  `lib/columns.ts`). Текстовая `recipes.author_name` не читается (удалить — B-024).
 - Глобальный поиск в шапке — реализован (§9).
 
 ## 7. Окружение и деплой
@@ -650,7 +674,7 @@ service-role); проекция рецепта → `ReadingItem` (`href=/recipes
 
 | Функция | Таблица | Поля (`.or()` ilike) | Фильтр | Сортировка |
 |---|---|---|---|---|
-| `searchRecipes` | `recipes` | title, excerpt, category, author_name | `is_published=true` | `published_at desc, id desc` |
+| `searchRecipes` | `recipes` | title, excerpt, category (автор в поиске больше не участвует) | `is_published=true` | `published_at desc, id desc` |
 | `searchCategories` | `categories` | name | — | `position, name` |
 | `searchPosts` | `posts` | title, excerpt | `is_published=true` (у posts **нет** `post_type`) | `published_at desc, id desc` |
 | `searchProducts` | `products` | title, description, brand | — (нет `is_published`; наличие = живой) | `created_at desc, id desc` |
