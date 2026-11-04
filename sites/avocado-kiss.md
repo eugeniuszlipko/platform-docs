@@ -1010,3 +1010,30 @@ Sans все веса ~18–25 КБ и близки друг к другу; фа�
 `web.admin/src/features/shared/RelationsEditor.tsx` (слой данных —
 `src/lib/contentRelations.ts` с тем же реестром связей). Пустой список пинов в UI
 прямо помечен как «auto-filled if empty» — это не скрытый блок.
+
+
+## 14. Brand — логотип, иконка, картинка для соцсетей (Фаза L, B-009)
+
+**Решение (2026-11-04):** логотип шапки, одна квадратная иконка сайта (админка режет её
+в браузере на 512/180/48 PNG) и картинка по умолчанию для соцсетей (1200×630 JPEG)
+правятся в web.admin → Pages → Brand ([../admin-panel/brand.md](../admin-panel/brand.md)).
+Пустое значение = файлы из репо. Код готов, ждёт приёмки «Принимаем фазу L».
+
+- **Данные:** `site_settings` — `logo_path/logo_width/logo_height`, `icon_path` (512),
+  `icon_apple_path` (180), `icon_small_path` (48), `og_image_path`; ключи бакета
+  `avocado-kiss-photos` под `brand/` (миграция 0029, применена к base-one 2026-11-04;
+  [../database/schema.md](../database/schema.md) §9). Сайт читает через `select("*")`.
+- **Код:** `lib/brand.ts` `resolveBrand()` (чистая; неверная или неполная группа → файл из репо
+  + `console.error`), `getBrand()` в `lib/content.ts` (react `cache()`, при ошибке — файлы из
+  репо). `app/layout.tsx` `generateMetadata` задаёт иконки (48×48, 512×512, apple 180) и
+  `openGraph`/`twitter`-картинку по умолчанию; логотип Organization JSON-LD — абсолютный URL
+  иконки 512. `Header` и `MobileMenu` получают проп `logo`. Шесть `generateMetadata` страниц
+  идут через `ogImage(own, brand)`: Next заменяет `openGraph` целиком, поэтому приоритет —
+  своя обложка → картинка сайта → файл из репо.
+- **Запасные файлы в репо:** `public/brand/` (логотип, знак 512, `apple-icon-180.png`,
+  `icon-48.png`, `og-default.jpg`) и `public/favicon.ico`. Файловые `icon.*`, `apple-icon.*`,
+  `favicon.ico` перенесены из `app/` в `public/` и в `app/` не возвращаются: файловые иконки
+  перекрывают `metadata.icons`, а с ними иконку из админки.
+- **Задержка и кэши:** правка видна на сайте до ~2 минут (`unstable_cache` 60 с + ISR 60 с).
+  Иконка вкладки кэшируется часами, favicon в поиске Google обновляется днями–неделями,
+  соцсети кэшируют превью (пересканирование — Facebook Sharing Debugger).

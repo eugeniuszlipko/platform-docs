@@ -198,3 +198,8 @@
   `updatePage`); гард несохранённых изменений — как везде. `about_content.story_image_path`
   добавлен в `USAGE_SOURCES` (`src/lib/media.ts`).
 - Сайт: роуты `/about /contact /privacy /terms` (RSC, ISR); контракт БД — schema.md §9.
+
+## 10. Brand — avocado и urban (Фаза L)
+
+Закреплённая ссылка «Brand» в списке Pages (`AvocadoPagesPage`, `UgPagesPage`), маршрут `/:siteSlug/pages/brand`.
+Логотип шапки, иконка сайта, картинка для соцсетей. Контракт — [brand.md](brand.md).

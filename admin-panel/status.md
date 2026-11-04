@@ -542,3 +542,7 @@ sitemap; ответы отдаются с `cache-control: private, no-store`; к
 **Privacy** и **Terms** (markdown-редактор с заголовками и ссылками + SEO, «Use the built-in text»). `PagesEditRoute` Urban выбирает редактор по slug страницы. Запись: RPC `save_about_page`, `save_site_settings`, прямой `update pages` (Privacy/Terms).
 Общий `RichTextEditor` получил **опциональные** `headings`/`links` (по умолчанию как раньше, Cozy/Avocado не затронуты). Контракт — [static-pages-urban-gardener.md](static-pages-urban-gardener.md).
 Сквозной сценарий под админской сессией вживую не гонялся (нужен вход владельца) — ручная проверка по плану Фазы 5 §6, п. 4–8, в том числе что RPC с `where true` проходит `pg_safeupdate`.
+
+## Pages → Brand: Avocado + Urban (2026-11-04, Фаза L / B-009)
+
+В Pages Avocado и Urban добавлена закреплённая ссылка **Brand** (`/:siteSlug/pages/brand`): логотип шапки, иконка сайта (браузер режет её на 512/180/48 PNG) и картинка для соцсетей (1200×630 JPEG). Запись — прямой `update` singleton `site_settings` (миграции avocado 0029, urban 0036, применены к base-one 2026-11-04). Код готов на ветке `feat/brand-from-admin`, ждёт приёмки «Принимаем фазу L». Контракт — [brand.md](brand.md). Известные остатки: B-026 (лимиты mime/size бакета), B-025 (тест даты StatusBadge). Сквозной сценарий под админской сессией вживую не проверялся — в Фазе X чек-листа (загрузка тестовой картинки и сброс).
