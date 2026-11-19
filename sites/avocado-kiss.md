@@ -87,7 +87,9 @@ lib/
                         #   НЕ server-only: тянется из blog.ts/shop.ts, а те живут и в браузере
   content.ts            # fetchCategories (все), fetchNavCategories (только show_in_nav — для шапки),
                         # fetchCategoryBySlug, fetchHomeSlots (сгруппировано по слоту),
-                        # fetchRecipeBySlug, fetchRecipesByCategory (embed'ит recipe_tags → recipe.tags),
+                        # fetchRecipeBySlug, fetchRecipesByCategory(client, categoryId) (один запрос:
+                        #   inner-embed `membership:recipe_categories!inner(category_id)` + is_published=true;
+                        #   embed'ит recipe_tags → recipe.tags; `fetchCategoryByName` удалён),
                         # fetchEditorsPicks, fetchRecipeSlugs, fetchPageSeo, fetchFooterSettings,
                         # fetchRecipeForPreview (service-role, по preview_token — §2.2),
                         # fetchRecipeRelated (блок «Read also» рецепта — §13),
@@ -98,6 +100,11 @@ lib/
                         #   НЕ server-only: нужен и в браузере (search.ts, blog.ts).
                         #   К PUBLIC_RECIPE_COLUMNS добавлен RECIPE_AUTHOR_EMBED
                         #   (`...authors(author_name:name)` — spread-embed автора, миграция 0028)
+                        #   и RECIPE_CATEGORIES_EMBED (`recipe_categories(position,category:categories(name,slug))`,
+                        #   миграция 0030); `category` из карты колонок БД убран
+  recipeCategories.ts   # toRecipe(): строка с embed → Recipe.categories[] (по position) + Recipe.category
+                        #   (= основная, наименьший position). Каждый загрузчик, выбирающий
+                        #   PUBLIC_RECIPE_COLUMNS, обязан пропускать строки через него. НЕ server-only
   blog.ts               # загрузчики блога + fetchPostForPreview, fetchPostSections({includeUnpublished})
   images.ts             # resolveRecipeImage() (контракт путей картинок рецептов)
   shop.ts               # загрузчики магазина: fetchShopCategories/…/fetchProductsPage/fetchShopFilterOptions/fetchEditorsPicks/
@@ -358,8 +365,13 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
    позже; пункт шапки **Curated Shop** (`/shop`).
 
 **Категории vs теги** — разные сущности:
-- **Категории** (`categories`, поле `recipes.category`) — раздел рецепта,
-  показываются в карточках (SEASONAL). Рецепт может относиться к нескольким.
+- **Категории** (`categories`, связь M2M `recipe_categories`, миграция 0030) — раздел рецепта,
+  показываются в карточках (SEASONAL). Рецепт может относиться к нескольким; **основная** —
+  с наименьшим `position` (первая выбранная в админке): её берут подпись на карточке, эйброу и
+  хлебная крошка на странице рецепта. В типе `Recipe`: `categories: {name, slug}[]` (по порядку) и
+  `category` (имя основной, вычисляется). Рецепт попадает в архив `/category/<slug>` каждой своей категории.
+  На странице рецепта (`RecipeArticle`) JSON-LD `recipeCategory` — массив имён всех категорий
+  (поля нет, если категорий нет); проп `categoryHref` убран.
 - **Теги** (`tags` + `recipe_tags`/`post_tags`) — сквозные метки контента,
   общие для всех типов. Два пласта: журнальные (LIFE, COMMUNITY) и дескрипторы
   блюда (Vegetarian, Quick, Comfort Food, …). Выводятся через «\|»
@@ -674,7 +686,7 @@ service-role); проекция рецепта → `ReadingItem` (`href=/recipes
 
 | Функция | Таблица | Поля (`.or()` ilike) | Фильтр | Сортировка |
 |---|---|---|---|---|
-| `searchRecipes` | `recipes` | title, excerpt, category (автор в поиске больше не участвует) | `is_published=true` | `published_at desc, id desc` |
+| `searchRecipes` | `recipes` | title, excerpt **или имя любой категории рецепта** (автор в поиске не участвует; шаги ниже) | `is_published=true` | `published_at desc, id desc` |
 | `searchCategories` | `categories` | name | — | `position, name` |
 | `searchPosts` | `posts` | title, excerpt | `is_published=true` (у posts **нет** `post_type`) | `published_at desc, id desc` |
 | `searchProducts` | `products` | title, description, brand | — (нет `is_published`; наличие = живой) | `created_at desc, id desc` |
@@ -682,9 +694,12 @@ service-role); проекция рецепта → `ReadingItem` (`href=/recipes
 
 - `sanitizeSearchQuery` — обрезает до 100 символов, заменяет ломающие `.or()`
   символы `,()` пробелами, экранирует спецсимволы LIKE `\ % _`; пустая строка на
-  выходе = «поиска нет». `searchPath(q)` → `/search?q=…`. `SearchResult<T> =
+  выходе = «поиска нет»; также вырезает `"`. `searchPath(q)` → `/search?q=…`. `SearchResult<T> =
   { items, total }` (`count:"exact"` — для счётчиков и «See all N»). Лимиты —
   константы `SEARCH_*_LIMIT` + `SEARCH_DROPDOWN_LIMIT=5` / `SEARCH_OVERLAY_LIMIT=10`.
+- `searchRecipes` ищет по категориям в несколько шагов: `categories` по `ilike` имени → id связей
+  в `recipe_categories` (не больше `SEARCH_CATEGORY_LINKS_CAP = 100`) → условие `id.in.(…)`
+  добавляется в `.or()` к title/excerpt.
 - `searchProducts` **не** достраивает `category_name` (ни строка выпадашки, ни
   `ProductCard` его не используют) — лишний lookup к `shop_categories` не делается.
 
@@ -965,7 +980,8 @@ Sans все веса ~18–25 КБ и близки друг к другу; фа�
    FK-каскады и RLS не переписывались. Реестр связей — константа `PIN_TABLES`.
 2. **Авто-подбор по скорингу**: общая категория `+3`, каждый общий тег `+2`
    (потолок `4` — иначе теги забивают категорию), тот же тип контента `+1`;
-   тай-брейк — `published_at desc`, затем `id`. Веса — именованные константы в
+   тай-брейк — `published_at desc`, затем `id`. Кандидат-рецепт: эйброу = основная категория,
+   `categoryKeys` = имена **всех** его категорий (Фаза M). Веса — именованные константы в
    начале файла. В блок идут только кандидаты со счётом > 0, то есть реально
    родственные, а не просто свежие.
 3. **Случайный фолбэк** — добор опубликованными материалами, чтобы блок не был
@@ -1000,7 +1016,7 @@ Sans все веса ~18–25 КБ и близки друг к другу; фа�
 двигает layout.
 
 **Известное ограничение.** Категории магазина (slug'и `shop_categories`) и
-категории рецептов (текстовое `recipes.category`) — разные пространства имён,
+категории рецептов (`categories` через `recipe_categories`) — разные пространства имён,
 общего словаря нет. Поэтому в блоке «Related reading» страницы товара скоринг
 почти всегда даёт 0 и блок наполняет фолбэк (случайный, но стабильный). Чтобы
 подбор стал осмысленным, нужен явный маппинг «категория магазина → категория

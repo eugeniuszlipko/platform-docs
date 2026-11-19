@@ -1,6 +1,6 @@
 # Раздел Recipes (Avocado Kiss) — контракт админки
 
-> Last updated: 2026-11-04 | Проект: web.admin, `src/features/recipes/` + справочник
+> Last updated: 2026-11-19 (Фаза M: рецепт в нескольких категориях) | Проект: web.admin, `src/features/recipes/` + справочник
 > `src/features/taxonomy/` (recipe categories). Сайт-потребитель — avocado.kiss.
 > Схема БД — [../database/schema.md](../database/schema.md) §9; страница рецепта на
 > сайте — [../sites/avocado-kiss.md](../sites/avocado-kiss.md) §2.
@@ -14,7 +14,8 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 
 | Блок формы | Колонки `avocado_kiss.recipes` |
 |---|---|
-| Шапка | `title`, `category`, `excerpt`, `hero_image_path` |
+| Шапка | `title`, `excerpt`, `hero_image_path` |
+| Категории | `recipe_categories` (M2M по `category_id`, `position` = порядок; первая = основная) — поле `RecipeCategoriesField`, см. §2 |
 | Мета | `author_id` (Select из `authors`, а не текст), `published_at`, `time_label`, `servings_label`, `slug` |
 | Теги | `recipe_tags` (M2M, `position` = порядок) |
 | Ingredients | `ingredients text[]` — порядок массива = порядок списка на сайте |
@@ -26,7 +27,7 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 **Автор (2026-11-04, миграция 0028):** свободный текстовый Author заменён на select из
 того же списка `authors`, что и в редакторе блога (query key `['authors', site.slug]`).
 Старая текстовая колонка `recipes.author_name` админка не читает и не пишет (удалить
-после деплоя — B-024).
+миграцией 0031 после деплоя — B-024).
 
 Списки (`ListEditor`) — строки с перестановкой **стрелками ↑/↓** (`useFieldArray.move`,
 тот же паттерн, что у блоков блога), добавлением и удалением; Enter в поле ингредиента
@@ -43,23 +44,47 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 
 ## 2. Recipe categories — отдельный справочник
 
-`recipes.category` — **текст, равный `categories.name`** (FK нет), а таблица
-`avocado_kiss.categories` — это разделы журнала (навигация шапки), НЕ `shop_categories`,
-которые редактирует раздел Categories. Поэтому заведён отдельный раздел
-**Recipe categories** на том же generic-коде `features/taxonomy/`:
+Рецепт связан с категориями через `avocado_kiss.recipe_categories` **по id** (миграция 0030,
+Фаза M; раньше — текст `recipes.category = categories.name`, он остаётся в БД до 0031, но
+админка его не читает и не пишет). Таблица `avocado_kiss.categories` — это разделы журнала
+(навигация шапки), НЕ `shop_categories`, которые редактирует раздел Categories. Поэтому
+заведён отдельный раздел **Recipe categories** на том же generic-коде `features/taxonomy/`:
 
 - `recipeCategoryConfig` (`kind: 'recipe_category'`, `usageNoun: 'recipe'`) — счётчик ряда
   и текст диалога удаления считают рецепты, а не товары;
 - `RecipeCategoryEditDialog` — name, `show_in_nav` (видимость в шапке сайта), SEO;
   картинок/hero-полей у рецептных категорий нет;
 - порядок ↑/↓ пишет `position` = порядок ссылок в шапке сайта;
-- **каскады на уровне приложения** (`src/lib/recipeCategories.ts`, связь по имени):
-  rename → `recipes.category` обновляется у всех рецептов раздела; delete → у рецептов
-  раздела `category` становится `null`. Не атомарно (два запроса) — тот же компромисс,
-  что был у cozycorner до перехода на M2M.
+- **каскадов на уровне приложения больше нет** (`src/lib/recipeCategories.ts`): rename и delete
+  не трогают `recipes`. Связь по id, поэтому переименование оставляет все рецепты привязанными;
+  удаление категории удаляет связи FK-каскадом (`on delete cascade`). Сигнатура
+  `updateRecipeCategory(site, id, input)`. Текст диалога: «Recipes link to a category by id —
+  renaming keeps all of them attached.»
+- счётчик использования в `TaxonomyManager` — число рецептов, у которых категория есть среди
+  их `categoryIds`; `usageKnown` ждёт загрузки списка рецептов.
 
-Тот же справочник подставляется в форму рецепта через `TaxonomyCombobox`
-(выбрать / создать на месте / Manage…).
+### Поле категорий в форме рецепта
+
+`features/recipes/RecipeCategoriesField.tsx` (заменяет прежний `TaxonomyCombobox` для категории):
+
+- упорядоченные чипы; порядок меняется кнопками ←/→, первый чип помечен «Main» (основная);
+- поповер **Add category**; состояния loading/error; возврат фокуса после действий,
+  объявления в live-region, именованные группы чипов, кнопки 24 px;
+- `RecipeEditPage`: `categoryIds` лежат в форме (`Controller`); id, удалённые в другой вкладке,
+  отбрасываются перед сохранением; `onError` инвалидирует список рецептов.
+
+Запись (`src/lib/recipes.ts`): `createRecipe`/`updateRecipe` принимают `categoryIds`;
+`syncCategories` сначала upsert нужного набора, затем удаляет лишнее — упавшая запись не оставляет
+рецепт без категорий. Откат `createRecipe` сообщает, если очистка тоже не удалась. `Recipe`/`RecipeInput`
+больше не содержат `category`; `RecipeWithTags` получил `categoryIds` (по порядку), `RecipeListItem` —
+`category` (имя основной) и `categoryIds`.
+
+### Список рецептов
+
+`RecipesPage`: фильтр по категории работает по **любой** категории рецепта (значение select = id
+категории); в строке показана основная категория и «+N» за остальные.
+
+Не проверено в реальном браузере: чипы категорий на 390 px (нужна админ-сессия).
 
 ## 3. Теги
 

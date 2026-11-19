@@ -425,9 +425,9 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 | `title` | text (not null) | название |
 | `slug` | text (unique, not null) | для `/recipes/[slug]`; автоген из `title` |
 | `excerpt` | text (nullable) | анонс (хедер рецепта, фолбэк описаний карточек) |
-| `category` | text (nullable) | = `categories.name` (текст, FK нет — паттерн products/cozycorner; индекс) |
+| `category` | text (nullable) | **устар.** (Фаза M, 0030): = `categories.name` (текст, FK нет; индекс). Сайт и админка больше не читают; связь с категориями — таблица `recipe_categories` (ниже). Колонка и индекс остаются до миграции 0031 (B-023/B-024) |
 | `author_id` | uuid (nullable, FK → authors, без cascade — как `posts.author_id`) | автор рецепта (миграция 0028); индекс `recipes_author_idx`. Анону выдан column-grant `select (author_id)`. Сайт читает имя через spread-embed `...authors(author_name:name)` |
-| `author_name` | text (nullable) | **устар.:** «by Mark P.». Сайт и админка больше не читают; колонку удалят после деплоя (B-024) |
+| `author_name` | text (nullable) | **устар.:** «by Mark P.». Сайт и админка больше не читают; колонку удалят миграцией 0031 после деплоя (B-024) |
 | `time_label` | text (nullable) | «45 minutes» — готовая строка |
 | `servings_label` | text (nullable) | «4 servings» — готовая строка |
 | `hero_image_path` | text (nullable) | ключ бакета `avocado-kiss-photos` или внешний URL (§4) |
@@ -436,6 +436,26 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 | `seo_title` / `seo_description` | text (nullable) | пусто = фолбэк `title`/`excerpt` |
 | `folder_id` | uuid (nullable, FK → admin_folders, on delete set null) | папка админки |
 | `preview_token` | uuid (not null, default `gen_random_uuid()`) | capability-токен превью черновика (0019). НЕ флаг видимости. Анону НЕ выдаётся (column-grant, 0020) — читается только service-role клиентом на роуте `/preview/recipes/[slug]` |
+
+### recipe_categories — связь рецепт↔категория журнала (M2M, миграция 0030)
+
+Заменяет чтение текстового `recipes.category`. Рецепт может быть в нескольких категориях.
+
+| Поле | Тип | Назначение |
+|---|---|---|
+| `recipe_id` | uuid (FK → recipes, on delete cascade) | рецепт |
+| `category_id` | uuid (FK → categories, on delete cascade) | категория журнала (`avocado_kiss.categories`) |
+| `position` | int (not null, check `>= 0`) | порядок; **наименьший = основная категория** (первая выбранная в админке) |
+
+PK — `(recipe_id, category_id)`; индекс `recipe_categories_category_id_idx` по `category_id`.
+RLS: anon/authenticated читают связь, только если рецепт виден им самим (`EXISTS` по `recipes`
+идёт через политику «Public read published recipes» — черновики не светятся); запись —
+`public.is_admin()`. Гранты: `select` anon; `all` authenticated + service_role;
+`truncate/references/trigger` отозваны у anon и authenticated. Поскольку связь по id, переименование
+категории ничего не рвёт, а удаление категории каскадно удаляет связи.
+
+Сайт читает связи embed'ом `recipe_categories(position,category:categories(name,slug))`
+(`RECIPE_CATEGORIES_EMBED` в `lib/columns.ts`), основная категория — с наименьшим `position`.
 
 ### recipes — рейтинги (звёзды)
 
@@ -492,8 +512,8 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 `seo_title`, `seo_description` (nullable, фолбэк — автоформула из `name`).
 Публичное чтение — все строки. Навигация шапки фильтрует по `show_in_nav = true`
 (`fetchNavCategories`); страницы категорий и sitemap берут полный список
-(`fetchCategories`). Рецепты привязаны по имени: `recipes.category =
-categories.name` (без FK). Миграция `0011` добавила `show_in_nav` + категорию
+(`fetchCategories`). Рецепты привязаны через M2M `recipe_categories` по `category_id`
+(миграция 0030; раньше — по имени: `recipes.category = categories.name`, без FK). Миграция `0011` добавила `show_in_nav` + категорию
 `Dinner`, скрыла `Seafood` из навигации.
 
 ### home_slots — курируемая главная
@@ -886,6 +906,20 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 (логотип, иконка), `revoke truncate, references, trigger … from authenticated` на `site_settings`,
 уникальный индекс-синглтон `site_settings_singleton`. Подробности — в таблице `site_settings` выше.
 **Применена к base-one 2026-11-04** (с подтверждения владельца).
+
+· **0030 recipe_categories** — Фаза M (B-023). Таблица `recipe_categories` (см. выше), RLS, гранты,
+индекс по `category_id`, бэкфилл из `recipes.category` (текст = `categories.name`): связаны 74 из 74
+рецептов с категорией (`position` 0); 8 рецептов без категории. **Применена к base-one 2026-11-19** как
+`avocado_kiss_0030_recipe_categories`, затем `avocado_kiss_0030a_recipe_categories_policy_qualify`
+(в политике чтения `recipe_id` квалифицирован как `recipe_categories.recipe_id`; файл 0030 уже содержит
+квалифицированную форму). Проверка под ролью anon: видно 61 связь из 74 (69 из 82 рецептов видимы,
+черновики скрыты). Повторный бэкфилл безопасен, только пока никто не правил категории в НОВОЙ админке;
+в момент переключения (старая админка заморожена) связи пересобирают целиком: `delete from
+recipe_categories` + тот же insert, одной транзакцией.
+
+· **0031 (ещё не написана и не применена)** — contract-шаг после деплоя и проверки владельцем: завести
+автора «Mark P.» в `authors`, привязать 5 рецептов с `author_name = 'Mark P.'` и `author_id is null`,
+затем drop `recipes.category` (с индексом) и `recipes.author_name`. «Test» (1 рецепт) не переносится.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
