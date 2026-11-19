@@ -11,6 +11,11 @@
 
 **Нужно решение владельца.** Брать ли в отдельную фазу «гигиена БД» или сделать вместе с Фазой X (итоговый аудит БД Urban Gardener); для Cozy/Avocado — нужна ли вообще.
 
-**Статус:** сделано для Urban Gardener в Фазе X (миграция 0031 применена 2026-10-19; проверки прав и защиты удаления темы — в плане Фазы X §8). Для cozycorner и avocado_kiss — не делалось (отдельное решение владельца).
+**Статус:** сделано для Urban Gardener в Фазе X (миграция 0031 применена 2026-10-19; проверки прав и защиты удаления темы — в плане Фазы X §8). Для cozycorner и avocado_kiss — сделано в Фазе O (2026-11-19), см. «Обновление 2026-11-19» ниже. **Итог: сделано (Avocado + Cozy).**
+
+**Обновление 2026-11-19 (Фаза O): сделано для Avocado и Cozy.** Миграции применены к `base-one` 2026-11-19: `avocado_kiss` `0033_grants_hygiene`, `cozycorner` `0037_grants_hygiene` (для Urban дополнительно `0039` делает `revoke maintain` на всех таблицах).
+- Проверено на живой базе: у `anon` и `authenticated` нет TRUNCATE/REFERENCES/TRIGGER/MAINTAIN ни на одной таблице трёх схем. У `anon` в `cozycorner` сняты INSERT/UPDATE/DELETE на 9 таблицах (`admin_folders`, `categories`, `footer_settings`, `hero_sections`, `media`, `pages`, `post_product_sections`, `post_text_sections`, `posts`). SELECT у `anon` не изменился (avocado 21, cozy 12, urban 13 таблиц); `authenticated` сохраняет select/insert/update/delete.
+- Права по умолчанию (владелец `postgres`) в `avocado_kiss` и `cozycorner`: у `anon` на новых таблицах прав нет, у `authenticated` — только select/insert/update/delete. Правило для новых таблиц — в `database/schema.md` («Конвенция прав»).
+- Вторая половина (гонка `guard_*`): у Avocado и Cozy триггеров `guard_*` на удаление нет, поэтому к ним не относится.
 
 **Обновление 2026-11-04 (Фаза L).** Ревью безопасности подтвердило на живой базе: у `authenticated` на таблицах Avocado остались TRUNCATE/REFERENCES/TRIGGER. Для `avocado_kiss.site_settings` это снято миграцией 0029 (применена). Остальные таблицы схемы `avocado_kiss` и схема Cozy по-прежнему требуют такого же `revoke` + `alter default privileges` (как Urban 0031) — отдельным решением владельца.
