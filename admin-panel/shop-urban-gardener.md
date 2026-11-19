@@ -41,7 +41,7 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 **Валидация публикации:** фото + alt, https-ссылка, ≥1 категория (черновику нужно только имя). Те же правила на сервере: RPC `save_product` (`23514`) и CHECK
 `products_published_needs_photo_link` (0010).
 
-**Фаза N (B-013, код готов, не выкачен; ждёт приёмки и применения миграции 0037):** блок «Plant details» (Light / Water / Size / Pets) и подсказка «Pet-safe → consider adding the Pet-friendly category» убраны из формы; колонки `light`, `water`, `size`, `pet_safety` удаляет 0037.
+**Фаза N (B-013, принята 2026-11-19; код в `main` web.admin, миграция 0037 применена 2026-11-19):** блок «Plant details» (Light / Water / Size / Pets) и подсказка «Pet-safe → consider adding the Pet-friendly category» убраны из формы; колонки `light`, `water`, `size`, `pet_safety` удалены миграцией 0037. Форма товара на 390 px и сохранение товара под сессией админа после 0037 в браузере не проверялись (нужен вход) — пункт в чек-листе Фазы X.
 
 **Подсказки редактора:** предупреждение, если у других товаров выбранных
 категорий другая валюта (сайт скроет там фильтр Price, B-002). «View on site» у опубликованного товара — `frontendUrl` + `/product/<slug>`.

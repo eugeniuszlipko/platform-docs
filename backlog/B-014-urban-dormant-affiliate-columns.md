@@ -6,4 +6,4 @@
 
 **Нужно решение владельца:** нет (технический хвост).
 
-**Статус:** реализовано в Фазе N, ждёт приёмки и применения 0037 (миграция написана, не применена). `0037_db_cleanup.sql` удаляет `site_settings.affiliate_disclosure` и `price_note` вместе с их `*_not_blank` CHECK-ами и пересоздаёт `save_site_settings` без этих ключей.
+**Статус:** сделано в Фазе N, 2026-11-19 (принята владельцем; миграция 0037 применена к `base-one` 2026-11-19). `0037_db_cleanup.sql` удалила `site_settings.affiliate_disclosure` и `price_note` вместе с их `*_not_blank` CHECK-ами и пересоздала `save_site_settings` без этих ключей.
