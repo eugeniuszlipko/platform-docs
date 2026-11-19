@@ -35,14 +35,15 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 | Brand | `brand_id` | необязателен («No brand») |
 | Price + Currency | `price`, `currency` | цена `''`→`null`, число ≥ 0, до 2 знаков, **запятая допустима** (`12,5`→12.5); валюта — список **EUR/USD/GBP**, чужое существующее значение (напр. PLN из SQL) остаётся в списке |
 | Affiliate link | `affiliate_url` | только `https://` (zod + CHECK в БД); обязательна для публикации |
-| Light / Water / Size / Pets | `light`, `water`, `size`, `pet_safety` | пусто → `null`; Pets: Pet-safe / Mildly toxic / Toxic |
 | Published at / Published | `published_at`, `is_published` | дата — только сортировка, не планирование |
 | SEO | `seo_title`, `seo_description` | значение = фолбэку (name / short) → `null` |
 
 **Валидация публикации:** фото + alt, https-ссылка, ≥1 категория (черновику нужно только имя). Те же правила на сервере: RPC `save_product` (`23514`) и CHECK
 `products_published_needs_photo_link` (0010).
 
-**Подсказки редактора:** «Pet-safe → consider adding the Pet-friendly category» (без автоматики, S10); предупреждение, если у других товаров выбранных
+**Фаза N (B-013, код готов, не выкачен; ждёт приёмки и применения миграции 0037):** блок «Plant details» (Light / Water / Size / Pets) и подсказка «Pet-safe → consider adding the Pet-friendly category» убраны из формы; колонки `light`, `water`, `size`, `pet_safety` удаляет 0037.
+
+**Подсказки редактора:** предупреждение, если у других товаров выбранных
 категорий другая валюта (сайт скроет там фильтр Price, B-002). «View on site» у опубликованного товара — `frontendUrl` + `/product/<slug>`.
 
 ## 4. Сохранение — одна транзакция (RPC `save_product`)
