@@ -116,11 +116,19 @@ them — they are how the data stays consistent.
 - **All Avocado Kiss content is in schema `avocado_kiss`.** Always qualify
   tables with the schema.
 - **Two different link styles coexist — know which is which:**
-  - **Categories link by NAME** (like CozyCorner). `recipes.category` (a single
-    text field) equals a `categories.name`. There is **no FK** — the join is a
-    string match. Renaming a category must also update every matching
-    `recipes.category` value (you own that cascade; there is no admin app to do
-    it for you).
+  - **Recipe categories link by FK, many-to-many** (migration `0030`). A recipe
+    belongs to 0..N journal categories via the **`recipe_categories`** join table
+    — rows `(recipe_id, category_id, position)`, both FK (`on delete cascade`),
+    `category_id` → **`categories.id`** (NOT `shop_categories`). To categorise a
+    recipe, resolve the real `categories.id` and insert rows — never a text field.
+    The **primary** category = the membership with the lowest `position` (the first
+    chosen). The old text columns `recipes.category` and `recipes.author_name` were
+    **dropped** (`0031`) — never write to them. Renaming a category needs no cascade
+    (the link is by id); deleting a category removes its links by FK cascade.
+  - **A recipe's author is an FK** — `recipes.author_id` → `authors(id)` (migration
+    `0028`); there is no `author_name` column. Reuse an existing author
+    (`select id, name from avocado_kiss.authors`) or insert one, then set
+    `recipes.author_id`.
   - **Tags link by FK.** `recipe_tags`/`post_tags` are join tables referencing
     real `tags.id` (foreign keys, `on delete cascade`). To tag a recipe, insert
     `(recipe_id, tag_id, position)` rows — never a text field. Query real
@@ -228,7 +236,8 @@ When in doubt, **prefer reading over writing**, and ask.
 1. **Restate the intent** in plain language ("You want a new recipe 'X' in
    category 'Seasonal', as a draft — right?").
 2. **Resolve dependencies with SELECTs first**: real `recipes.id` /
-   `posts.id` / `tags.id` / `products.id` values, existing `categories.name` /
+   `posts.id` / `tags.id` / `products.id` / `categories.id` (for recipe
+   categories) values, existing `categories.name` /
    `shop_categories.slug` (so you match, not duplicate), existing slugs/titles
    (avoid duplicates), `media.path` for images, and — for home-page or
    shop-curation work — the current rows in the target `slot` or curation table.
@@ -255,19 +264,25 @@ Field lists here are the *intent*; confirm exact columns live (§4). All tables
 are in schema `avocado_kiss`.
 
 - **recipes** — the core content. Key fields: `title`, `excerpt` (always fill
-  it — it feeds card descriptions and `seo_description` fallback), `category`
-  (= a real `categories.name`, single value), `author_name` ("by Mark P."),
-  `time_label` ("45 minutes" — a ready-made string, not a number),
-  `servings_label` ("4 servings"), `hero_image_path` (§3 contract),
+  it — it feeds card descriptions and `seo_description` fallback), `author_id`
+  (FK → `authors`; no `author_name` column), `time_label` ("45 minutes" — a
+  ready-made string, not a number), `servings_label` ("4 servings"), `hero_image_path` (§3 contract),
   `ingredients` (`text[]`, order = list order), `steps` (`text[]`, order = step
   numbers), `is_published` (defaults false), `published_at`, optional
-  `seo_title`/`seo_description`. Don't send `slug`. New recipe with an unknown
-  category → confirm whether to also create that `categories` row. Tagging is a
-  separate step via `recipe_tags` (below).
-- **categories** — header nav + `/category/[slug]` archives. `name` (the join
-  key, unique), `position` (nav order), optional `seo_title`/`seo_description`
+  `seo_title`/`seo_description`. Don't send `slug`. Categories are a separate
+  step via **recipe_categories** (below); a recipe with an unknown category →
+  confirm whether to also create that `categories` row first. Tagging is
+  likewise a separate step via `recipe_tags` (below).
+- **categories** — header nav + `/category/[slug]` archives. `name` (unique),
+  `position` (nav order), optional `seo_title`/`seo_description`
   (empty → auto-formula from `name`). There is **no category image field** in
-  v1. Renaming a category must cascade to every `recipes.category` string.
+  v1. Renaming a category needs no cascade (recipes link by id); deleting one
+  removes its `recipe_categories` links by FK cascade.
+- **recipe_categories** — M2M join: `(recipe_id, category_id)` PK + `position`
+  (check `>= 0`; the lowest = the primary category). FK to `recipes.id` and
+  `categories.id`, both `on delete cascade`. To put a recipe in categories,
+  resolve the real `categories.id` values and insert rows (first chosen =
+  lowest `position`) — never a text field on the recipe.
 - **tags** — the cross-content taxonomy (`name` unique, `position`). Magazine
   labels (LIFE, COMMUNITY) and dish descriptors (Vegetarian, Quick, …). Don't
   send `slug`. To attach tags to a recipe, insert **recipe_tags** rows.
@@ -450,8 +465,14 @@ are in schema `avocado_kiss`.
 
 Use these to answer "what do we have" and to ground writes:
 
-- Catalog overview: `select title, category, is_published, slug from
-  avocado_kiss.recipes order by published_at desc limit 50;`
+- Catalog overview: `select r.title, (select string_agg(c.name, ', ' order by
+  rc.position) from avocado_kiss.recipe_categories rc join avocado_kiss.categories
+  c on c.id = rc.category_id where rc.recipe_id = r.id) as categories,
+  r.is_published, r.slug from avocado_kiss.recipes r order by r.published_at desc
+  limit 50;`
+- A recipe's categories (first = primary): `select c.name from
+  avocado_kiss.recipe_categories rc join avocado_kiss.categories c on c.id =
+  rc.category_id where rc.recipe_id = '<id>' order by rc.position;`
 - Taxonomy: `select name, position from avocado_kiss.categories order by
   position;` · `select name, position from avocado_kiss.tags order by position,
   name;`
