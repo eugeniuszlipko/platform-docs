@@ -1,6 +1,6 @@
 # База данных — Supabase (все сайты)
 
-> Last updated: 2026-08-27 | Source project: cozycorner (CLAUDE.md, docs/admin-app-spec.md, docs/page-content.md, docs/multisite-migration.md) + web.admin
+> Last updated: 2026-11-19 (Фаза O: конвенция прав, `reorder_positions`) | Source project: cozycorner (CLAUDE.md, docs/admin-app-spec.md, docs/page-content.md, docs/multisite-migration.md) + web.admin
 
 Единый источник правды о структуре БД и контрактах с данными. Схема **версионируется
 миграциями в репозитории `cozycorner/supabase/migrations/`** — менять её из других мест
@@ -69,6 +69,28 @@
   service-role (превью) и authenticated-админ (RLS).
   ⚠️ Диагностика: anon-запросы к `media` ВСЕГДА возвращают 0 строк, даже когда данные
   есть, — проверять содержимое через SQL Editor / MCP / Management API (роль postgres).
+- **Конвенция прав (Фаза O, 2026-11-19; avocado_kiss 0033, cozycorner 0037, urban_gardener 0031 + 0039).**
+  У `anon` и `authenticated` нет TRUNCATE/REFERENCES/TRIGGER/MAINTAIN ни на одной таблице схем `cozycorner`,
+  `avocado_kiss`, `urban_gardener` (проверено на живой базе). `anon` сохраняет только SELECT (avocado 21, cozy 12,
+  urban 13 таблиц); `authenticated` — select/insert/update/delete. В `cozycorner` у `anon` сняты INSERT/UPDATE/DELETE
+  на 9 таблицах (`admin_folders`, `categories`, `footer_settings`, `hero_sections`, `media`, `pages`,
+  `post_product_sections`, `post_text_sections`, `posts`). Default privileges (владелец `postgres`) в `avocado_kiss`
+  и `cozycorner`: у `anon` на новых таблицах прав нет, у `authenticated` — только select/insert/update/delete.
+  **Правило для новой таблицы:** публичное чтение — явный `grant select … to anon` + RLS-политика; никогда
+  `grant all … to authenticated` (писать `grant select, insert, update, delete`). У Avocado и Cozy нет триггеров
+  `guard_*` на удаление, поэтому «гонка guard» из [B-004](../backlog/B-004-db-grants-truncate-and-guard-race.md) к ним не относится.
+- **`<schema>.reorder_positions(p_table text, p_ids uuid[]) returns void`** (Фаза O; avocado_kiss 0034, cozycorner 0038,
+  urban_gardener 0039). `security invoker`, `search_path ''`, белый список таблиц: urban — `topics`, `levels`,
+  `shop_categories`, `brands`; avocado — `tags`, `brands`, `shop_categories`, `categories`; cozy — `categories`, `brands`.
+  Ставит `position` = индекс в массиве (с 0) для переданных id одной транзакцией; сначала блокирует строки
+  `for no key update` в порядке id. Ошибки: `22023` (таблица не в списке, null или дубли в `p_ids`), `P0002` (обновлено
+  строк ≠ числу id, например RLS/не админ/удалённая строка). Пустой массив — ничего не делает. `execute` выдан только
+  `authenticated` (не public и не anon). Вызывает `reorderRows` в web.admin для всех списков перестановки; вызывающий
+  обязан передавать полный список.
+- **Порядок блокировок Urban (0039).** `save_article` после тем берёт `for key share` на свой уровень, `save_product` после
+  категорий — на свой бренд (порядок: тема → уровень → статья, категории → бренд → товар); это убирает возможную взаимную
+  блокировку с удалением уровня/бренда (`ON DELETE SET NULL`). Принятый остаток: один `DELETE` сразу нескольких
+  тем/категорий магазина всё ещё может уйти во взаимную блокировку; админка удаляет по одной строке.
 - Auth: Email-провайдер включён, публичная регистрация закрыта; 2 админа заведены и
   внесены в whitelist (eugeniusz.lipko@gmail.com, yury.brankovsky@gmail.com).
 - Security advisor: осознанные WARN — public-bucket listing; `is_admin` executable
@@ -355,6 +377,7 @@ pg_cron-задача `publish-due-cozycorner` каждую минуту. `publis
 Аналогично avocado_kiss 0024 (`posts`, `recipes`, `products`; `publish-due-avocado_kiss`) и urban_gardener 0032 (`articles`, `products`; `publish-due-urban_gardener`; cron перед публикацией перепроверяет правила: обложка/тема/время чтения, категория) + 0033 (`save_article`/`save_product` принимают `publish_at`). Все применены 2026-10-21. Функции: `security definer`, `search_path=''`, execute только у `postgres`; строки берутся `for update skip locked`, условие повторяется в update; сбой строки — `RAISE WARNING`, запись остаётся запланированной. (B-022, avocado 0026, 2026-10-21: у `posts`/`recipes` снова табличный revoke + column-grant без `preview_token`/`publish_at`; сняты права anon на `subscribers`/`recipe_ratings`/`admin_folders`/`media`. Не повторять `grant select on all tables` — он отменяет column-grant.)
 Доработка: cozycorner 0035 / avocado_kiss 0025 / urban_gardener 0034 — сброс ISR-кэша после автопубликации. `public.site_revalidation (schema_name, base_url, token)` (RLS без политик, права только postgres/service_role; токен генерируется в БД), `public.notify_site_revalidate(schema)` (`pg_net` POST на `<base_url>/api/revalidate`, тайм-аут 20 с, ошибки — `RAISE WARNING`; ответы видны в `net._http_response`), `<schema>.check_revalidate_token(text)` (security definer, execute у anon — Supabase advisor пометит как WARN, это намеренно; возвращает только boolean). `publish_due_content()` вызывает notify только если что-то опубликовано.
 Сброс кэша из админки: `<schema>.request_revalidate()` (cozycorner 0036 / avocado_kiss 0027 / urban_gardener 0035; security definer, внутри `public.is_admin()` иначе 42501; execute только у `authenticated`) → `notify_site_revalidate`. Вызывает web.admin: автоматически после каждой успешной мутации (дебаунс 1,5 с, `src/lib/siteCache.ts`) и кнопкой «Clear site cache» в левом меню сайта.
+0037 `grants_hygiene` (Фаза O, B-004) — снимает TRUNCATE/REFERENCES/TRIGGER/MAINTAIN у `anon`/`authenticated` и INSERT/UPDATE/DELETE у `anon` на 9 таблицах, правит default privileges (см. §3). 0038 `reorder_positions` — RPC перестановки (см. §3). Применены к base-one 2026-11-19.
 
 Нюанс хронологии: 0021 (`add_admin_folders`) и 0022 (`add_content_folders`) применены
 к base-one 2026-07-16 через MCP из админки **до** 0020 (`add_seo_post_type`) — файлы
@@ -924,6 +947,8 @@ with tomato and basil, Buttermilk French toast with caramelised banana, Wild sou
 charred greens); текст «Test» (1 рецепт) не переносился — решение владельца. Необратимо: значения удалённых колонок
 не хранятся нигде, кроме `recipe_categories` и `authors`. Проверка: все страницы прода 200; REST `select=category` → 400.
 
+· **0033 grants_hygiene** — Фаза O (B-004): снимает TRUNCATE/REFERENCES/TRIGGER/MAINTAIN у `anon`/`authenticated`, правит default privileges (см. §3). **0034 reorder_positions** — Фаза O (B-012): RPC `avocado_kiss.reorder_positions` (`tags`, `brands`, `shop_categories`, `categories`; см. §3). Обе применены к base-one 2026-11-19.
+
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом
 (не миграцией).
@@ -1003,6 +1028,7 @@ charred greens); текст «Test» (1 рецепт) не переносилс�
 · **0031 grants_hygiene_topic_guard** — Фаза X (B-004), применена к `base-one` 2026-10-19. `revoke truncate, references, trigger` у `anon, authenticated` на 8 таблицах Фазы 2 (`authors, topics, levels, articles, article_blocks, article_topics, media, admin_folders`; магазин — уже в 0010); `alter default privileges in schema urban_gardener revoke all on tables from anon, authenticated` (новая таблица получает права только явным `grant`); `guard_topic_delete` блокирует статьи темы (`order by id for no key update`) до подсчёта; блок `do $$` в конце миграции падает при лишних правах, выключенном RLS, записи у `anon`, чтении закрытых таблиц гостем, вставке в `subscribers/messages` вошедшим и читаемом `preview_token`. Остаток (взаимная блокировка 40P01 при одновременном удалении темы и сохранении статьи с ней, CHECK-и публикации у `articles`) — [B-011](../backlog/B-011-urban-db-hardening-leftovers.md).
 · **0030 preview_tokens** — Фаза 8 (8B). `articles.preview_token` и `products.preview_token` (`uuid not null default gen_random_uuid()`, бэкфилл дефолтом). Токен — capability для `/preview/articles|products/<slug>?token=`; сравнивается В БАЗЕ (`.eq('preview_token', …)`), в выборки публичных загрузчиков не входит. **Закрыт от anon: `revoke select` на таблице + `grant select (все колонки, кроме preview_token)`** (DO-блок по `information_schema`; column-level revoke при табличном grant — no-op). authenticated/service_role не затронуты. **Правило на будущее: любая НОВАЯ колонка `articles`/`products` недоступна anon, пока ей не выдан `grant select (col) … to anon`; в запросах — только явные списки колонок; любая будущая миграция с `grant select on all tables in schema urban_gardener to anon` (шаблон 0002) снова откроет токен — не повторять.** Проверено под ролями: anon `select preview_token` → permission denied, `select *` → denied, опубликованные строки и RPC `search_content` читаются; authenticated/service_role видят токен. Известное: любой вошедший не-админ читает токен ОПУБЛИКОВАННЫХ строк (как у Avocado) — значимо только при открытой регистрации в Supabase Auth; кнопки смены токена нет (смена — SQL).
 · **0036 site_settings_brand** — Фаза L (B-009), применена к `base-one` 2026-11-04 (с подтверждения владельца). `site_settings` + 7 nullable-колонок бренда (см. строку `site_settings` выше), CHECK-и `site_settings_brand_path_fmt`, `site_settings_logo_group`, `site_settings_icon_group`. Права и `save_site_settings` не менялись. **Порядок выкладки: 0036 применяется ДО кода** — сайт читает `site_settings` явным списком колонок, без новых колонок сборка/ISR падает.
+· **0039 reorder_positions_lock_order** — Фаза O (B-011 + B-012), применена к `base-one` 2026-11-19. RPC `urban_gardener.reorder_positions` (`topics`, `levels`, `shop_categories`, `brands`), `save_article` дополнительно блокирует свой уровень, `save_product` — свой бренд (`for key share`), `revoke maintain` на всех таблицах схемы (подробности — §3).
 · **0003 seed_articles** — сид из референса (D15): автор Anna Sokolova (Senior editor), 4 уровня (Beginner/Easy/Medium/Essential), 9 тем,
   10 статей (13 связей статья↔тема, 80 блоков). Тела девяти статей, кроме «How to tell when a plant needs water…», — **черновики агента**,
   владелец переписывает их в админке до запуска. Картинки — внешние Unsplash-URL референса (перезалив в Storage — Фаза 9,

@@ -18,7 +18,7 @@
 
 | Что | Где |
 |---|---|
-| Слой данных | `src/lib/ugShop.ts` — товары (`listUgProducts`, `getUgProduct`, `saveUgProduct` → RPC, `deleteUgProduct`), категории (`…UgShopCategory…`, `publishedProductsOnlyInCategory`, `shopCategoryUsage`), бренды (`…UgBrand…`, `brandUsage`); общие хелперы `reorderRows`/`countBy`/`assertNotTruncated`/`mustAffect` — `src/lib/ugDb.ts` |
+| Слой данных | `src/lib/ugShop.ts` — товары (`listUgProducts`, `getUgProduct`, `saveUgProduct` → RPC, `deleteUgProduct`), категории (`…UgShopCategory…`, `publishedProductsOnlyInCategory`, `shopCategoryUsage`), бренды (`…UgBrand…`, `brandUsage`); общие хелперы `reorderRows` (RPC `reorder_positions`, Фаза O)/`countBy`/`assertNotTruncated`/`mustAffect` — `src/lib/ugDb.ts` |
 | Список и редактор товара | `src/features/ug-products/` — `UgProductsPage`, `UgProductEditPage`, `UgCategoriesField`, `ugProductForm.ts` (zod-схема, конвертеры, `currencyConflict`, `needsPetFriendlyHint`), `ShopRoutes.tsx` |
 | Категории / бренды | `src/features/taxonomy/` — `ShopCategoryEditDialog` + `shopCategoryForm.ts`, `UgShopTaxonomyPages.tsx`; `TaxonomyManager` + `ugShopCategoryConfig`/`ugBrandConfig` (`config.ts`, `usage`) |
 
@@ -66,7 +66,7 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 
 ## 7. Тесты
 
-`ugShop.test.ts` (RPC-payload, `mustAffect`, блок удаления категории, счётчики, усечение 1000 строк), `ugProductForm.test.ts` (правила публикации, https, цена, конвертеры, валюта, подсказки),
+`ugShop.test.ts` (RPC-payload, `mustAffect`, блок удаления категории, счётчики, усечение: `assertNotTruncated(rows, count, what)` бросает ошибку, если count отсутствует или строк меньше count — загрузчики берут `{ count: 'exact' }`, Фаза O), `ugProductForm.test.ts` (правила публикации, https, цена, конвертеры, валюта, подсказки),
 `UgProductEditPage.test.tsx` (публикация без ссылки блокируется, Save → payload, чужая валюта не теряется, подсказки, View on site, удаление с подтверждением),
 `UgCategoriesField.test.tsx`, `shopCategoryForm.test.ts`, `ShopRoutes.test.tsx` (диспетчер по схеме; Cozy/Avocado не затронуты). Сквозной сценарий
 «создать товар → виден на сайте» — ручная проверка владельцем (спека 3D §6): автоматически под админской сессией не гоняется.

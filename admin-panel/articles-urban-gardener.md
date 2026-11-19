@@ -20,7 +20,7 @@ Levels (`levels`), Authors (`authors`); `media` — общий менеджер.
 | Что | Где |
 |---|---|
 | Слой данных статей | `src/lib/ugArticles.ts` — `listUgArticles`, `getUgArticle`, `createUgArticle`, `updateUgArticle`, `deleteUgArticle`, `syncBlocks`, `syncTopics`, мапперы `rowToBlock`/`blockToValues` |
-| Темы и уровни | `src/lib/ugTaxonomy.ts` — CRUD + `reorder` + счётчики `topicUsage`/`levelUsage` + `deleteUgTopic` с защитой |
+| Темы и уровни | `src/lib/ugTaxonomy.ts` — CRUD + `reorder` (через RPC `reorder_positions`, Фаза O) + счётчики `topicUsage`/`levelUsage` + `deleteUgTopic` с защитой |
 | Авторы | `src/lib/ugAuthors.ts` — CRUD + `deleteUgAuthor` с защитой |
 | Список и редактор статьи | `src/features/ug-articles/` — `UgArticlesPage`, `UgArticleEditPage`, `UgBlocksEditor`, `UgTopicsField`, `ugArticleForm.ts` (zod-схема + конвертеры) |
 | Темы / уровни | `src/features/taxonomy/` — `TopicsPage`, `LevelsPage`, `TopicEditDialog` + `topicForm.ts`; `TaxonomyManager` расширен `config.usage` (`topicConfig`, `levelConfig` в `config.ts`) |
@@ -49,6 +49,8 @@ Query-ключи: `['ug-articles', site.slug]` (+ `, id`), `['ug-topics', …]`,
 **первый заголовок тела обязан быть H2**), `callout` (title с emoji + текст), `image` (картинка, **alt обязателен**, caption, credit), `list`
 (элементы: необязательный жирный lead-in + текст; ≥1 элемента). Позиции плотные (индекс блока). Блок неизвестного типа в БД админка не показывает
 и не трогает (его не удалит diff, т.к. он не попадает в форму — но и не редактируется).
+
+**Баннер «repaired» (Фаза O, 2026-11-19; код ждёт деплоя).** Если блоки или элементы списка не удалось прочитать, `getUgArticle` возвращает `repaired`, и редактор показывает янтарную плашку «Some blocks or list items could not be read and will be removed when you save. Check the article before saving.» Выборщики автора, уровня, тем (и бренда/категорий у товара) при ошибке загрузки показывают «Couldn't load <thing>.» + Retry и не сбрасывают выбранные значения.
 
 ## 4. Сохранение — одна транзакция (RPC `save_article`)
 

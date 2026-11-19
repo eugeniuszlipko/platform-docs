@@ -354,8 +354,9 @@ terms/privacy); hero-секции (`HeroSectionsEditor` — только update 
 Products/Blog (кликабельная зона с hover-подсветкой + иконки-действия соседями, без
 рамки-карточки на каждой строке). Общее в строке:
 счётчик «N products» (из общего кэша `['products', site.slug]`), стрелки ↑/↓
-(reorder — **оптимистичный**: порядок меняется в кэше мгновенно, запись позиций
-конкурентная `Promise.all`), кнопка **Delete** (`AlertDialog` «N products use this …
+(reorder — **оптимистичный**: порядок меняется в кэше мгновенно, запись позиций —
+один вызов RPC `<schema>.reorder_positions` из `reorderRows` в одной транзакции, «всё или
+ничего»; с Фазы O, 2026-11-19, код ждёт деплоя; вызывающий передаёт полный список), кнопка **Delete** (`AlertDialog` «N products use this …
 will lose it» — не блокирует; ссылка у товаров обнуляется). Мутации немедленные,
 rename/delete каскадят в `products` (см. [products.md](products.md) §1).
 
