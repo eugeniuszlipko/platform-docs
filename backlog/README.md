@@ -16,10 +16,10 @@
 | [B-008](B-008-focus-and-keyboard-audit.md) | Фокус и клавиатурная навигация: двойное кольцо в окне рассылки, Tab не доходит до кнопок (вероятно, настройка Safari) — единая политика и проход по проектам, отдельная фаза | urban.gardener (и другие) | принято 2026-10-19 (влито в `main` и запушено) |
 | [B-009](B-009-admin-favicon-og-image.md) | Логотип, favicon и og:image меняются из админки (поля в настройках сайта, хранение в Storage) | urban.gardener, avocado.kiss, web.admin | сделано в Фазе L (влито в `main` и запушено) |
 | [B-010](B-010-shop-category-crawlability.md) | Товары 13+ в категории не видны краулеру (только кнопка «Show more») | urban.gardener | новая (вернуться при > 12 товаров в категории) |
-| [B-011](B-011-urban-db-hardening-leftovers.md) | БД Urban: CHECK-и публикации у `articles`, порядок блокировок | urban.gardener | новая |
-| [B-012](B-012-row-limit-guards-and-admin-silent-drops.md) | Лимит 1000 строк PostgREST и тихие потери в админке Urban | urban.gardener, web.admin | новая |
-| [B-013](B-013-urban-spec-list-hidden.md) | Таблица характеристик товара скрыта на фронте — удалить совсем или вернуть | urban.gardener, web.admin | ждёт решения |
-| [B-014](B-014-urban-dormant-affiliate-columns.md) | Неиспользуемые колонки `affiliate_disclosure`/`price_note` в БД Urban | urban.gardener | новая |
+| [B-011](B-011-urban-db-hardening-leftovers.md) | БД Urban: CHECK-и публикации у `articles`, порядок блокировок | urban.gardener | в плане (Фаза N, план утверждён 2026-11-19) |
+| [B-012](B-012-row-limit-guards-and-admin-silent-drops.md) | Лимит 1000 строк PostgREST и тихие потери в админке Urban | urban.gardener, web.admin | в плане (Фаза N, кроме атомарной перестановки `reorderRows` — она остаётся открытой) |
+| [B-013](B-013-urban-spec-list-hidden.md) | Таблица характеристик товара скрыта на фронте — удалить совсем или вернуть | urban.gardener, web.admin | в плане (Фаза N; решение владельца 2026-11-19: удалить совсем) |
+| [B-014](B-014-urban-dormant-affiliate-columns.md) | Неиспользуемые колонки `affiliate_disclosure`/`price_note` в БД Urban | urban.gardener | в плане (Фаза N, план утверждён 2026-11-19) |
 | [B-015](B-015-urban-search-reliability.md) | Поиск: первые запросы не показывают подсказки, нужна проверка скорости и нагрузки (фаза Z) | urban.gardener | сделано в фазе Z (клиент; влито в `main` и запушено) |
 | [B-016](B-016-urban-search-db-scaling.md) | Поиск Urban: функция в базе читает всю таблицу — стоимость растёт линейно (замер: 3 мс сейчас, ~100 мс при 1000+900) | urban.gardener | новая (вернуться при > ~300 статей/товаров) |
 | [B-017](B-017-e2e-on-local-test-db.md) | e2e на локальной тестовой базе вместо живых данных (после Фазы Y, шаг Y3) | cozycorner, avocado.kiss, urban.gardener | новая |
