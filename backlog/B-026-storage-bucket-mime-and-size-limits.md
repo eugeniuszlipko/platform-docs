@@ -5,3 +5,5 @@
 **Предложение.** Задать в бакетах `allowed_mime_types = {image/png,image/jpeg,image/webp,image/gif}` и `file_size_limit = 6 МБ` (GIF нужен медиатеке). Проверить, что админка не загружает другие типы.
 
 **Нужно решение владельца:** да, при выборе момента (меняет настройки Storage в рабочем проекте). **Статус:** новая.
+
+**Статус (2026-11-19):** сделано для `avocado-kiss-photos` и `urban-gardener-photos`: `allowed_mime_types = {png, jpeg, webp, gif}`, `file_size_limit = 6291456` (6 МБ). Миграции `avocado.kiss/0032_storage_bucket_limits.sql` и `urban.gardener/0038_storage_bucket_limits.sql`, применены к base-one. Все существующие файлы (jpeg/png/webp, до 3,7 МБ) под лимиты подходят; живая загрузка запрещённого типа не пробовалась. Бакет `cozycorner-photos` (то же пустое ограничение) не трогали — вне B-026, при желании тем же приёмом.
