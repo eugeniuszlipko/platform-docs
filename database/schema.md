@@ -425,9 +425,7 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 | `title` | text (not null) | название |
 | `slug` | text (unique, not null) | для `/recipes/[slug]`; автоген из `title` |
 | `excerpt` | text (nullable) | анонс (хедер рецепта, фолбэк описаний карточек) |
-| `category` | text (nullable) | **устар.** (Фаза M, 0030): = `categories.name` (текст, FK нет; индекс). Сайт и админка больше не читают; связь с категориями — таблица `recipe_categories` (ниже). Колонка и индекс остаются до миграции 0031 (B-023/B-024) |
-| `author_id` | uuid (nullable, FK → authors, без cascade — как `posts.author_id`) | автор рецепта (миграция 0028); индекс `recipes_author_idx`. Анону выдан column-grant `select (author_id)`. Сайт читает имя через spread-embed `...authors(author_name:name)` |
-| `author_name` | text (nullable) | **устар.:** «by Mark P.». Сайт и админка больше не читают; колонку удалят миграцией 0031 после деплоя (B-024) |
+| `author_id` | uuid (nullable, FK → authors, без cascade — как `posts.author_id`) | автор рецепта (миграция 0028); индекс `recipes_author_idx`. Анону выдан column-grant `select (author_id)`. Сайт читает имя через spread-embed `...authors(author_name:name)` (`author_name` здесь — алиас embed, не колонка `recipes`) |
 | `time_label` | text (nullable) | «45 minutes» — готовая строка |
 | `servings_label` | text (nullable) | «4 servings» — готовая строка |
 | `hero_image_path` | text (nullable) | ключ бакета `avocado-kiss-photos` или внешний URL (§4) |
@@ -439,7 +437,7 @@ embed'ов (`recipe:recipes!inner(...)`). Доступ к токену — то�
 
 ### recipe_categories — связь рецепт↔категория журнала (M2M, миграция 0030)
 
-Заменяет чтение текстового `recipes.category`. Рецепт может быть в нескольких категориях.
+Заменила текстовую колонку `recipes.category` (удалена миграцией 0031). Рецепт может быть в нескольких категориях.
 
 | Поле | Тип | Назначение |
 |---|---|---|
@@ -513,7 +511,7 @@ RLS: anon/authenticated читают связь, только если реце�
 Публичное чтение — все строки. Навигация шапки фильтрует по `show_in_nav = true`
 (`fetchNavCategories`); страницы категорий и sitemap берут полный список
 (`fetchCategories`). Рецепты привязаны через M2M `recipe_categories` по `category_id`
-(миграция 0030; раньше — по имени: `recipes.category = categories.name`, без FK). Миграция `0011` добавила `show_in_nav` + категорию
+(миграция 0030; раньше — по имени через текстовую колонку `recipes.category`, удалена в 0031). Миграция `0011` добавила `show_in_nav` + категорию
 `Dinner`, скрыла `Seafood` из навигации.
 
 ### home_slots — курируемая главная
@@ -898,7 +896,7 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 (без cascade, как `posts.author_id`), индекс `recipes_author_idx`, бэкфилл: 'Anna I.' →
 автор со slug `anna-ivarsson` ('Mark P.' и 'Test' остались без автора),
 `grant select (author_id) on recipes to anon` (column-grants из 0026). Текстовая
-`recipes.author_name` оставлена, но не читается; будет удалена после деплоя (B-024).
+`recipes.author_name` оставлена на время перехода; удалена миграцией 0031.
 **Применена к base-one 2026-11-04.**
 
 · **0029 site_settings_brand** — Фаза L (B-009). `site_settings` + колонки бренда (`logo_path/width/height`,
@@ -917,9 +915,14 @@ from anon` + `grant select (<все колонки, кроме preview_token>) t
 в момент переключения (старая админка заморожена) связи пересобирают целиком: `delete from
 recipe_categories` + тот же insert, одной транзакцией.
 
-· **0031 (ещё не написана и не применена)** — contract-шаг после деплоя и проверки владельцем: завести
-автора «Mark P.» в `authors`, привязать 5 рецептов с `author_name = 'Mark P.'` и `author_id is null`,
-затем drop `recipes.category` (с индексом) и `recipes.author_name`. «Test» (1 рецепт) не переносится.
+· **0031 drop_recipe_legacy_columns** — Фаза M, contract-шаг (B-023 + B-024): `alter table avocado_kiss.recipes
+drop column category, drop column author_name`; индекс `recipes_category_idx` ушёл вместе с колонкой.
+**Применена к base-one 2026-11-19** как `avocado_kiss_0031_drop_recipe_legacy_columns`, после выкладки кода сайта и
+админки в `main` (прод), который колонки уже не использует. Перед миграцией (данные, не DDL): автор «Mark P.»
+(slug `mark-p`) создан в `authors` и привязан к 5 рецептам (Creamy lemon risotto with spring peas, One-pot orzo
+with tomato and basil, Buttermilk French toast with caramelised banana, Wild sourdough loaf, Seared salmon with
+charred greens); текст «Test» (1 рецепт) не переносился — решение владельца. Необратимо: значения удалённых колонок
+не хранятся нигде, кроме `recipe_categories` и `authors`. Проверка: все страницы прода 200; REST `select=category` → 400.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом

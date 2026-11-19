@@ -26,8 +26,7 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 
 **Автор (2026-11-04, миграция 0028):** свободный текстовый Author заменён на select из
 того же списка `authors`, что и в редакторе блога (query key `['authors', site.slug]`).
-Старая текстовая колонка `recipes.author_name` админка не читает и не пишет (удалить
-миграцией 0031 после деплоя — B-024).
+Старая текстовая колонка `recipes.author_name` удалена миграцией 0031 (2026-11-19, B-024).
 
 Списки (`ListEditor`) — строки с перестановкой **стрелками ↑/↓** (`useFieldArray.move`,
 тот же паттерн, что у блоков блога), добавлением и удалением; Enter в поле ингредиента
@@ -45,8 +44,8 @@ RLS и папки (`admin_folders.section = 'recipes'`, `recipes.folder_id`) з�
 ## 2. Recipe categories — отдельный справочник
 
 Рецепт связан с категориями через `avocado_kiss.recipe_categories` **по id** (миграция 0030,
-Фаза M; раньше — текст `recipes.category = categories.name`, он остаётся в БД до 0031, но
-админка его не читает и не пишет). Таблица `avocado_kiss.categories` — это разделы журнала
+Фаза M; раньше — текст `recipes.category = categories.name`, колонка удалена миграцией 0031).
+Таблица `avocado_kiss.categories` — это разделы журнала
 (навигация шапки), НЕ `shop_categories`, которые редактирует раздел Categories. Поэтому
 заведён отдельный раздел **Recipe categories** на том же generic-коде `features/taxonomy/`:
 

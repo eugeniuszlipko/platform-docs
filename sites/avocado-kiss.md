@@ -506,7 +506,7 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
   (все 6 мест вызова).
 - **Автор рецепта** — `recipes.author_id` → `authors` (миграция 0028); имя сайт читает
   spread-embed'ом `...authors(author_name:name)` (`RECIPE_AUTHOR_EMBED` в
-  `lib/columns.ts`). Текстовая `recipes.author_name` не читается (удалить — B-024).
+  `lib/columns.ts`). Текстовая `recipes.author_name` удалена миграцией 0031 (2026-11-19, B-024).
 - Глобальный поиск в шапке — реализован (§9).
 
 ## 7. Окружение и деплой
