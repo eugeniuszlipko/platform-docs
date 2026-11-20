@@ -1,5 +1,5 @@
 # Все сайты + админка — Фаза O: остатки бэклога
-> Статус: исполнена 2026-11-19, ждёт приёмки
+> Статус: принята 2026-11-19, влита в `main` и выложена (avocado.kiss `245183e`, cozycorner `77eed19`, urban.gardener `3c56010`, web.admin `f570aba`, platform-docs `8778ec8`)
 > Техническая спека (для агента): [../specs/2026-11-19-phase-o-backlog-leftovers-spec.md](../specs/2026-11-19-phase-o-backlog-leftovers-spec.md)
 
 ## 1. Коротко
