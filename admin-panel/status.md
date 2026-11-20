@@ -375,6 +375,7 @@ email `mailto` + соцсети). Инфра-нюанс: alias `@/` из `vite-t
 переехало **внутрь страницы** `Pages → Homepage`, автосохранение заменено на явный
 Save с жёсткой валидацией. Правила — [home-avocado-kiss.md](home-avocado-kiss.md).
 
+- *Change 2026-11-20:* Homepage снова отдельный пункт меню (первый, `/avocado-kiss/homepage`), из списка Pages убран; описание ниже — история.
 - **Место**: `home` больше не пункт `NAV_ITEMS` (и не в allowlist `sections`);
   `HomePage.tsx` удалён, роут `/:siteSlug/home` снят. Курирование — блок
   «Homepage content» в `AvocadoPageEditPage` при `slug === 'home'`; в списке Pages

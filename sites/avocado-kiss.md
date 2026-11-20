@@ -1,8 +1,14 @@
 # Avocado Kiss — архитектура сайта
 
-> Last updated: 2026-11-04 | Source project: avocado.kiss (AGENTS.md,
+> Last updated: 2026-11-20 | Source project: avocado.kiss (AGENTS.md,
 > sites/avocado-kiss/specs/2026-07-17-avocado-kiss-v1-design.md) — пути файлов
 > относятся к репозиторию `avocado.kiss/`
+>
+> **Change 2026-11-20 (ветка `feat/client-fixes`):** в видимых посетителю текстах «Article/Articles»
+> переименовано в «Blog»/«blog posts» (меню, фолбэк заголовка `/blog`, поиск). Широкий баннер мозаики на
+> телефонах растёт вместе с текстом (описание обрезается до 3 строк). Страница рецепта на телефонах
+> показывает excerpt под главным фото (CSS-перестановка), десктоп без изменений. Публикация по
+> расписанию — одна дата: `published_at = publish_at` ([../admin-panel/products.md](../admin-panel/products.md)).
 
 Кулинарный журнал (рецепты, английский UI): курируемая через `home_slots`
 главная, страницы рецептов, страницы категорий. **Next.js 16** (App Router,
@@ -343,7 +349,7 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
    строки `pages.blog` — hero_eyebrow/title/description/image, мигр. 0010, фолбэк
    на код-константу; фильтр по тегам + Load more) и single-page `/blog/[slug]`;
    в шапке ведёт пункт
-   **Article**. Данные — `lib/blog.ts` (`fetchPosts`/`fetchPostBySlug`/
+   **Article** (с 2026-11-20 пункт называется **Blog**). Данные — `lib/blog.ts` (`fetchPosts`/`fetchPostBySlug`/
    `fetchPostSlugs`/`fetchPostSections`/`fetchRelatedReading`/`fetchBlogTags`).
    Три шаблона (`posts.template`) реализованы: **essay** (полноэкранный hero +
    отдельный byline), **interview** (сплит-hero, блок `qa`), **roundup**
@@ -464,7 +470,7 @@ Editor's Picks и могут ссылаться на рецепт **или** п�
   **иконка-триггер поиска** (мобайл, <768px, открывает полноэкранный оверлей — как
   в cozycorner); под шапкой — `CategoryNav` из **`fetchNavCategories()`** (только
   `show_in_nav = true`, сортировка `position, name`), а следом — статические пункты
-  **Articles** (архив блога, в работе) и **Curated Shop** (`/shop`). Оба варианта
+  **Articles** (архив блога, в работе; с 2026-11-20 — **Blog**) и **Curated Shop** (`/shop`). Оба варианта
   шапки (`Header` и `MobileMenu`) содержат эти ссылки. Скрытая из нав категория
   (напр. `Seafood`, `show_in_nav=false`) остаётся доступна по `/category/<slug>`,
   в поиске и на главной — страницы/sitemap берут полный `fetchCategories()`.

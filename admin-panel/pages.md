@@ -182,6 +182,8 @@
   `slots`, поэтому Save и гард у страницы общие, а неполный слот **блокирует
   сохранение**. Отдельного пункта меню у курирования нет. Контракт —
   [home-avocado-kiss.md](home-avocado-kiss.md).
+  *Change 2026-11-20:* Homepage вынесен в отдельный пункт меню (`/avocado-kiss/homepage`, сверху)
+  и убран из списка Pages; старый URL `pages/<id>` работает.
 - **body (Markdown)** — `privacy`/`terms` (`BODY_SLUGS`), через общий `RichTextEditor`
   (`Controller`), пишется в `pages.body`.
 - **About** (`slug='about'`) — встроенный `AvocadoAboutEditor` (порт cozy

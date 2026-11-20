@@ -11,12 +11,18 @@
 
 ## 1. Где это живёт
 
+> **Change 2026-11-20 (ветка `feat/client-fixes`):** Homepage — снова **отдельный пункт
+> левого меню, самый верхний** (`/avocado-kiss/homepage`, `HomepageRoute`); из списка Pages он
+> убран (старый URL `pages/<id>` продолжает работать). Hero и Editor's Picks принимают рецепты
+> или посты (кнопка «+ Post») — это уже поддерживалось. Автообновление hero «последним» —
+> [B-028](../backlog/B-028-avocado-hero-auto-latest.md). Описание ниже (§1) — состояние до этой правки.
+
 **Отдельного пункта навигации нет.** Курирование — часть страницы `home`:
 **Pages → Homepage** (`/:siteSlug/pages/:pageId`, строка `pages` со slug `home`).
 Один экран, один Save: сверху SEO страницы, ниже блок «Homepage content».
 
 В списке Pages строки подписаны человекочитаемо (`PAGE_LABELS` в
-`AvocadoPagesPage`) — `home` показывается как **Homepage** с пометкой
+`AvocadoPagesPage`) — `home` показывался как **Homepage** с пометкой
 «curated content», а не голым slug'ом.
 
 > Первая итерация раздела (2026-08-25) жила отдельным пунктом меню `Home` со
