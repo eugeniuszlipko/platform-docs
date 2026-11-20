@@ -79,7 +79,7 @@
 | Tags | `post_tags` (m2m, §4) | мультиселект из `tags` | нет | эйброу + фильтр + Read also |
 | Read time | `read_minutes` | number (мин) | нет | «N min read»; null → скрыто |
 | Published | `is_published` | Switch | — | фильтр ленты |
-| Published at | `published_at` | datetime-local | — | сортировка ленты (обрезка до минут) |
+| Published at | `published_at` | datetime-local | — | сортировка ленты (обрезка до минут). С 2026-11-20 у Scheduled поле скрыто, `published_at = publish_at` ([products.md](products.md), «Change 2026-11-20») |
 | SEO title | `seo_title` | text (живой фолбэк → title) | нет | — |
 | SEO description | `seo_description` | textarea (живой фолбэк → excerpt) | нет | — |
 

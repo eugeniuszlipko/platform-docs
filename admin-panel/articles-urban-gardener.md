@@ -41,7 +41,7 @@ Query-ключи: `['ug-articles', site.slug]` (+ `, id`), `['ug-topics', …]`,
 | Level | `level_id` | необязателен; `null` → бейджа нет |
 | Topics | `article_topics` | мультивыбор с порядком (←/→): **первая = основная**; для публикации ≥1 |
 | Read time | `read_minutes` | целое ≥ 1; для публикации обязателен |
-| Published at | `published_at` | дата показа и сортировки; **не планировщик** (политика читает только `is_published`) |
+| Published at | `published_at` | дата показа и сортировки; **не планировщик** (политика читает только `is_published`). С 2026-11-20 у Scheduled поле скрыто, `published_at = publish_at` (см. [products.md](products.md), «Change 2026-11-20») |
 | Published | `is_published` | switch; новая статья начинается черновиком |
 | SEO | `seo_title`, `seo_description` | значение = фолбэку (title / excerpt) или пусто → `null` |
 

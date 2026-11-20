@@ -35,7 +35,7 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 | Brand | `brand_id` | необязателен («No brand») |
 | Price + Currency | `price`, `currency` | цена `''`→`null`, число ≥ 0, до 2 знаков, **запятая допустима** (`12,5`→12.5); валюта — список **EUR/USD/GBP**, чужое существующее значение (напр. PLN из SQL) остаётся в списке |
 | Affiliate link | `affiliate_url` | только `https://` (zod + CHECK в БД); обязательна для публикации |
-| Published at / Published | `published_at`, `is_published` | дата — только сортировка, не планирование |
+| Published at / Published | `published_at`, `is_published` | дата — только сортировка, не планирование. С 2026-11-20 у Scheduled поле скрыто, `published_at = publish_at` ([products.md](products.md), «Change 2026-11-20») |
 | SEO | `seo_title`, `seo_description` | значение = фолбэку (name / short) → `null` |
 
 **Валидация публикации:** фото + alt, https-ссылка, ≥1 категория (черновику нужно только имя). Те же правила на сервере: RPC `save_product` (`23514`) и CHECK

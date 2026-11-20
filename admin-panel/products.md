@@ -33,6 +33,17 @@ UX-детали — [components.md](components.md) §3.7. Читать этот 
   те же предусловия, что опубликованные (фото+ссылка+категория / обложка+тема+время чтения), RPC
   `save_article`/`save_product` принимают `publish_at`. В списках — `StatusBadge` («Scheduled · Oct 25,
   14:00») и фильтр статуса «Scheduled».
+- **Change 2026-11-20 — одна дата публикации и пикер.** Для сущностей с `published_at` (рецепты, посты,
+  статьи avocado и Urban, товары Urban; три сайта) у Scheduled (`is_published=false`, `publish_at` задан)
+  админка пишет `published_at = publish_at`; поле «Published at» в редакторе скрыто (показано
+  «Publication date = scheduled time»), в списках у запланированных строк датой показан `publish_at`.
+  Переключение на Published с будущим `published_at` сбрасывает его в «сейчас»; прошедшее запланированное
+  время публикует сразу с этой датой. Cron `publish_due_content()` не менялся. Логика —
+  `publishColumns`/`listDate`/`settledValues` в `src/lib/publishState.ts`. Поле datetime-local заменено
+  пикером `src/components/DateTimePicker.tsx`: календарь react-day-picker 9.14 в popover, поле времени,
+  пресеты «In 1 hour», «Tomorrow 09:00», «In 1 week»; прошедшие дни отключены; прошедшее время сегодня
+  сдвигается на ближайший полный час; подсказка «This time has passed — saving will publish now»; время —
+  в часовом поясе браузера.
 - **Статус «Draft/Published» и превью (Фаза D1, cozycorner 0032 / avocado 0022).** У товара есть
   `is_published` (default false; новый товар — черновик, тост «saved as a draft — switch to
   Published…»; существующие бэкфиллены `true`). Верх редактора — общий компонент

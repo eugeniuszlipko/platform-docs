@@ -81,6 +81,7 @@
 - Миграции применены к base-one: cozycorner 0034, avocado_kiss 0024, urban_gardener 0032–0033. Три pg_cron-задачи `publish-due-<схема>` (раз в минуту, active). `publish_at` анону не выдаётся.
 - Боевой прогон: тестовые записи на +90 с/+2 мин (пост Cozy, рецепт Avocado, товары Cozy/Avocado/Urban) опубликовались сами, `published_at` = назначенное время, `publish_at` очищен; Urban-товар без фото остался запланированным (cron отказался — правильно). Тестовые записи удалены. Задержка на сайте с ISR 60 с отдельно не замерялась.
 - Решения по ходу: по одной функции на схему (а не одна общая); блокировка строк `for update skip locked` + повтор условия в update; cron у Urban перепроверяет правила публикации; бейдж «Overdue» в списках админки (просрочено > 5 мин); Scheduled без даты не сохраняется (маркер в форме + схема).
+- **Change 2026-11-20:** отложенное «редактируемое Published at при Scheduled» закрыто иначе — одна дата: у Scheduled админка пишет `published_at = publish_at`, поле скрыто, в списках показан `publish_at`; cron не менялся; 10 запланированных рецептов Avocado бэкфиллены (`published_at = publish_at`). Новый пикер даты-времени. Подробности — `admin-panel/products.md`.
 - Не проверено: 390 px панели при Scheduled (jsdom не показывает), e2e на сидовых slug не писали. Отложено minor: пикеры («Draft» вместо «Scheduled»), редактируемое «Published at» при Scheduled, секунды в publish_at.
 - Найдено попутно: [B-022](../../../backlog/B-022-avocado-posts-recipes-anon-table-grant.md).
 
