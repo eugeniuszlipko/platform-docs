@@ -33,3 +33,4 @@
 | [B-025](B-025-admin-statusbadge-test-date-dependent.md) | web.admin: тест `StatusBadge` зависит от даты и падает (красный и без изменений Фазы L) | web.admin | сделано 2026-11-19 (время в тесте зафиксировано `vi.setSystemTime`) |
 | [B-026](B-026-storage-bucket-mime-and-size-limits.md) | Бакеты Storage без ограничения типов и размера файлов (проверяет только админка) | avocado.kiss, urban.gardener | сделано 2026-11-19 для Avocado и Urban (миграции 0032 / 0038); бакет CozyCorner остаётся без лимитов |
 | [B-027](B-027-admin-cozy-avocado-loaders-truncation-guard.md) | web.admin: загрузчики списков Cozy/Avocado без защиты от усечения на 1000 строк (найдено в Фазе O) | web.admin | новая |
+| [B-028](B-028-avocado-hero-auto-latest.md) | Avocado: Hero-карусель сама показывает свежие рецепты (и посты?) — режим «авто/ручной» | avocado.kiss, web.admin | ждёт решения (уточнение у заказчика) |
