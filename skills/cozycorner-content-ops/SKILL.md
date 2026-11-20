@@ -55,6 +55,8 @@ Things that matter for how you operate:
   A CHECK forbids `publish_at` on a published row, so never set both. Cancel = set
   `publish_at = null`. A past `publish_at` is not "publish now" — publish explicitly
   instead. Report it as "scheduled for …", not "published".
+  **One publication date (2026-11-20):** when scheduling a post via SQL, set
+  `published_at` equal to `publish_at` in the same statement (the admin does the same).
 - **Multisite.** One Supabase project (**base-one**) hosts several sites, one
   Postgres **schema per site**. CozyCorner lives in schema `cozycorner`. A
   second site (`avocado_kiss`) shares the project but is **not the current

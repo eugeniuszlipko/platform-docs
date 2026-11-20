@@ -84,6 +84,9 @@ Things that matter for how you operate:
   `publish_at`; the site shows it within ~2 min. A CHECK forbids `publish_at` on a
   published row, so never set both. Cancel = `publish_at = null`. Do not use it as
   "publish now" (publish explicitly). Report it as "scheduled for …".
+  **One publication date (2026-11-20):** when scheduling a post or recipe via SQL, set
+  `published_at` equal to `publish_at` in the same statement (the admin does the same;
+  the cron job also sets `published_at = publish_at` and clears `publish_at` on publish).
 - **The home page is curated, not queried.** It is assembled from `home_slots`
   rows, not from "latest N recipes". Putting a recipe on the home page = adding
   a `home_slots` row (§3, §7).
