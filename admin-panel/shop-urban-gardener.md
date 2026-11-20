@@ -46,6 +46,8 @@ Query-ключи: `['ug-products', site.slug]` (+ `, id`), `['ug-shop-categories
 **Подсказки редактора:** предупреждение, если у других товаров выбранных
 категорий другая валюта (сайт скроет там фильтр Price, B-002). «View on site» у опубликованного товара — `frontendUrl` + `/product/<slug>`.
 
+**Сортировка списка (Фаза R, 2026-11-20; ветка `feat/phase-r`, не влито):** на странице Products выбор сортировки — Newest, Oldest, Name A–Z, Name Z–A; работает вместе с существующими фильтрами.
+
 ## 4. Сохранение — одна транзакция (RPC `save_product`)
 
 `saveUgProduct(site, id|null, input, categoryIds)` → `rpc('save_product', { p_id, p_product, p_category_ids })` → `{ id }`: товар и связи категорий пишутся атомарно;

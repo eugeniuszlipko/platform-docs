@@ -7,6 +7,12 @@
 > ⚠️ Не путать с [blog-avocado-kiss.md](blog-avocado-kiss.md): у Avocado модель другая (3 шаблона, теги, QA, «Read also»,
 > превью-токены). Код Urban Gardener живёт отдельно (`features/ug-articles`, `lib/ug*.ts`) — Avocado Blog не затронут.
 
+> **Фаза R (2026-11-20; ветка `feat/phase-r`, не влито) меняет этот документ — в тексте ниже остаётся состояние до фазы, актуальное — здесь:**
+> - **Levels удалены:** раздел Levels (меню, роут `/levels`, `levelConfig`) и поле Level в статье убраны; в БД таблица `levels` и `articles.level_id` исчезнут с миграцией 0041 (**ещё не применена**: порядок сайт → админка → 0041). Строки про Levels в §1–§5 устарели.
+> - **Автор и Read time необязательны:** `author_id` nullable («No author»), у Read time подсказка «Leave empty — calculated from the text»; `read_minutes` пусто → сайт показывает `read_minutes_auto`, которое считает `save_article`. Публикации нужны обложка и ≥1 тема (CHECK `articles_published_needs_cover`; время чтения больше не требуется).
+> - **Блоки text и callout** редактируются через `RichTextEditor` с ссылками (жирный, курсив, ссылки, списки) — тело хранится как Markdown. Правило «обычный текст без markdown» из §3 больше не верно для этих блоков.
+> - **Новые блоки** (`UgBlocksEditor`, `UgBlockTargets.tsx`): «Article link» (`type = article`, поле `linked_article_id`; пикер статьи) и «Products» (`type = products`, `product_ids` 1–3, порядок и удаление; поведение Save при «мёртвом» Products-блоке (товары удалены/сняты) в этих доках не проверено — см. `UgBlocksEditor.tsx`). Миграция 0040; FK на `linked_article_id` снят миграцией 0040a и вернётся в 0041. Запросы, встраивающие блоки статей, должны использовать подсказку `article_blocks!article_blocks_article_id_fkey`.
+
 ## 1. Реестр и навигация
 
 `web.admin/src/config/sites.ts`: `slug: "urban-gardener"`, `schema: "urban_gardener"`, `bucket: "urban-gardener-photos"`,

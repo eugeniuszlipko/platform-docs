@@ -57,7 +57,7 @@
 | `SearchForm` (/search) | поле, Clear, Search | Clear достижим Tab-ом; кольцо на общей рамке поля |
 | `FiltersBar` | select Brand, select Price, Clear | порядок разметки |
 | `TopicPills`, `Pill` | ссылки/кнопки-фильтры | порядок разметки |
-| Карточки | `ArticleCard`, `ProductCard`, `CategoryCard`, `FeaturedArticle` | один Tab-стоп на карточку (растянутая ссылка); у `ProductCard` ещё «Find on Amazon»; кольцо вокруг карточки снаружи (у `FeaturedArticle` — внутри, на подложке) |
+| Карточки | `ArticleCard`, `ProductCard`, `CategoryCard`, `FeaturedArticle`, `ArticleLinkBlock` (Urban, блок «Article link» в теле статьи — то же `.card:has(.link:focus-visible)`; e2e — образец на `/design`) | один Tab-стоп на карточку (растянутая ссылка); у `ProductCard` ещё «Find on Amazon»; кольцо вокруг карточки снаружи (у `FeaturedArticle` — внутри, на подложке) |
 | `ProductGrid` | кнопка «Show more plants» / «Try again» | новые карточки добавляются ниже, фокус не трогается; «Try again» исчезает вместе с ошибкой — фокус переносится в область ленты (`tabindex=-1`, без кольца), чтобы не упасть на `<body>` |
 | `ShareBar` | кнопки шаринга | порядок разметки |
 | `Footer` | колонки ссылок, соцссылки, «Cookie settings» | порядок разметки; «Cookie settings» открывает баннер и переводит фокус на него |

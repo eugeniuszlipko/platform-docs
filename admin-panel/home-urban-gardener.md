@@ -1,6 +1,6 @@
 # Главная Urban Gardener (Pages → Homepage) — контракт админки
 
-> Last updated: 2026-10-16 | Проект: web.admin, `src/features/ug-home/` + `src/lib/ugHome.ts`, страница списка —
+> Last updated: 2026-11-20 (Фаза R, §2) | Проект: web.admin, `src/features/ug-home/` + `src/lib/ugHome.ts`, страница списка —
 > `src/features/pages/UgPagesPage.tsx`, диспетчер — `PagesRoutes.tsx` (ветка `urban_gardener`).
 > Сайт-потребитель — urban.gardener (`app/page.tsx`, `lib/home.ts`). Схема БД — [../database/schema.md](../database/schema.md) §10
 > (`pages`, `home_slots`, миграции 0012–0015). Решения — [../sites/urban-gardener.md](../sites/urban-gardener.md) D31–D32.
@@ -28,6 +28,7 @@
   (слот выключен переключателем «Shown»), стрелки ↑/↓, удаление. Add открывает пикер (`UgHomePickerDialog`): поиск по названию,
   опубликованные первыми, **не показывает** уже добавленное в слот (для статейных слотов — стоящее в featured **или** journal).
   Add неактивна на ёмкости. Одна статья в featured и journal (допустимо в БД) — жёлтое предупреждение; сайт покажет её один раз.
+- **Фаза R (2026-11-20; ветка `feat/phase-r`, не влито): режимы Auto/Manual.** У «From the journal» и «Plants & everything they need» переключатель Auto/Manual (колонки `pages.journal_mode`/`shop_mode`, миграция 0040) со списком-предпросмотром того, что сайт показывает сейчас. Auto-журнал — 6 последних опубликованных статей без featured; Auto-магазин — последние товары, плюс select «limit» 6/9/12 (`pages.shop_limit`). «This week's read» остаётся ручным. Ёмкость Manual-слота магазина — 12 (было 3). Редактор карточек (с ёмкостью, стрелками и пикером) остаётся для Manual; ключи `journal_mode`, `shop_mode`, `shop_limit` уходят в RPC `save_home_page` внутри `p_page`. Код — `src/features/ug-home/`, `src/lib/ugHome.ts`. Описание ёмкости 1/6/3 выше относится к режиму до Фазы R (для shop теперь 12).
 - **Неполный слот Save не блокирует** (решение владельца): жёлтая подсказка «Empty — this section will be hidden…» /
   «N of M cards will be shown…». Карточка «заполняет место» (`isRenderable`), только если слот включён И статья/товар опубликованы.
 
