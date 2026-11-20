@@ -318,6 +318,11 @@ are in schema `avocado_kiss`.
   `pick`/`pick_feature` feed Editor's Picks and may point to a recipe **or** a
   post. To feature something: pick the slot, `select` current rows to choose a
   `position`, insert one row with exactly one of `recipe_id`/`post_id`.
+  **Hero mode:** the `hero` slot is used only when `pages.hero_mode = 'manual'`.
+  In `'auto'` (current state of `home`) the site shows the latest 3 published
+  recipes + 3 published posts (with a non-empty `hero_image_path`) interleaved,
+  and `hero` rows are ignored. Switch with
+  `update avocado_kiss.pages set hero_mode = 'auto'|'manual' where slug = 'home';`.
 - **Blog (Article) posts** — the second content type (migrations `0008`/`0009`):
   archive `/blog`, single `/blog/[slug]`, header nav "Article". A post is **three
   independent axes** — a template, tags, and a body of reorderable sections.

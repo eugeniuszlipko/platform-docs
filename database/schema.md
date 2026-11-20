@@ -644,6 +644,11 @@ null → плейсхолдер) — страницы читают строку 
 У `home` баннера нет (мозаика). **`body`** (миграция 0017, Markdown) используют только
 `privacy`/`terms` (рендер `LegalArticle`+`react-markdown`, null → встроенный
 шаблон-фолбэк). SEO всех 7 страниц читается через `fetchPageSeo(slug)`.
+**`hero_mode`** (миграция 0035, Фаза Q): `text not null default 'manual'`, CHECK
+`in ('auto','manual')`. Используется только строкой `home`, там выставлено `'auto'`:
+`auto` — hero главной собирается из свежих рецептов и постов, `manual` — из `home_slots`
+со `slot = 'hero'`. anon читает колонку через табличный `SELECT`, обновлять может
+только админ (RLS `is_admin()`).
 
 ### about_content — контент страницы /about (singleton, одна строка)
 
@@ -948,6 +953,8 @@ charred greens); текст «Test» (1 рецепт) не переносилс�
 не хранятся нигде, кроме `recipe_categories` и `authors`. Проверка: все страницы прода 200; REST `select=category` → 400.
 
 · **0033 grants_hygiene** — Фаза O (B-004): снимает TRUNCATE/REFERENCES/TRIGGER/MAINTAIN у `anon`/`authenticated`, правит default privileges (см. §3). **0034 reorder_positions** — Фаза O (B-012): RPC `avocado_kiss.reorder_positions` (`tags`, `brands`, `shop_categories`, `categories`; см. §3). Обе применены к base-one 2026-11-19.
+
+· **0035 pages_hero_mode** — Фаза Q (B-028): `pages.hero_mode` (см. `pages` в §9); строка `home` переведена в `'auto'`. Применена к проду 2026-11-20.
 
 Ручной шаг после 0001: схема `avocado_kiss` добавлена в **Exposed schemas**
 (готово). Картинки-заглушки для сида загружаются в бакет отдельным шагом

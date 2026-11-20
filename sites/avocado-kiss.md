@@ -326,6 +326,18 @@ mockups/                # исходные SingleFile-макеты Lovable: v1 (
 React `cache()`). Слайд с постом ведёт на `/blog/<slug>`. В админке
 `SLOT_META.hero.allowsPost = true` (`web.admin/src/lib/homeSlots.ts`).
 
+**Режим hero (Фаза Q, 2026-11-20, миграция 0035).** `fetchHeroItems` читает
+`pages.hero_mode` строки `home`:
+- `auto` — 3 последних опубликованных рецепта + 3 последних опубликованных поста с
+  непустым `hero_image_path`; порядок `published_at desc, id desc`, лимит 3 на тип;
+  чередование Р,П,Р,П,Р,П делает `interleaveHero` (`lib/hero.ts`). Если одного типа
+  меньше, остаток добирает другой (максимум 6). Эйброу — «Recipe of the week» /
+  «From the blog».
+- `manual` (или значение не прочиталось) — слоты `home_slots` со `slot = 'hero'`, как раньше.
+
+Свежесть: публикация по cron вызывает `/api/revalidate` → `revalidatePath("/", "layout")`,
+плюс ISR главной `revalidate 60`. Колонка — `database/schema.md` §`pages`.
+
 Мозаика (`app/page.tsx`, компоненты `MosaicCard`/`MosaicBanner`) — фиксированный
 шаблон на 12-колоночной сетке, питается **только рецептными** слотами
 (`grid_*`, `wide`, `mosaic_banner`). `pick`/`pick_feature` отданы секции
